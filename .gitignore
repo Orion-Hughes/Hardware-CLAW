@@ -1,0 +1,36 @@
+# Local credentials (do not expose to generated-project tools)
+.secrets/
+DS API.txt
+DS_Api.txt
+**/DS_Api.txt
+**/.env
+**/.env.*
+**/.venv/
+**/__pycache__/
+*.pyc
+temp/
+workspace/.chat/
+
+# Local generated projects and personal administration (keep on disk)
+/workspace/*
+!/workspace/README.md
+/项目总体信息/
+
+# Installed toolchains, downloaded reference checkout and UI runtime caches
+/pio/
+/tools/
+/references/projects/ESP-CLAW/Git-Clone/
+**/.chainlit/
+**/.files/
+**/.pio/
+**/node_modules/
+**/.pytest_cache/
+*.log
+*.sqlite3
+*.sqlite3-*
+*.bin
+*.elf
+*.zip
+*.7z
+*.exe
+*.dll

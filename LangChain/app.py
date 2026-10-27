@@ -1,0 +1,209 @@
+"""Chainlit adapter. Agent, tools and credentials remain on the server."""
+import json
+import os
+import uuid
+from datetime import datetime, timezone
+
+os.environ["LANGSMITH_TRACING"] = "false"
+os.environ["LANGCHAIN_TRACING_V2"] = "false"
+
+import chainlit as cl
+from chainlit.server import app, UserParam
+from starlette.responses import JSONResponse, FileResponse
+from starlette.routing import Route
+from fastapi import HTTPException
+from fastapi.routing import APIRoute
+from langchain_core.messages import HumanMessage, AIMessage
+
+from hardware_claw.api_config import create_model
+from hardware_claw.runtime import error_message, execute_turn
+from hardware_claw.projects.service import ProjectService, ProjectError
+from hardware_claw.chat_store import LocalChatStore, configure_local_auth
+
+configure_local_auth()
+_store = None
+
+
+@cl.data_layer
+def chat_store():
+    global _store
+    if _store is None:
+        _store = LocalChatStore()
+    return _store
+
+
+@cl.header_auth_callback
+def local_user(headers):
+    # This app is intentionally bound to 127.0.0.1, not a multi-user server.
+    if headers.get("host", "").split(":")[0] in {"127.0.0.1", "localhost"}:
+        return cl.User(identifier="hardware-claw-local", display_name="本地用户")
+    return None
+
+
+async def stored_asset(thread_id: str, element_id: str, current_user: UserParam):
+    store = chat_store()
+    if not current_user or await store.get_thread_author(thread_id) != current_user.identifier:
+        raise HTTPException(404)
+    data = await store.get_element(thread_id, element_id)
+    key = (data or {}).get("objectKey", "")
+    if len(key) != 32 or any(c not in "0123456789abcdef" for c in key):
+        raise HTTPException(404)
+    path = store.root / "assets" / key
+    if not path.is_file():
+        raise HTTPException(404)
+    return FileResponse(path, filename=data["name"], media_type=data.get("mime"))
+
+
+app.router.routes.insert(0, APIRoute("/hardware-claw-assets/{thread_id}/{element_id}", stored_asset, methods=["GET"]))
+
+
+def thread_id():
+    return cl.context.session.thread_id
+
+
+async def save_chat():
+    project = cl.user_session.get("project")
+    history = cl.user_session.get("history") or []
+    chat_store().put("state", thread_id(), {
+        "project_id": project.id if project else None,
+        "mode": cl.user_session.get("mode") or "generate",
+        "history": [{"role": "user" if isinstance(m, HumanMessage) else "assistant", "content": m.content} for m in history[-6:]],
+    })
+
+
+@cl.on_chat_resume
+async def resume(thread):
+    state = chat_store().get("state", thread["id"]) or {}
+    cl.user_session.set("mode", state.get("mode", "generate"))
+    cl.user_session.set("project", None)
+    cl.user_session.set("history", [HumanMessage(content=m["content"]) if m["role"] == "user" else AIMessage(content=m["content"]) for m in state.get("history", [])[-6:]])
+    if state.get("project_id"):
+        try:
+            project = ProjectService.open(state["project_id"])
+            cl.user_session.set("project", project)
+            notice = cl.Message(content=f"已恢复工程 `{project.id}`，当前版本 {project.get()['version']}。后续反馈继续修改此工程；历史消息中的旧交付路径不会自动更新。")
+        except ProjectError:
+            cl.user_session.set("mode", "query")
+            notice = cl.Message(content="此聊天绑定的工程无法打开，已切换只读查询，未另建工程。请检查工程文件夹或用 `/project 工程ID` 重新绑定。")
+        notice.id = str(uuid.uuid5(uuid.NAMESPACE_URL, "hardware-claw-resume:" + thread["id"]))
+        await notice.send()
+        # Chainlit replays the supplied snapshot after this callback returns.
+        thread["steps"] = [s for s in thread.get("steps", []) if s.get("id") != notice.id] + [notice.to_dict()]
+
+
+async def identity(request):
+    return JSONResponse({"service": "hardware-claw-chainlit", "pid": os.getpid()})
+
+
+# Place before Chainlit's SPA catch-all route.
+app.router.routes.insert(0, Route("/hardware-claw-health", identity))
+
+
+@cl.on_chat_start
+async def start():
+    cl.user_session.set("history", [])
+    cl.user_session.set("project", None)
+    cl.user_session.set("mode", "generate")
+    await save_chat()
+    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。自动行为评估目前覆盖DHT22串口，其他功能不标记验收通过。每轮显示工具、耗时、Token及真实验证状态。").send()
+
+
+@cl.on_message
+async def respond(message: cl.Message):
+    if len(message.content) > 12000:
+        await cl.Message(content="问题过长，请控制在 12000 字符以内。").send()
+        return
+    question = message.content.strip()
+    if not question:
+        return
+    require_delivery = False
+    if question == "/query":
+        cl.user_session.set("project", None)
+        cl.user_session.set("mode", "query")
+        cl.user_session.set("history", [])
+        await save_chat()
+        await cl.Message(content="已切换只读查询模式。已有工程保留在workspace；输入 `/new 需求` 恢复生成模式。").send()
+        return
+    try:
+        # Default generation is an explicit UI mode, not keyword intent guessing.
+        if not question.startswith("/") and cl.user_session.get("project") is None and cl.user_session.get("mode") != "query":
+            question = "/new " + question
+        if question.startswith(("/new ", "/new-pio ", "/new-arduino ")):
+            template = "platformio" if question.startswith("/new-pio ") else "arduino" if question.startswith("/new-arduino ") else "vscode"
+            requirement = question.split(" ", 1)[1].strip()
+            project = ProjectService.create("web-project", requirement, template)
+            cl.user_session.set("project", project)
+            cl.user_session.set("mode", "generate")
+            cl.user_session.set("history", [])
+            await save_chat()
+            question = requirement + "\n请实际完成绑定工程的文件生成、基础检查和导出。"
+            require_delivery = True
+            await cl.Message(content=f"已创建工程 `{project.id}`（{template}），保存在workspace。生成失败时进度也会保留。").send()
+        elif question.startswith("/project "):
+            project = ProjectService.open(question.split(" ", 1)[1].strip())
+            cl.user_session.set("project", project)
+            cl.user_session.set("mode", "generate")
+            cl.user_session.set("history", [])
+            await save_chat()
+            await cl.Message(content=f"已绑定工程 `{project.id}`，版本 {project.get()['version']}。可直接提出后续修改或导出要求。").send()
+            return
+        elif question.startswith("/"):
+            await cl.Message(content="命令不完整或未知。使用 `/new 需求`、`/project 工程ID` 或 `/query`；默认模式下也可直接输入工程需求。").send()
+            return
+    except ProjectError as exc:
+        await cl.Message(content=f"{exc.code}：{exc}").send()
+        return
+    steps = {}
+
+    async def emit(kind, data):
+        if kind == "tool_request":
+            step = cl.Step(name=data["name"], type="tool")
+            step.start = datetime.now(timezone.utc).isoformat()
+            step.input = json.dumps(data["args"], ensure_ascii=False, indent=2)
+            steps[data["id"]] = step
+            await step.send()
+        elif kind == "tool_result":
+            step = steps.get(data["id"])
+            if step:
+                step.output = data["content"]
+                step.end = datetime.now(timezone.utc).isoformat()
+                step.language = "json"
+                await step.update()
+        elif kind in ("model", "error", "host_export"):
+            await cl.Message(content=data["text"]).send()
+        elif kind == "summary":
+            tokens = data["tokens_reported"]
+            label = str(tokens) if tokens is not None else "未返回"
+            if not data["usage_complete"] and tokens is not None:
+                label += "（仅已返回部分）"
+            await cl.Message(content=(
+                f"本轮：{data['status']} · {data['elapsed_seconds']} 秒 · "
+                f"工具结果 {data['tool_results']}/{data['tool_requests']} · Token {label}\n\n"
+                "查询完成不代表硬件验证通过。"
+            ), elements=[cl.Text(name="本轮用量明细", content=json.dumps(data, ensure_ascii=False, indent=2), display="side")]).send()
+            delivery = data.get("project")
+            if delivery:
+                elements = [cl.File(name="project.zip", path=delivery["archive"], display="inline")] if delivery.get("archive") else []
+                folder = delivery.get("simulation_folder")
+                instructions = f"\n\nVS Code打开 `{folder}`，F1 → `Wokwi: Start Simulator`。" if folder else ""
+                await cl.Message(content=f"工程 `{delivery['project_id']}` · 版本 {delivery['version']} · {delivery['delivery_status']}\n编译：{delivery['build']}；仿真执行：{delivery['simulation']}；行为判定：{delivery['behavior']}。仅覆盖登记场景，非全功能验收。{instructions}", elements=elements).send()
+
+    history = cl.user_session.get("history")
+    if history is None:
+        history = []
+        cl.user_session.set("history", history)
+    try:
+        project = cl.user_session.get("project")
+        model = create_model(max_tokens=4096 if project else 1024)
+    except Exception as exc:
+        await cl.Message(content=error_message(exc)).send()
+        return
+    try:
+        await execute_turn(model, question, history, emit, project=project, require_delivery=require_delivery)
+    finally:
+        await save_chat()
+
+
+@cl.on_stop
+async def stop():
+    await cl.Message(content="已请求停止本轮任务。已发出的 API 请求仍可能计费。未完成的回答不加入后续上下文。").send()

@@ -1,0 +1,1576 @@
+{
+  "schema_version": 1,
+  "retrieved_at": "2026-10-26T08:35:41.088321+00:00",
+  "sources": [
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "commit_date": "2026-10-23T14:31:19Z",
+      "id": "wokwi-diagram-lint",
+      "license_files": [
+        "LICENSE"
+      ],
+      "license_status": "included",
+      "redistribution_review_required": false
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "commit_date": "2026-10-23T15:22:20Z",
+      "selection_basis": "official docs website footer commit, confirmed main branch",
+      "id": "wokwi-docs",
+      "license_files": [
+        "LICENSE"
+      ],
+      "license_status": "included",
+      "redistribution_review_required": false
+    },
+    {
+      "repo": "wokwi/wokwi-boards",
+      "commit": "962b19d5636756537a93bb5337ac99abd775eae0",
+      "commit_date": "2026-10-23T13:47:39Z",
+      "id": "wokwi-boards",
+      "license_files": [],
+      "license_status": "not_found_in_repository_root",
+      "redistribution_review_required": true
+    }
+  ],
+  "files": [
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "LICENSE",
+      "local_path": "upstream/wokwi-diagram-lint/LICENSE",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/LICENSE",
+      "bytes": 1077,
+      "sha256": "3df01526a8a277cb34d5be806321bebd876120d588f90f5e4bffdfde00bb7bee"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/README.md",
+      "local_path": "upstream/wokwi-diagram-lint/packages/diagram-lint/README.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/README.md",
+      "bytes": 2518,
+      "sha256": "988e6b95368f520799836edd54fa0344d805b6319efcccba540b5a17d65ff379"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/package.json",
+      "local_path": "upstream/wokwi-diagram-lint/packages/diagram-lint/package.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/package.json",
+      "bytes": 955,
+      "sha256": "3c53a6b62cf7e2149c8cdd271774cfab871135daab698ed02deefa22f67f441b"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/part-registry.ts",
+      "local_path": "upstream/wokwi-diagram-lint/packages/diagram-lint/src/registry/part-registry.ts",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/part-registry.ts",
+      "bytes": 2339,
+      "sha256": "aa9ad9162708f02a209eac18e1f728d9710eb1074c2964540c1932f373deb4a1"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-aitewinrobot-esp32c3-supermini.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-aitewinrobot-esp32c3-supermini.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-aitewinrobot-esp32c3-supermini.json",
+      "bytes": 219,
+      "sha256": "3a0ad4c32cb0e26adfe6d4e685fc2f4aa16e5f9bb0bbedac8a682a96f40053e1"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-aitewinrobot-esp32h2-supermini.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-aitewinrobot-esp32h2-supermini.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-aitewinrobot-esp32h2-supermini.json",
+      "bytes": 349,
+      "sha256": "2ff9ea59a7832eb563b4f1c883afe967f5cd744feae93455511432bd1656ce60"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-arduino-nano-esp32.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-arduino-nano-esp32.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-arduino-nano-esp32.json",
+      "bytes": 455,
+      "sha256": "7f38ea5fdfc007b2dd14f7bd67e2ca7019968b19fd17b350a03c87a59eec6d0e"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-bmp180.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-bmp180.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-bmp180.json",
+      "bytes": 143,
+      "sha256": "4ac53e1945962229ff63541633b3cfc1d3c29fdaea3bd9f89f2f9e5cdf6c4854"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-cd74hc4067.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-cd74hc4067.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-cd74hc4067.json",
+      "bytes": 364,
+      "sha256": "6d05b65756c2e97d6ff9cd3440251dc1cee17b6e6b56d0bad4898dd89183e5f3"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-ds18b20.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-ds18b20.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-ds18b20.json",
+      "bytes": 128,
+      "sha256": "061b8ca6fc20e54172215f042d3bc878a97649e45048351f5a69795556dfcf6d"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-epaper-2in9.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-epaper-2in9.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-epaper-2in9.json",
+      "bytes": 167,
+      "sha256": "c66c0b866402a70382e33f8dfc78c398e6932b935546b9b7813b9fea8259e630"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp-01.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp-01.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp-01.json",
+      "bytes": 169,
+      "sha256": "362a2da9ed88867d86157e20dc5a68b4c66621f41a8f6d52b58bd88b96c49c92"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp-mosaico.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp-mosaico.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp-mosaico.json",
+      "bytes": 712,
+      "sha256": "fe8d1ad5c46d5aaf9bfdca10007c0381de63ca0dc0ac2c512294be26af8b52f9"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-2432s028r.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-2432s028r.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-2432s028r.json",
+      "bytes": 470,
+      "sha256": "49d739d4aede146bd11c5d8bdba1286240a869ccd4442ab168229c3f82303b69"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-c3-devkitm-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-c3-devkitm-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-c3-devkitm-1.json",
+      "bytes": 455,
+      "sha256": "2bc726877f8cbf38cf53676adbaa5105daef763445afe2a26394c68d65a7bb37"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-c3-rust-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-c3-rust-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-c3-rust-1.json",
+      "bytes": 476,
+      "sha256": "e41a6f71818f4b42162ed09ca6e71179eefacaa9e7d4d4f7a54df68f2074fdd4"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-c5-devkitc-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-c5-devkitc-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-c5-devkitc-1.json",
+      "bytes": 450,
+      "sha256": "08d66c75eb780ed13d62beca4ed4c80b1d19b6dad2386f42e86c8d8bc5ca53ac"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-c6-devkitc-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-c6-devkitc-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-c6-devkitc-1.json",
+      "bytes": 449,
+      "sha256": "7c72159e0753c9922502c267ef02ff6d847b3c524441a61d06398940092f9fe9"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-c61-devkitc-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-c61-devkitc-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-c61-devkitc-1.json",
+      "bytes": 450,
+      "sha256": "fb5f695fe564a8a4f4b7eced9cc62e7166315efe6e79046b07dfd9bb57e8cf31"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-cam.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-cam.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-cam.json",
+      "bytes": 399,
+      "sha256": "6dd819f77f0c5bada1907b2727a89eb4de9435cafcf0da6e9bed80d39a4ffbe4"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-devkit-c-v4.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-devkit-c-v4.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-devkit-c-v4.json",
+      "bytes": 510,
+      "sha256": "d74ca97c68e70ea7edd75ecdec28628fe90d64f16456582dbd3dfa1e32a2468d"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-devkit-v1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-devkit-v1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-devkit-v1.json",
+      "bytes": 448,
+      "sha256": "15e56741090c104b1fbe937ca49898e3729fb7780fdb28e254707723511dfc9f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-h2-devkitm-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-h2-devkitm-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-h2-devkitm-1.json",
+      "bytes": 437,
+      "sha256": "b5a7580632e82011cacc3163377182c0ac916d2ee45a7e0179a49b65a679493f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-p4-function-ev.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-p4-function-ev.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-p4-function-ev.json",
+      "bytes": 954,
+      "sha256": "35757ee7b0fa17da6ab15ddcdfc87c552820383e418ef99795433cac2ab3a3ff"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-p4-preview.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-p4-preview.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-p4-preview.json",
+      "bytes": 742,
+      "sha256": "e84b7f3b8b1627623a27bebf446f6e183794fbd3405509e743922cf9610fb1dd"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-s2-devkitm-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-s2-devkitm-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-s2-devkitm-1.json",
+      "bytes": 541,
+      "sha256": "4e915e37c3729404d8c7431c43bb64a9a28ce07a5c5adb23b15fd1589f5df97d"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-s3-box-3.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-s3-box-3.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-s3-box-3.json",
+      "bytes": 512,
+      "sha256": "f8a033a2b0bce53e27456fa3fc35fd7cdaa011155233ab44216081eeb72715f6"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-s3-box.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-s3-box.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-s3-box.json",
+      "bytes": 510,
+      "sha256": "9bd14f2940a4620ecb38062d778ea9717c6dea92df7e3695ceeec5cb2566bb8c"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-s3-devkitc-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-s3-devkitc-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-s3-devkitc-1.json",
+      "bytes": 572,
+      "sha256": "6bad0223e4e69a9fba854f9af86c546ea7fefb009b979b8d175b2e0ebd7cf2a2"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-esp32-s31-function-coreboard-1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-esp32-s31-function-coreboard-1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-esp32-s31-function-coreboard-1.json",
+      "bytes": 565,
+      "sha256": "68c61292d929c0f00617cf217c1ac033c7518dd53eb79bd06664450e0ff9f9a4"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-franzininho-wifi.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-franzininho-wifi.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-franzininho-wifi.json",
+      "bytes": 647,
+      "sha256": "787f3b6bed1dcefd64cc892fd9a038acd6f0eedb34e2afb707a633b1a63a4029"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-grove-oled-sh1107.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-grove-oled-sh1107.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-grove-oled-sh1107.json",
+      "bytes": 149,
+      "sha256": "f1b075f8450f350cc927467fe9c8f8708c20e1f75ea94dd3a2021bd8ddcf0764"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-ili9341-cap-touch.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-ili9341-cap-touch.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-ili9341-cap-touch.json",
+      "bytes": 196,
+      "sha256": "7f30abda54d0156d25098b04191de9b1cbb78c350fbc352cfabbe00a03689484"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-ili9881c-8in.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-ili9881c-8in.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-ili9881c-8in.json",
+      "bytes": 115,
+      "sha256": "dea1c9751dda63c5932a59cd0287e12d92da77df01371c4a24049937e99545e6"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-lm35.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-lm35.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-lm35.json",
+      "bytes": 126,
+      "sha256": "987182e637b03b59273cb0a20011b0b3d388b8a19e2341ba268d948c6d0a8e03"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-m5stack-core-s3.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-m5stack-core-s3.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-m5stack-core-s3.json",
+      "bytes": 623,
+      "sha256": "15d71244d414186d10785d3ee1a7da8e6d200ecccac98d0a32314963fee3191c"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-mch2022-badge.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-mch2022-badge.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-mch2022-badge.json",
+      "bytes": 487,
+      "sha256": "ffe54bd58f568cdd6fb7663ad9f185258a8117947818e70ab623c1b3bee05d4a"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-mfrc522.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-mfrc522.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-mfrc522.json",
+      "bytes": 167,
+      "sha256": "0f358c3719bbf47562b76a78e9b2bb2f7662a626114d132eb07b577d7318f509"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-nokia-5110.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-nokia-5110.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-nokia-5110.json",
+      "bytes": 306,
+      "sha256": "7a25b698009242f70eaa87220e3b18c775fd2505c0f1398025838ca8ec37fe99"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-notecarrier-a.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-notecarrier-a.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-notecarrier-a.json",
+      "bytes": 369,
+      "sha256": "eb6a551732392a05505699aba3337bc684720aca34e72783985d60e7bb7a56b9"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-pi-pico-2.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-pi-pico-2.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-pi-pico-2.json",
+      "bytes": 617,
+      "sha256": "30f4a953365eb3dab66a07c9c41b3c1c9f41e33224d2bbd49fc1055ada4356ff"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-pi-pico-2w.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-pi-pico-2w.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-pi-pico-2w.json",
+      "bytes": 648,
+      "sha256": "00034693bc8efd9d5276e5d95898f89d72f1f6f8b371dc6a6dfb913b2fa4206f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-pi-pico-w.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-pi-pico-w.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-pi-pico-w.json",
+      "bytes": 648,
+      "sha256": "bba8b16c9fb941eea62bb88787e755e86dc21a8be3e68852a7cdcf677e9594ed"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-pi-pico.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-pi-pico.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-pi-pico.json",
+      "bytes": 616,
+      "sha256": "aca64010675d520b903a30ac8ec74a399e04c9e30e705474755eac545144cd36"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-ssd1306.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-ssd1306.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-ssd1306.json",
+      "bytes": 135,
+      "sha256": "3d6096bcd4c621a48d1423508ac0ca1ea54527c37b9e2a8b3e82a30979499365"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-st-nucleo-c031c6.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-st-nucleo-c031c6.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-st-nucleo-c031c6.json",
+      "bytes": 1214,
+      "sha256": "04443572d45afdd7570f917a8ec9b073330202fbdf1c9e1d6fddcef34822de6c"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-st-nucleo-l031k6.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-st-nucleo-l031k6.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-st-nucleo-l031k6.json",
+      "bytes": 467,
+      "sha256": "d27f64f28694a06544f0318eb7c4206c5657a4652d11289280ff98ff79120d74"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-st-nucleo-l432kc.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-st-nucleo-l432kc.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-st-nucleo-l432kc.json",
+      "bytes": 468,
+      "sha256": "d643f9633494891fb8a4474da25fd6b4c60d46841aee286cd6f726eeb3d17932"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-st7789.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-st7789.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-st7789.json",
+      "bytes": 160,
+      "sha256": "6ca758334e7babbac26fb7583cd8ded155f74f96f8af2be55d5d7eb5f8403d24"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-stm32-blackpill.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-stm32-blackpill.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-stm32-blackpill.json",
+      "bytes": 558,
+      "sha256": "7c7c87a3e438c366d741af5a989297c30341f54db221952ae42c0020de7f5b59"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-stm32-bluepill.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-stm32-bluepill.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-stm32-bluepill.json",
+      "bytes": 549,
+      "sha256": "402d8a12665a45c6bd6da8b55b60a5353a2673d9de387e2e0bf3ed4bbee6c7f1"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-tt-block-bidirectional-io.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-tt-block-bidirectional-io.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-tt-block-bidirectional-io.json",
+      "bytes": 152,
+      "sha256": "2937bb9218fe2f9f0a06c84dd24492669f48128286e0195a924f1daf674941cd"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-tt-block-input-8.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-tt-block-input-8.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-tt-block-input-8.json",
+      "bytes": 321,
+      "sha256": "5665bf2f1ef08eed91cd46660fe64b53e0dede247a731b53fa9395d0fdd6186e"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-tt-block-input.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-tt-block-input.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-tt-block-input.json",
+      "bytes": 373,
+      "sha256": "3d3fe687b7737f725e519589daa236a6dcf32bdb6c726592ccf471d1c365a3c4"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-tt-block-output.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-tt-block-output.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-tt-block-output.json",
+      "bytes": 336,
+      "sha256": "59e028e750b3411147a546fe0cd874569ba9aea6e2c521b7a0dc1d378fcee05f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-wemos-lolin32-lite.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-wemos-lolin32-lite.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-wemos-lolin32-lite.json",
+      "bytes": 508,
+      "sha256": "2364190b4e45c2c8026f264ff9f6f5991821bbaedce8495d4f3416bdd23083c8"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-wemos-s2-mini.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-wemos-s2-mini.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-wemos-s2-mini.json",
+      "bytes": 465,
+      "sha256": "ce76f9d8b7f6733a1d2c39a34d79e9f0d62c26bc7c463a46ad35c8041b112c61"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-xiao-esp32-c3.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-xiao-esp32-c3.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-xiao-esp32-c3.json",
+      "bytes": 201,
+      "sha256": "c5bd8f6b0d7bdcbade20f3b2450107dcc2b2c5f737f37e9f36b2e334cae4601e"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-xiao-esp32-c6.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-xiao-esp32-c6.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-xiao-esp32-c6.json",
+      "bytes": 276,
+      "sha256": "97be7bbce2a129806e3f1c52516f33258722a5505143960a6b7eb322131ac33b"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/board-xiao-esp32-s3.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/board-xiao-esp32-s3.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/board-xiao-esp32-s3.json",
+      "bytes": 276,
+      "sha256": "7ca075278e809dd7c545d5665976c92d8d0b28b7558baf49ef5d608e7e8d1745"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-74hc165.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-74hc165.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-74hc165.json",
+      "bytes": 255,
+      "sha256": "3fd8a5fb24d2ade0ed528f94a9cdf32fd746710782335370996ed5052f4447a0"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-74hc595.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-74hc595.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-74hc595.json",
+      "bytes": 258,
+      "sha256": "619412f2d547569970258f5fec0d868dc7f49adb5bd7d48bd194bd61640f3106"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-7segment.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-7segment.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-7segment.json",
+      "bytes": 562,
+      "sha256": "d54d459f2a613fb2d63e60a012484910715474c4b3d8c30b205a04b75ee2679e"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-a4988.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-a4988.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-a4988.json",
+      "bytes": 286,
+      "sha256": "ac018fb10f21fa658955465ca3fbfe833c758e1c4d17a9ca09aab4818f1a24fe"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-analog-joystick.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-analog-joystick.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-analog-joystick.json",
+      "bytes": 209,
+      "sha256": "f3243fbc023d97bd0d1611a0a9e5964d8f0ea864292de092bea94a2cac03deec"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-apa102-matrix.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-apa102-matrix.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-apa102-matrix.json",
+      "bytes": 400,
+      "sha256": "16feccbd4e84d963c4863feb468a2a45e43f3f8e2f0ba37a899c8a2f2cbbd096"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-arduino-mega.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-arduino-mega.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-arduino-mega.json",
+      "bytes": 1005,
+      "sha256": "cebfc650b6e0f92df5a3c4ffeebceea36bbfd6a645f14334e045327e2420d6d5"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-arduino-nano.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-arduino-nano.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-arduino-nano.json",
+      "bytes": 512,
+      "sha256": "df73d27fedda01650cfc7dbc133392b9f47f34b17fb4efd888bc07204232eee9"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-arduino-uno.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-arduino-uno.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-arduino-uno.json",
+      "bytes": 450,
+      "sha256": "b08d089f735841573548aab2ea72c8f01ffdae53e639fcec17c2a11421dec300"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-attiny85.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-attiny85.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-attiny85.json",
+      "bytes": 171,
+      "sha256": "3bd4657a505317af215d2892d0d9d099daecc2a84fdba23664f683d3c74a1d31"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-biaxial-stepper.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-biaxial-stepper.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-biaxial-stepper.json",
+      "bytes": 295,
+      "sha256": "5d20879fcb72b7852267857ada86bdf8ddd966719f39f0bdfce03b864174134f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-breadboard-half.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-breadboard-half.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-breadboard-half.json",
+      "bytes": 113,
+      "sha256": "22661ea77477d38541466639e3a3c1083cfdb26777524cf060963b2dd25de40d"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-breadboard-mini.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-breadboard-mini.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-breadboard-mini.json",
+      "bytes": 113,
+      "sha256": "5757085ab2c018e5303506fcea783572704147d8a2c1c55070c31eade47ac404"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-breadboard.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-breadboard.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-breadboard.json",
+      "bytes": 108,
+      "sha256": "4329f410729a1d8a0075513697fbfbe5ef9960e7ae55ddcf3ad92ea34719c303"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-buzzer.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-buzzer.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-buzzer.json",
+      "bytes": 278,
+      "sha256": "f1c0a3d793294e05147e452811bc91a291bd061be202f01c8f97c488b46467ca"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-clock-generator.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-clock-generator.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-clock-generator.json",
+      "bytes": 191,
+      "sha256": "0bd9b3ee1c8ef685311fc994ca6a8b30052fcac1632c151d3dd10c1429054ae2"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-dht22.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-dht22.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-dht22.json",
+      "bytes": 258,
+      "sha256": "a9256cdf2ecd0ddb1cc67450e3afb5c42cf380d57f6ec26e7c3353badffa2110"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-dip-switch-8.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-dip-switch-8.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-dip-switch-8.json",
+      "bytes": 256,
+      "sha256": "ab1cac7b8c2b44fcfdd06807c77a6f5f537068470a1e0ab169e725e3c7ab7cf9"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ds1307.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ds1307.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ds1307.json",
+      "bytes": 200,
+      "sha256": "1a6e8fd4405dfd750bf4b7d1150c3c98008f3079e1afb6b22433ffaba999f4a6"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ds18b20.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ds18b20.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ds18b20.json",
+      "bytes": 318,
+      "sha256": "e86d1fea222f653fb126a18482df1df5ee3218ced423381ba8218dd7ef6b4379"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-esp32-devkit-v1.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-esp32-devkit-v1.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-esp32-devkit-v1.json",
+      "bytes": 448,
+      "sha256": "fd7e133b730957df38b2e1db397d4bc17409b4dc727ce3a2badb5cbfce2845b4"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-flip-flop-d.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-flip-flop-d.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-flip-flop-d.json",
+      "bytes": 127,
+      "sha256": "ccb2ac510347e85074f326b6649fce5733863d6ef514555219d6e55a6bd9319c"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-flip-flop-dr.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-flip-flop-dr.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-flip-flop-dr.json",
+      "bytes": 128,
+      "sha256": "02368c1246104d16644d01f4cff7e938b6853ecd16f841283b6a21d358d9c113"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-flip-flop-dsr.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-flip-flop-dsr.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-flip-flop-dsr.json",
+      "bytes": 129,
+      "sha256": "3dbdaada6b271b5dba6de2a53bad7fe45bf48e090620c9fa01a551dcab5b2440"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-flip-flop-sr.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-flip-flop-sr.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-flip-flop-sr.json",
+      "bytes": 123,
+      "sha256": "35c821beaced7960a0f40114782f101f4d86ef8313fd878471e56905827108bb"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-franzininho.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-franzininho.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-franzininho.json",
+      "bytes": 196,
+      "sha256": "aea3754baf5b87b0d223a5f0bafd6a7f67f01aabd7c17f85576410678baf17a1"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gas-sensor.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gas-sensor.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gas-sensor.json",
+      "bytes": 259,
+      "sha256": "682edf44d8557af6aaf3db81aeca4d25e8bc9ea8bf5e5d19caba1707950106e8"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gate-and-2.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gate-and-2.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gate-and-2.json",
+      "bytes": 108,
+      "sha256": "856cd466fb9fcde2ddd997a6d102d413d99f2075c64245d1928b3f0ec78b629f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gate-buffer.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gate-buffer.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gate-buffer.json",
+      "bytes": 105,
+      "sha256": "00143cc2aaab45652647b94d817d84c20d48a40aff439665c6807b0f37c40de7"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gate-nand-2.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gate-nand-2.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gate-nand-2.json",
+      "bytes": 109,
+      "sha256": "c22ff77bba8d2400051846990e8171dc70faba500e02d51852edfe3c2afcfa0e"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gate-nor-2.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gate-nor-2.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gate-nor-2.json",
+      "bytes": 108,
+      "sha256": "26f9afd8282197b86149afc71698cab5e5cd3da32b05ee7e3b9a4ff70e66bd87"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gate-not.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gate-not.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gate-not.json",
+      "bytes": 102,
+      "sha256": "aaa082f707f48110a647ea7be07646839cb7691f4214a5be9041658035d710a4"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gate-or-2.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gate-or-2.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gate-or-2.json",
+      "bytes": 107,
+      "sha256": "bf7593b65fd07eabb221ba7aeef6f9f5b61ea1bebee8c815b1fe68108ca9ff3e"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gate-xnor-2.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gate-xnor-2.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gate-xnor-2.json",
+      "bytes": 109,
+      "sha256": "00258f2b42bc7c7dd38c16725e045c2291594d5ba6cba13c4463077926124639"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gate-xor-2.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gate-xor-2.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gate-xor-2.json",
+      "bytes": 108,
+      "sha256": "690b7856518e162e0746c56dc4a3cd590ad0a8a706ce2aa3bf898d3c71b5439f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-gnd.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-gnd.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-gnd.json",
+      "bytes": 91,
+      "sha256": "c16536af3561eb1bbcd8886b7e6c92c42d987bc3d59bcaf9e23f0355aac745f9"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-hc-sr04.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-hc-sr04.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-hc-sr04.json",
+      "bytes": 198,
+      "sha256": "257724c230a709f45a8811951f506e1ec73490e31adb865d1622fc428bccada2"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-hub75-matrix.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-hub75-matrix.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-hub75-matrix.json",
+      "bytes": 317,
+      "sha256": "45a2993a09492e7260aad3988f56c7b528cb81ffc477e5714af1eedee44f3a39"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-hx711.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-hx711.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-hx711.json",
+      "bytes": 296,
+      "sha256": "8c1eba7b1566c7139f1b3d7c0c62fa3aa6cd2ff4828be0c8cbc2e0649b4e8352"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-il9163.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-il9163.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-il9163.json",
+      "bytes": 145,
+      "sha256": "499d3af97f4420827a3e2ad3e346f26395cbe118de03725a82b22b91fafbc1b4"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ili9341.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ili9341.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ili9341.json",
+      "bytes": 368,
+      "sha256": "f67fc8df6b35ac7eae702525d01004464c3648a4629737ac7a0cdb41e71d71e3"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ir-receiver.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ir-receiver.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ir-receiver.json",
+      "bytes": 120,
+      "sha256": "5a8bd16a8246759fbd59bf8c58a9e1791dacee70ce9c0c4e449f2c3588f00e5d"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ir-remote.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ir-remote.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ir-remote.json",
+      "bytes": 173,
+      "sha256": "d0d3a93e2cc4be119815bc5afd12fafb53adeae7aa07e3f9eceebcfb4ed0ec33"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ks2e-m-dc5.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ks2e-m-dc5.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ks2e-m-dc5.json",
+      "bytes": 226,
+      "sha256": "dff2c15caecbc7156940b20718a21eff666a0ae53d9deddb05c740268041b48f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ky-040.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ky-040.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ky-040.json",
+      "bytes": 119,
+      "sha256": "9efe0354bc474eb597ed76dbc1a29e619fcdcf4b839112125eb5616912331516"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-lcd1602.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-lcd1602.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-lcd1602.json",
+      "bytes": 723,
+      "sha256": "ec9141491e47dc52fcaac33d4dac07eacea7720bf5e768abd6c81329f12c4e83"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-lcd2004.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-lcd2004.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-lcd2004.json",
+      "bytes": 723,
+      "sha256": "657344fbe5ca5651544c68ebd11741b44567c19c0c8f6c152e71b205a8d52cec"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-led-bar-graph.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-led-bar-graph.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-led-bar-graph.json",
+      "bytes": 374,
+      "sha256": "6d8c864569618810f7a7aa0d5687975f572e8fdc2ed6b4740fc8dd36084d9d2c"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-led-matrix.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-led-matrix.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-led-matrix.json",
+      "bytes": 502,
+      "sha256": "8df013c64b3ae5502b9f20b60bb7d166f6162f70d6d53a77bddce3afce232964"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-led-ring.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-led-ring.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-led-ring.json",
+      "bytes": 193,
+      "sha256": "7bf5eb580c820ef08487cbf5c6a941104eb24f28e5e7c21f471352974e69394b"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-led-strip.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-led-strip.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-led-strip.json",
+      "bytes": 339,
+      "sha256": "96e288d981f633f0e4984c8ef9ec2f32d5de243e77e40034df66f2654edf4906"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-led.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-led.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-led.json",
+      "bytes": 559,
+      "sha256": "7d6e9a8f3235ad96d4a7ac729dbd6fc6ee39e7f7b4ba8c826477eb2d62c8a390"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-logic-analyzer.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-logic-analyzer.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-logic-analyzer.json",
+      "bytes": 495,
+      "sha256": "ad5d5d109d3e983ffefea3f824d559bb2e9286de48a0b322830c64d1de6c2dc1"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-logo.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-logo.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-logo.json",
+      "bytes": 101,
+      "sha256": "19521090d03d14d980e7c40f378c9a591f885f2dbe7ea4a19e5f86af10fbd0ee"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-max7219-matrix.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-max7219-matrix.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-max7219-matrix.json",
+      "bytes": 408,
+      "sha256": "4dac777ad4b8c144d9b1acbe92b09d770410576febf80bcab9ca76b992cedbbc"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-membrane-keypad.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-membrane-keypad.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-membrane-keypad.json",
+      "bytes": 312,
+      "sha256": "67daf8e310573da1967862a8b4e229134ee70b10bd491d4362215050fd026d86"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-microphone.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-microphone.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-microphone.json",
+      "bytes": 103,
+      "sha256": "e5b8141488dbd52681a1c385714a7f13e33764b55e2d01cb62f7a188acf2bedc"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-microsd-card.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-microsd-card.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-microsd-card.json",
+      "bytes": 145,
+      "sha256": "ca0dde155975ee5bc8c1d5c70e8000b15965dedd1c5342bd350f7521ad4c7451"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-mpu6050.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-mpu6050.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-mpu6050.json",
+      "bytes": 596,
+      "sha256": "8600e5520c2655b5dba8369c4418a5a765a81432abd57f611a06edf41c1aa7cb"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-mux-2.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-mux-2.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-mux-2.json",
+      "bytes": 110,
+      "sha256": "172806fa228a695c80e464307015b497bc6fd6de8bd61acee0751134aa85a789"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-neopixel-canvas.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-neopixel-canvas.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-neopixel-canvas.json",
+      "bytes": 393,
+      "sha256": "3faa0bc2b34f082bc0c26ee77a2d22282cd427324623bf7a9d3ccb78fcc3a738"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-neopixel-matrix.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-neopixel-matrix.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-neopixel-matrix.json",
+      "bytes": 393,
+      "sha256": "6bd92f5b7aede80c4d155321656abc82a7f5c06265126cbbf0f0c2174aeedcfc"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-neopixel-meter.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-neopixel-meter.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-neopixel-meter.json",
+      "bytes": 178,
+      "sha256": "80f5a2a34ace3e6220d5cf446250276a457be11c1a6143b7afd6db9c6cb7f8a8"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-neopixel-serial.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-neopixel-serial.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-neopixel-serial.json",
+      "bytes": 260,
+      "sha256": "4ae84b27e1b7093cc1b89eae7774f08137a69980c3f29879c840c0ef0098cb21"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-neopixel.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-neopixel.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-neopixel.json",
+      "bytes": 131,
+      "sha256": "70ee7dae006301b03a71a2773fff280dc2b1ea1418892ad80763b7108f81f5c7"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-nlsf595.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-nlsf595.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-nlsf595.json",
+      "bytes": 258,
+      "sha256": "ce1e96cbd9e8cfc32f0c35ceddf43e49feef7d2a01b8708086d89f43ad6bd5c5"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-nokia-5110-screen.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-nokia-5110-screen.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-nokia-5110-screen.json",
+      "bytes": 153,
+      "sha256": "7e55f17c349c8aee1538a577cc56d3d46f2f7f27586f8d693efc165dc293d0b2"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ntc-temperature-sensor.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ntc-temperature-sensor.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ntc-temperature-sensor.json",
+      "bytes": 265,
+      "sha256": "337d009d1002555d953b813ffb52bddada47b5e98c79aa1d88dbf616ad3e047a"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-photoresistor-sensor.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-photoresistor-sensor.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-photoresistor-sensor.json",
+      "bytes": 382,
+      "sha256": "e69ab3e1070943b6a0a496f6f410754d68620bd9add747f690dc8777380a5628"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-pi-pico.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-pi-pico.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-pi-pico.json",
+      "bytes": 615,
+      "sha256": "eb2ef200c5eb11fdab52bd51054eeb90a8f3295941c662fb2dd049fd0c23ffac"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-pir-motion-sensor.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-pir-motion-sensor.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-pir-motion-sensor.json",
+      "bytes": 364,
+      "sha256": "d32951b5d2c80604ffdf0204cd3cbe1e0a23b83cf98ce3ad691430a93ed3b52b"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-potentiometer.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-potentiometer.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-potentiometer.json",
+      "bytes": 190,
+      "sha256": "754234339226bc947268706e24a967fad946a4a3ffd84e4b8696273374bb5c4b"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-pushbutton-6mm.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-pushbutton-6mm.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-pushbutton-6mm.json",
+      "bytes": 315,
+      "sha256": "8a2a28eea6eb5aaec71597c5c30a6cc4aa2940aaf6340a0a6228ce6b103414fb"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-pushbutton.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-pushbutton.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-pushbutton.json",
+      "bytes": 428,
+      "sha256": "4d6c518d27c0d23eb69ba967464dbd6e3ae05f645b3a95c88f94330b84f7174b"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-relay-module.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-relay-module.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-relay-module.json",
+      "bytes": 250,
+      "sha256": "dc4fd3f4494475dfee2c9b9c4a690126812d1af126f32b534cbd0cdcb9b1256a"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-resistor.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-resistor.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-resistor.json",
+      "bytes": 176,
+      "sha256": "8807de306e0f92896842efd5edb8eb915effafdac2924c6c8e5ee9c8068af01f"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-rgb-led.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-rgb-led.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-rgb-led.json",
+      "bytes": 285,
+      "sha256": "c5a5d6a3e23c3136cc97c4e87e4c1effb7099263d15439ca1356a2b5e4e0d77d"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-rotary-dialer.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-rotary-dialer.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-rotary-dialer.json",
+      "bytes": 118,
+      "sha256": "00eab6974293bb0b1092481655e7a9a1f4f62bbfd9289365ecfc251e04cd188e"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-servo.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-servo.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-servo.json",
+      "bytes": 296,
+      "sha256": "0b3adf61558acd1dfed0ddc315af02222ef6e6160af9ab09690f6eadc66eda38"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-slide-potentiometer.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-slide-potentiometer.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-slide-potentiometer.json",
+      "bytes": 262,
+      "sha256": "c476fcaf1ba85b2da64b04df4c3b8d8a0337d05df6dc9bdc0b59b7e87af41822"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-slide-switch.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-slide-switch.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-slide-switch.json",
+      "bytes": 184,
+      "sha256": "360b7dd15b5273f15285435962cdc3142033d03e3c08dc0d6da537ce41c59728"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-splendida.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-splendida.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-splendida.json",
+      "bytes": 118,
+      "sha256": "5913952b3dd3088951d216482fdd265268fd2caf75bebfcb0437bfccc1564b0b"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-ssd1306.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-ssd1306.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-ssd1306.json",
+      "bytes": 291,
+      "sha256": "1ebfb43ff37aafe08c1b504a71e0f12079871245e7ff529953b49c01276123e0"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-stepper-motor.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-stepper-motor.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-stepper-motor.json",
+      "bytes": 417,
+      "sha256": "1f06565302c1e948506debfbd99c70b6c68087fe48763a9b7c21389246445f78"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-text.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-text.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-text.json",
+      "bytes": 345,
+      "sha256": "5286434fef81ff193c5bc00b68d203fe556c9c7eecee2ff7918df15e717b3573"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-tinypico.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-tinypico.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-tinypico.json",
+      "bytes": 322,
+      "sha256": "38a86a6f41313cb6d10709da5b761c359d92dbfc0339d40dd0b799aaad5c770b"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-tm1637-7segment.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-tm1637-7segment.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-tm1637-7segment.json",
+      "bytes": 202,
+      "sha256": "9ee41b28b2d31e2a98f8a44d8a1dd77846102bafe443d527b39089051d9d27fd"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-tv.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-tv.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-tv.json",
+      "bytes": 106,
+      "sha256": "dc519dfdba328788e64e76cf673d27faa15eaf8e729db1411dd903602cf6607c"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-vcc.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-vcc.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-vcc.json",
+      "bytes": 169,
+      "sha256": "00e8ab8595956fb9f4844aad6e71138d3099144a27e8bb5c3d1a46b38e9eb455"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/registry/parts/wokwi-wifi-ap.json",
+      "local_path": "upstream/wokwi-diagram-lint/parts/wokwi-wifi-ap.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/registry/parts/wokwi-wifi-ap.json",
+      "bytes": 327,
+      "sha256": "41739ab650248e03dafa0089df439cd8470d91fa47795a70aa1cc2435eeee815"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/rules/invalid-pin.ts",
+      "local_path": "upstream/wokwi-diagram-lint/packages/diagram-lint/src/rules/invalid-pin.ts",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/rules/invalid-pin.ts",
+      "bytes": 4739,
+      "sha256": "b82e3f565c7cd8b9876239afa56a831031830fcd25072a24ec19d3ab94276ed6"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/types.ts",
+      "local_path": "upstream/wokwi-diagram-lint/packages/diagram-lint/src/types.ts",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/types.ts",
+      "bytes": 3348,
+      "sha256": "cb6b1d94699b67e67fecb27b53632f51ceaf3c402cd06b19faa69046a80dc5e7"
+    },
+    {
+      "repo": "wokwi/wokwi-cli",
+      "commit": "f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c",
+      "upstream_path": "packages/diagram-lint/src/utils/connection-parser.ts",
+      "local_path": "upstream/wokwi-diagram-lint/packages/diagram-lint/src/utils/connection-parser.ts",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-cli/f23ed6fe2a8df332a9020fafb3c82b6ca95aa61c/packages/diagram-lint/src/utils/connection-parser.ts",
+      "bytes": 398,
+      "sha256": "c4f3f0d4abaeee6bb493ec6a26ff63376a3c10b93d49ad2be99e5cd3c7e752c8"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "LICENSE",
+      "local_path": "upstream/wokwi-docs/LICENSE",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/LICENSE",
+      "bytes": 1085,
+      "sha256": "4309562684d375e437100cb21a20d1278c7976ddf0869d7ed2946ad81fb0fc67"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/diagram-format.md",
+      "local_path": "upstream/wokwi-docs/docs/diagram-format.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/diagram-format.md",
+      "bytes": 6541,
+      "sha256": "7c8def287d78f1f8daa96643a0fa1ab8a0d586e64bcde7b556d4db2ad06ac711"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/guides/esp32-wifi.md",
+      "local_path": "upstream/wokwi-docs/docs/guides/esp32-wifi.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/guides/esp32-wifi.md",
+      "bytes": 11526,
+      "sha256": "94e21f703581f0c8fe76d91a2a54013ee96b935f2be3de0a824df5e675d23b49"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/guides/esp32.md",
+      "local_path": "upstream/wokwi-docs/docs/guides/esp32.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/guides/esp32.md",
+      "bytes": 18236,
+      "sha256": "1fa2562ef3b7c162026a91d489b9639e2a2061467b6a2e95d2c165071436720b"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/parts/board-ssd1306.md",
+      "local_path": "upstream/wokwi-docs/docs/parts/board-ssd1306.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/parts/board-ssd1306.md",
+      "bytes": 1956,
+      "sha256": "89c0741cadd889d1ec0010862a237bbca022b7ff724a877682a14ac622934b41"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/parts/wokwi-analog-joystick.md",
+      "local_path": "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/parts/wokwi-analog-joystick.md",
+      "bytes": 5696,
+      "sha256": "e539116a23686fb23984629abac4d79f4f4c62be60c79fc8dde1538a9e593ddc"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/parts/wokwi-dht22.md",
+      "local_path": "upstream/wokwi-docs/docs/parts/wokwi-dht22.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/parts/wokwi-dht22.md",
+      "bytes": 1527,
+      "sha256": "6c4235b905482a5201f2baa49a0c8f9cdb308ee6f2b1054b382270a167f7eaa4"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/parts/wokwi-led-ring.md",
+      "local_path": "upstream/wokwi-docs/docs/parts/wokwi-led-ring.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/parts/wokwi-led-ring.md",
+      "bytes": 1426,
+      "sha256": "bd6354705c2596e8c520b3fdee085da07603064c6350128be7b532ec0d880bc6"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/parts/wokwi-servo.md",
+      "local_path": "upstream/wokwi-docs/docs/parts/wokwi-servo.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/parts/wokwi-servo.md",
+      "bytes": 1991,
+      "sha256": "cba645bcbb5b677ea6b90e829d10bee1bbfceb9b683282443273e2b56be32d2f"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/parts/wokwi-ssd1306.md",
+      "local_path": "upstream/wokwi-docs/docs/parts/wokwi-ssd1306.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/parts/wokwi-ssd1306.md",
+      "bytes": 1162,
+      "sha256": "f36c35bd0ec8378b45fa3a1d1e9bb7e4a65b5dff01c18f72ab89fe72908a140c"
+    },
+    {
+      "repo": "wokwi/wokwi-docs",
+      "commit": "5c90e532d24fb8ac4cd471e9568db03917011e91",
+      "upstream_path": "docs/wokwi-ci/automation-scenarios.md",
+      "local_path": "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-docs/5c90e532d24fb8ac4cd471e9568db03917011e91/docs/wokwi-ci/automation-scenarios.md",
+      "bytes": 10259,
+      "sha256": "57b3f257813650544aa982ac896f41ba14c77c559087b1f423ccb47e723ee2e0"
+    },
+    {
+      "repo": "wokwi/wokwi-boards",
+      "commit": "962b19d5636756537a93bb5337ac99abd775eae0",
+      "upstream_path": "README.md",
+      "local_path": "upstream/wokwi-boards/README.md",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-boards/962b19d5636756537a93bb5337ac99abd775eae0/README.md",
+      "bytes": 1147,
+      "sha256": "cde47c016af0728a27210f9eca13567a63fcbc69524cf3cc9a983bd1bdabd345"
+    },
+    {
+      "repo": "wokwi/wokwi-boards",
+      "commit": "962b19d5636756537a93bb5337ac99abd775eae0",
+      "upstream_path": "boards/esp32-s3-devkitc-1/board.json",
+      "local_path": "upstream/wokwi-boards/boards/esp32-s3-devkitc-1/board.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-boards/962b19d5636756537a93bb5337ac99abd775eae0/boards/esp32-s3-devkitc-1/board.json",
+      "bytes": 3376,
+      "sha256": "8a0630d34dfce9f9f6f82a735c9348b1fbcce5f6137c55f10fc8c628badeb50d"
+    },
+    {
+      "repo": "wokwi/wokwi-boards",
+      "commit": "962b19d5636756537a93bb5337ac99abd775eae0",
+      "upstream_path": "boards/ssd1306/board.json",
+      "local_path": "upstream/wokwi-boards/boards/ssd1306/board.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-boards/962b19d5636756537a93bb5337ac99abd775eae0/boards/ssd1306/board.json",
+      "bytes": 707,
+      "sha256": "cdbce0a6c36262cde2326255e86e369c0876c467df680ede7616c031495ce001"
+    },
+    {
+      "repo": "wokwi/wokwi-boards",
+      "commit": "962b19d5636756537a93bb5337ac99abd775eae0",
+      "upstream_path": "boards/st7789/board.json",
+      "local_path": "upstream/wokwi-boards/boards/st7789/board.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-boards/962b19d5636756537a93bb5337ac99abd775eae0/boards/st7789/board.json",
+      "bytes": 944,
+      "sha256": "76711f190b71380677c9d22aa1c6b99274d68298a13dca0e6f067551d835303e"
+    },
+    {
+      "repo": null,
+      "commit": null,
+      "upstream_path": null,
+      "local_path": "upstream/wokwi-docs/web/wokwi-led-ring.html",
+      "url": "https://docs.wokwi.com/parts/wokwi-led-ring",
+      "retrieved_at": "2026-10-26T08:36:16.108744+00:00",
+      "bytes": 46220,
+      "sha256": "fc9035b3c7d4811e47b6cd42e23a433e49a35317e73a42518c71d5dd2635348d",
+      "scope": "live_web_snapshot; not commit-pinned; redistribution license not independently confirmed"
+    }
+  ],
+  "scope": "Full diagram-lint registry metadata; selected owned-hardware documentation and board definitions. Not a simulator engine.",
+  "lookup_notes": [
+    {
+      "url": "https://docs.wokwi.com/parts/wokwi-breadboard",
+      "result": "HTTP 404",
+      "scope": "lookup_only_not_global_nonexistence"
+    },
+    {
+      "url": "https://docs.wokwi.com/parts/wokwi-microphone",
+      "result": "HTTP 404",
+      "scope": "lookup_only_not_global_nonexistence"
+    }
+  ]
+}

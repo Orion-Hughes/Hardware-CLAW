@@ -1,0 +1,187 @@
+{
+  "schema_version": 2,
+  "id": "st7789_240x240_simulation",
+  "name": "ST7789 240×240（临时仿真配置，非已购实物）",
+  "kind": "display",
+  "physical_display": null,
+  "inventory": {
+    "owned": false,
+    "quantity": 0,
+    "unit": "块",
+    "evidence": null,
+    "scope": "user_requested_simulation_variant"
+  },
+  "simulation": {
+    "backend": "wokwi",
+    "part_type": "board-st7789",
+    "candidate_part_type": null,
+    "match_status": "explicit_simulation_variant_not_physical_equivalent",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/board-st7789.json",
+    "documented": false,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "SPI_CLOCK": "SCL",
+      "SPI_MOSI": "SDA",
+      "RESET": "RST",
+      "DATA_COMMAND": "DC",
+      "CHIP_SELECT": "CS",
+      "BACKLIGHT": "BL"
+    },
+    "proposed_attrs": {},
+    "mapping_scope": "logical_simulation_signals_not_physical_connector_order",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "preferred_alternative_id": "st7789_240x240_simulation"
+  },
+  "source_refs": [
+    "upstream/wokwi-boards/boards/st7789/board.json",
+    "supplements/sources/waveshare-st7789-reference.html",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7789.cpp",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7789.h",
+    "supplements/sources/code/chip-st7789/src/main.c",
+    "supplements/sources/code/chip-st7789/docs/README.md",
+    "supplements/sources/arduino-2.0.17-spi.h",
+    "supplements/sources/arduino-2.0.17-spi.cpp",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest_st7789/graphicstest_st7789.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/library.properties",
+    "supplements/sources/code/Adafruit-GFX-Library/library.properties",
+    "supplements/sources/code/Adafruit_BusIO/library.properties"
+  ],
+  "notes": [
+    "根据用户要求，暂以此配置进行屏幕仿真；不修改采购240×320记录。",
+    "注册表documented=false仍保留；补充资料来自第三方模拟芯片源码和Adafruit驱动。"
+  ],
+  "missing_information": [
+    "实际模型加载、编译、完整绘制与旋转2效果的运行验证"
+  ],
+  "electrical_profile": {
+    "scope": "simulation_wiring_convention",
+    "supply_v": 3.3,
+    "logic_v": 3.3,
+    "rules": [
+      "仿真接VCC到3V3、GND共地；这不是采购蓝板电压规格。",
+      "SCL是SPI时钟、SDA是MOSI，不是I2C。",
+      "BL在该模拟芯片中未实现，不能用它验证背光开关或电流。"
+    ],
+    "source_refs": [
+      "supplements/sources/code/chip-st7789/docs/README.md",
+      "supplements/sources/code/chip-st7789/src/main.c"
+    ]
+  },
+  "physical_connector_order": null,
+  "driver_profile": {
+    "scope": "simulation_source_analysis",
+    "framework": "arduino-esp32 2.0.17 (simulation baseline)",
+    "dependencies": [
+      {
+        "name": "Adafruit ST7735 and ST7789 Library",
+        "version": "1.12.0",
+        "source_ref": "supplements/sources/code/Adafruit-ST7735-Library/library.properties"
+      },
+      {
+        "name": "Adafruit GFX Library",
+        "version": "1.13.0",
+        "source_ref": "supplements/sources/code/Adafruit-GFX-Library/library.properties"
+      },
+      {
+        "name": "Adafruit BusIO",
+        "version": "1.17.4",
+        "source_ref": "supplements/sources/code/Adafruit_BusIO/library.properties"
+      }
+    ],
+    "headers": [
+      "SPI.h",
+      "Adafruit_GFX.h",
+      "Adafruit_ST7789.h"
+    ],
+    "initialization": [
+      "Adafruit_ST7789 tft(&SPI, PIN_CS, PIN_DC, PIN_RST);",
+      "SPI.begin(PIN_SCK, -1, PIN_MOSI, PIN_CS);",
+      "tft.init(240, 240, SPI_MODE0);",
+      "tft.setRotation(2);",
+      "tft.setSPISpeed(10000000);"
+    ],
+    "operations": [
+      "tft.fillScreen(ST77XX_BLACK);",
+      "tft.setCursor(10, 10); tft.setTextColor(ST77XX_WHITE); tft.setTextSize(2); tft.print(\"Hello\");"
+    ],
+    "example_refs": [
+      "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest_st7789/graphicstest_st7789.ino"
+    ],
+    "constraints": [
+      "PIN_*由工程分配，不直接照抄例程Arduino引脚。",
+      "Adafruit 1.12.0的240×240 rotation 0引入80行偏移；rotation 2使用零偏移和MADCTL RGB，作为本地模拟配置选择。",
+      "10MHz为本地保守起始设置，并非模型或采购屏的额定最高频率。",
+      "未进行编译/仿真；零偏移策略仅由两端源码分析得出。",
+      "ST7735/ST7789库的library.properties另外声明Adafruit seesaw Library与SD；由包管理器按原始清单解析，不把本地列出的三个直接版本当成完整依赖锁。"
+    ],
+    "source_refs": [
+      "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7789.cpp",
+      "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7789.h",
+      "supplements/sources/code/chip-st7789/src/main.c",
+      "supplements/sources/code/chip-st7789/docs/README.md",
+      "supplements/sources/arduino-2.0.17-spi.h",
+      "supplements/sources/arduino-2.0.17-spi.cpp"
+    ]
+  },
+  "record_role": "simulation_variant",
+  "documentation_status": "source_reviewed_not_runtime_tested",
+  "generation_profile": {
+    "target": "wokwi",
+    "build_profile_ref": "supplements/esp32_s3_simulation.json",
+    "status": "documented_not_tested",
+    "blockers": [],
+    "pin_requirements": [
+      {
+        "signal": "SPI_CLOCK",
+        "resource": "spi_sck",
+        "notes": "接SCL"
+      },
+      {
+        "signal": "SPI_MOSI",
+        "resource": "spi_mosi",
+        "notes": "接SDA，不需要MISO"
+      },
+      {
+        "signal": "CHIP_SELECT",
+        "resource": "digital_output",
+        "notes": "接CS，低有效；模型依赖CS切换"
+      },
+      {
+        "signal": "DATA_COMMAND",
+        "resource": "digital_output",
+        "notes": "接DC，低为命令，高为数据"
+      },
+      {
+        "signal": "RESET",
+        "resource": "digital_output",
+        "notes": "接RST，低有效"
+      }
+    ],
+    "controls": [],
+    "manual_checks": [
+      "绘制边框与四角标记，核对240×240区域是否完整。",
+      "绘制红绿蓝色块和Hello文本，人工观察颜色、裁切与方向。",
+      "屏幕截图能力需对该第三方模型实际试用，不从SSD1306直接推断。"
+    ],
+    "limitations": [
+      "该模型按RGB565解码；背光、睡眠、显示开关、反色等没有完整实现。",
+      "源码存在简化的偏移/旋转处理；不要扩展为完整ST7789控制器验证。",
+      "模型源码标签与Wokwi实际加载的预编译工件一致性尚未核验。",
+      "真实屏幕电气和240×320显示区域不在此仿真覆盖范围。"
+    ],
+    "source_refs": [
+      "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7789.cpp",
+      "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7789.h",
+      "supplements/sources/code/chip-st7789/src/main.c",
+      "supplements/sources/code/chip-st7789/docs/README.md"
+    ]
+  },
+  "display_profile": {
+    "scope": "wokwi_model",
+    "width_px": 240,
+    "height_px": 240,
+    "source_ref": "upstream/wokwi-boards/boards/st7789/board.json"
+  }
+}

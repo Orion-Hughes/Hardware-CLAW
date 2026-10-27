@@ -1,0 +1,89 @@
+{
+  "schema_version": 2,
+  "id": "speaker_8ohm_1w",
+  "name": "2030椭圆扬声器8Ω/1W（1.25mm插头）",
+  "kind": "audio_output",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "simulation": {
+    "backend": "wokwi",
+    "part_type": null,
+    "candidate_part_type": null,
+    "match_status": "no_matching_model_in_snapshot",
+    "upstream_definition_ref": null,
+    "documented": null,
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {},
+    "mapping_scope": "logical_simulation_signals_not_physical_connector_order",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run"
+  },
+  "source_refs": [
+    "supplements/sources/speaker-amplifier-reference.html",
+    "upstream/wokwi-docs/docs/guides/esp32.md"
+  ],
+  "notes": [
+    "wokwi-buzzer不是该8Ω扬声器与功放系统，不作为等价映射。"
+  ],
+  "missing_information": [
+    "实际功放或音频板的型号、供电与接线",
+    "扬声器接头定义和功率限制方案",
+    "适用的模拟模型及音频验证路径"
+  ],
+  "electrical_profile": {
+    "scope": "passive_speaker_with_amplifier_reference",
+    "supply_v": null,
+    "logic_v": null,
+    "rules": [
+      "采购参数为8Ω/1W，应由适配功放驱动，不直接接GPIO输出音频。",
+      "MAX98357A仅为候选音频链路参考：I2S输入、桥接输出；使用该类功放时扬声器两端接功放输出，不能把其中一端随意接地。",
+      "参考功放在5V/8Ω时可输出超过1W，必须限制输出功率；不把功放的额定能力当作扬声器耐受功率。"
+    ],
+    "source_refs": [
+      "supplements/sources/speaker-amplifier-reference.html"
+    ]
+  },
+  "physical_connector_order": null,
+  "driver_profile": {
+    "scope": "blocked_without_selected_amplifier",
+    "framework": null,
+    "dependencies": [],
+    "headers": [],
+    "initialization": [],
+    "operations": [],
+    "example_refs": [],
+    "constraints": [
+      "确定功放/编解码器、输入格式、采样率和供电后才能选择驱动。",
+      "MAX98357A未确认为已购配件，不自动写入工程BOM。"
+    ],
+    "source_refs": [
+      "supplements/sources/speaker-amplifier-reference.html"
+    ]
+  },
+  "record_role": "owned_hardware",
+  "documentation_status": "source_reviewed_not_runtime_tested",
+  "generation_profile": {
+    "target": "wokwi",
+    "build_profile_ref": "supplements/esp32_s3_simulation.json",
+    "status": "blocked",
+    "blockers": [
+      "未找到匹配的扬声器及功放仿真模型。",
+      "当前官方表中ESP32-S3的I2S未实现，不能据其他ESP32音频例程承诺S3可仿真。"
+    ],
+    "pin_requirements": [],
+    "controls": [],
+    "manual_checks": [],
+    "limitations": [
+      "蜂鸣器发声不能作为8Ω扬声器系统的等价验证。"
+    ],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/guides/esp32.md",
+      "supplements/sources/speaker-amplifier-reference.html"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "schema_version": 2,
+  "id": "electret_microphone",
+  "name": "4.5×2.2mm驻极体咪头（采购文字灵敏度52dB）",
+  "kind": "audio_input",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "simulation": {
+    "backend": "wokwi",
+    "part_type": null,
+    "candidate_part_type": "wokwi-microphone",
+    "match_status": "undocumented_candidate_only",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/wokwi-microphone.json",
+    "documented": false,
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {},
+    "mapping_scope": "logical_simulation_signals_not_physical_connector_order",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run"
+  },
+  "source_refs": [
+    "supplements/sources/electret-reference.html",
+    "upstream/wokwi-diagram-lint/parts/wokwi-microphone.json"
+  ],
+  "notes": [
+    "上游仅给出1、2两个引脚且documented=false；本地不指定极性或替换成I2S麦克风。"
+  ],
+  "missing_information": [
+    "确切胶囊型号、极性、偏置与灵敏度单位",
+    "前置放大/滤波/ADC接口和采样参数",
+    "可操作的仿真声源和模型行为说明"
+  ],
+  "electrical_profile": {
+    "scope": "electret_signal_chain_reference_only",
+    "supply_v": null,
+    "logic_v": null,
+    "rules": [
+      "驻极体胶囊需要匹配的偏置与模拟前置放大/调理，再接ADC或音频编解码器。",
+      "参考MAX4466模块不能证明采购裸咪头的极性、偏置电压或灵敏度。",
+      "不得把模拟器1/2脚自行指定为正负极；52dB缺少符号和参考单位。"
+    ],
+    "source_refs": [
+      "supplements/sources/electret-reference.html"
+    ]
+  },
+  "physical_connector_order": null,
+  "driver_profile": {
+    "scope": "blocked_without_analog_frontend",
+    "framework": null,
+    "dependencies": [],
+    "headers": [],
+    "initialization": [],
+    "operations": [],
+    "example_refs": [],
+    "constraints": [
+      "裸咪头本身没有I2S数字驱动；确定前端和ADC采样参数后才能选择代码路径。",
+      "没有将MAX4466或INMP441加入已购清单。"
+    ],
+    "source_refs": [
+      "supplements/sources/electret-reference.html"
+    ]
+  },
+  "record_role": "owned_hardware",
+  "documentation_status": "source_reviewed_not_runtime_tested",
+  "generation_profile": {
+    "target": "wokwi",
+    "build_profile_ref": "supplements/esp32_s3_simulation.json",
+    "status": "blocked",
+    "blockers": [
+      "wokwi-microphone只有未文档化的1/2端点，输入与模型行为未确认。",
+      "模拟偏置/放大链路、输出范围及采样方式未定义。"
+    ],
+    "pin_requirements": [],
+    "controls": [],
+    "manual_checks": [],
+    "limitations": [
+      "不把其他数字麦克风替代为该裸驻极体咪头。"
+    ],
+    "source_refs": [
+      "upstream/wokwi-diagram-lint/parts/wokwi-microphone.json",
+      "supplements/sources/electret-reference.html"
+    ]
+  }
+}

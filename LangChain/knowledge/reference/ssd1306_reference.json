@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "ssd1306_reference",
+  "name": "SSD1306 OLED（已有仿真参考，非已购）",
+  "kind": "display",
+  "inventory": {
+    "owned": false,
+    "quantity": null,
+    "unit": null,
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "existing_simulation_example_not_purchased"
+  },
+  "simulation": {
+    "backend": "wokwi",
+    "part_type": "board-ssd1306",
+    "candidate_part_type": null,
+    "match_status": "reference_only_not_owned",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/board-ssd1306.json",
+    "documented": true,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "I2C_CLOCK": "SCL",
+      "I2C_DATA": "SDA"
+    },
+    "proposed_attrs": {},
+    "mapping_scope": "logical_simulation_signals_not_physical_connector_order",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run"
+  },
+  "source_refs": [
+    "upstream/wokwi-docs/docs/parts/board-ssd1306.md",
+    "upstream/wokwi-boards/boards/ssd1306/board.json"
+  ],
+  "notes": [
+    "保留当前仿真基线的入口，不计入采购硬件。"
+  ],
+  "missing_information": [
+    "将当前示例的尺寸、地址、驱动版本整理成可复用配置"
+  ],
+  "electrical_profile": null,
+  "physical_connector_order": null,
+  "driver_profile": null
+}

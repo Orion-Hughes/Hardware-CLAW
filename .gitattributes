@@ -1,0 +1,2 @@
+# Preserve original bytes: knowledge lockfiles include SHA256 of vendored sources.
+* -text

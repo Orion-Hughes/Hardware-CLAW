@@ -1,0 +1,5 @@
+# 已接入的Agent技能
+
+通过load_skill按ID加载，空ID列出目录。wokwi_generation负责流程入口；hardware_selection负责选型边界；firmware_and_observation负责驱动、采样与串口；build_and_delivery负责编译排错与VS Code交付。
+
+这些是本程序的领域指导，不是Codex插件，也不自动执行代码。注册表在hardware_claw/tools/skills.py；加载返回内容和SHA256。Agent工具无权改此目录。规则不能替代确定性检查，资料与秘密不应复制进技能。

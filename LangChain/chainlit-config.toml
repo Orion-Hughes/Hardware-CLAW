@@ -1,0 +1,19 @@
+[project]
+allow_origins = ["http://127.0.0.1:8000", "http://localhost:8000"]
+persist_user_env = false
+cache = false
+
+[features]
+unsafe_allow_html = false
+edit_message = false
+
+[features.spontaneous_file_upload]
+enabled = false
+
+[UI]
+name = "Hardware-CLAW"
+language = "zh-CN"
+cot = "full"
+
+[meta]
+generated_by = "2.12.0"
