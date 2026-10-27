@@ -1,6 +1,6 @@
 # 正式生成程序：模块、工程布局与数据流
 
-更新：2026-10-27。正式程序已接入15个工具，默认vscode模式交付可直接打开的simulation文件夹。持久化、修订、基础检查、编译、Wokwi CLI仿真、DHT22串口场景评估、导出已实现；其他场景与真机验收未实现。当前结构以[自主仿真](AGENT_SIMULATION.md)、[VS Code交付](VSCODE_DELIVERY.md)和[工具实现状态](TOOLS_IMPLEMENTATION_STATUS.md)为准，以下未同步的“待实现”描述为此前规划。
+更新：2026-10-27。正式程序已接入15个工具，默认vscode模式交付可直接打开的simulation文件夹。持久化、修订、基础检查、编译、统一Wokwi CLI观察与导出已实现；单工程专用场景已删除，通用功能验收和真机验收未实现。禁止针对某个工程添加特殊优化文件或分支。当前结构以[自主仿真](AGENT_SIMULATION.md)、[VS Code交付](VSCODE_DELIVERY.md)和[工具实现状态](TOOLS_IMPLEMENTATION_STATUS.md)为准，以下未同步的“待实现”描述为此前规划。
 
 ## 1. 保留与扩展
 

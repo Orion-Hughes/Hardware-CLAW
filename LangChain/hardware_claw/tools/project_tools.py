@@ -110,11 +110,10 @@ def make_project_tools(project):
     @tool(args_schema=VersionInput)
     async def simulate_project(expected_version: int) -> dict:
         """Run real Wokwi CLI on the current compiled vscode revision. No arbitrary
-        commands, credentials, expected outputs or YAML arguments. Host selects and freezes
-        the DHT22 serial contract: 24/40 -> 30/65 -> 24/40 -> 24/40.
-        Serial format: Temperature: 24.0 C | Humidity: 40.0 % (one decimal).
-        Captures evidence only; call evaluate_tests afterwards. Unsupported designs are
-        explicitly unsupported. Maximum 3 calls per agent turn; 25s simulated/90s wall limit.
+        commands, credentials, expected outputs or YAML arguments. Collects raw serial
+        and CLI logs without requiring a particular component or output format.
+        No functional acceptance is implemented. Call evaluate_tests to report this gap.
+        Maximum 3 calls per agent turn; 25s simulated/90s wall limit.
         """
         from ..adapters.simulator import simulate
         nonlocal simulation_calls
@@ -132,10 +131,10 @@ def make_project_tools(project):
 
     @tool(args_schema=VersionInput)
     def evaluate_tests(expected_version: int) -> dict:
-        """Deterministically evaluate the current simulation's actual serial evidence
-        against the frozen contract. No caller-supplied pass/fail or expected values.
-        Returns pass/fail/timeout/tool_error/unsupported and structured findings.
-        A DHT22 serial pass does not cover displays, other peripherals or real hardware.
+        """Verify current evidence identity and report execution status and coverage gap.
+        No functional acceptance rules are implemented: normal observation returns
+        unsupported, never pass. Infrastructure failures return timeout/tool_error.
+        Raw logs may support diagnosis, but do not establish requirements compliance.
         """
         from ..adapters.simulator import evaluate
         return result(lambda: evaluate(project, expected_version))

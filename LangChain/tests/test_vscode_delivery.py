@@ -18,10 +18,12 @@ from tests.test_projects import DESIGN
 class VSCodeTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.base = ROOT / "temp/vscode-tests" / uuid.uuid4().hex
-        self.p = ProjectService.create("delivery-test", "DHT22 UART", "vscode", workspace=self.base)
-        self.p.update_design(0, copy.deepcopy(DESIGN))
+        self.p = ProjectService.create("delivery-test", "Build delivery fixture", "vscode", workspace=self.base)
+        design = copy.deepcopy(DESIGN)
+        design.update(goal="Build delivery fixture", components=[], connections=[], dependencies=[], pin_defines={})
+        self.p.update_design(0, design)
         self.p.scaffold(1)
-        self.p.write_files(2, {"src/main.cpp": read_template("dht22_uart_example"), "README.md": "Simulation test"})
+        self.p.write_files(2, {"src/main.cpp": '#include <Arduino.h>\nvoid setup() { Serial.begin(115200); Serial.println("HWCLAW_BOOT"); }\nvoid loop() { delay(100); }\n', "README.md": "Test fixture only"})
 
     def fake_build(self):
         state = self.p._load()

@@ -1,40 +1,27 @@
-# Agent自主仿真与评估
+# Agent通用仿真观察
 
-2026-10-27。底层ProjectService、CLI新建入口、Chainlit `/new` 均默认vscode输出；显式旧模式仍保留。默认输出为含BIN/ELF的simulation文件夹。
+2026-10-27更新：删除了只针对单个工程的固定刺激、专用日志解析、验收条件和业务模板。开发约束见根目录AGENTS.md。历史测试报告仅记录旧流程，不代表当前功能。
 
-## 新工具
+## 当前执行
 
-`simulate_project(expected_version)`核对当前源码、基础检查及固件，按硬件选择受控场景，复制仿真输入到temp，在子进程中运行Wokwi CLI。Token由宿主从`.secrets/wokwi-cli-token.txt`读取，仅进入子进程环境，不传给模型、不打进交付包。捕获真实串口流与CLI日志，并将证据保存到工程`.hwclaw/simulations/<attempt>/`。
+`simulate_project(expected_version)`检查修订、基础检查和真实编译固件，在temp复制电路、配置与固件，调用Wokwi CLI进行限时观察。无需特定元件，不传scenario，不改变元件控制值，不要求业务串口格式。Token只进入子进程环境。
 
-`evaluate_tests(expected_version)`校验当前版本、固件/电路/场景身份及证据哈希，按Python规则判定。它不接受调用方传入预期值、任意YAML、日志路径或pass/fail。测试在第一次仿真时冻结于`.hwclaw/test_plan.json`；删除传感器不能自动换成更容易的测试。
+所有受支持构建配置的工程使用相同观察参数：25秒模拟窗口、90秒宿主墙钟、1MiB日志上限，每轮最多3次。CLI退出42表示模拟观察窗口到期，记录observation_limit；退出0为completed，其他退出为tool_error，宿主超时单独记录timeout。这些都是执行状态，不是功能判定。
 
-输出包括：verdict、逐项expected/observed/matched、错误记录、findings、测试覆盖范围和未覆盖项目。LLM根据证据诊断，不能自己决定判定结果。
+保存原始serial.txt、cli.log和通用observation.json；固件、电路、观察配置和证据绑定哈希。相同输入可复用证据；修改或证据篡改使旧报告失效。超时/取消保留现有进程回收机制。
 
-## 当前支持范围
+`evaluate_tests(expected_version)`核验当前证据并报告执行/覆盖状态。正常观察返回unsupported，checks为空、full_project_acceptance=not_evaluated；工具故障单独返回tool_error或timeout。**通用需求验收尚未实现，不会返回功能pass。** 不将启动日志或用户文本中的ERROR等关键词当成业务判定。
 
-首个行为场景`dht22_serial_v1`：恰好一个DHT22，输入24°C/40%→30°C/65%→恢复24°C/40%，随后再等一次恢复值。
+## 迁移与边界
 
-串口协议：`Temperature: 24.0 C | Humidity: 40.0 %`，一位小数，建议CRLF。场景等待该固定格式；评估器单独解析实际serial-log-file，并容忍CLI把多条完整消息拼接而省略换行。CLI回显预期文字不能充当实测。常量传感器输出、没有恢复输出、错误输出均不能通过。
+旧工程的专用test_plan.json及历史报告不删除、不继续使用。当前报告必须匹配observation_v1；旧通过记录不能被用作新流程的结果。历史导出包保持原样。
 
-不覆盖显示内容、其他外设、阈值业务、精确采样间隔或实物正确性。DHT22场景通过只代表该场景；`full_project_acceptance=not_evaluated`。没有支持场景时返回unsupported，不能偷偷改成启动即pass。
+默认输出仍为含固件的VS Code文件夹。宿主可打包已检查、编译的文件，不能把ready_for_vscode解释为功能通过。缺少验收能力时如实交付供人工验证。
 
-## 执行与退出
+当前构建基线仍为ESP32-S3，不宣称支持所有板卡。下一步只能建设需求驱动、可复用的验收机制及通用操作；不得新增某个示例专用的skills、模板、预期、解析器或补丁来制造成功。
 
-- Agent按检查→编译→仿真→评估→导出执行。失败后可读源码、修补，重新走完整链路。
-- 每轮模型20次、工具32次、仿真工具最多3次，任务总墙钟900秒。每次模拟时限25秒、进程墙钟90秒；输出上限1MiB，取消/超时回收进程树。
-- 已完成的相同固件/电路/契约可复用原始证据；仅改README不能靠重试掩盖失败。工具或网络错误可在预算内重试。
-- `completed`是CLI执行结束，不意味着行为通过。业务错误为fail；宿主时限或场景等待超时为timeout；连接/授权/执行故障为tool_error。
-- 修改文件导致旧报告失效；重新编译后固件哈希变化也会使旧结果失效。证据被改动拒绝评估。
-- 原始交付包不会为新诊断而自动改写。当前诊断以`.hwclaw/evaluation.json`与UI摘要为准；新导出包记录导出时的判定。
-- 用户仍可获得失败工程的simulation文件夹用于查看。宿主状态会显示validation_failed或validation_unavailable，不能把可打开文件夹误认为功能通过。
-- 正常结束或预算退出时，若当前版本已检查、编译且尚未导出，宿主尝试打包已有文件。此兜底不编辑源码、不重新编译、不改变失败判定；没有有效固件则不能承诺可运行交付。
+## 本次验证
 
-本轮离线与实际API测试见[测试报告](AGENT_SIMULATION_TEST_REPORT_20261027.md)。
+88项离线测试通过，覆盖无外设工程也进入仿真、CLI不携带专用scenario、任意业务日志不产生功能通过、旧专用报告失效、证据篡改及修订绑定。
 
-## 已知边界与下一步
-
-当前已知ESP32-S3+DHTesp1.19组合可在Wokwi中TIMEOUT。Agent可以自行仿真、评估并关联这个已知问题，但尚不能自动安装用户参考工程中的修订驱动和上拉电路。下一步应维护并实现受控driver variant安装，不能靠人工改生成工程或让模型凭空补底层驱动。
-
-扩大测试覆盖应扩展受控场景库（显示、舵机、灯环、板间通信），不一定每个器件都新增tool。更完整的日志检索可后续加入绑定工程的报告读取接口。真机阶段仍需detect_devices、flash_firmware、monitor_serial；edge-AI建议器也尚未实现。
-
-编译器与CLI仍是本机子进程，不是OS沙箱；未实现跨进程任务调度或持久化队列。一个真实连接中断已被正确记录为tool_error，不宣称网络可靠性已解决。
+真实CLI运行已有屏幕工程，未修改源码：采集到启动和业务串口日志，90.36秒触发宿主墙钟超时并回收进程，记录timeout/full_project_acceptance=not_evaluated。不能宣称屏幕功能通过。摘要留在本地temp/general-observation/result.json；没有调用LLM API。

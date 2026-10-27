@@ -1,7 +1,7 @@
 # Wokwi 工程开发流程 v2
 
 新增默认vscode模式：先加载hardware_selection、firmware_and_observation、build_and_delivery三个技能。
-按get_project→查硬件→update_project_design→scaffold_project→写src/main.cpp和README.md→check_project_files→compile_project→simulate_project→evaluate_tests→export_project。加载simulation_feedback学习固定输出协议和反馈规则。
+按get_project→查硬件→update_project_design→scaffold_project→写src/main.cpp和README.md→check_project_files→compile_project→simulate_project→evaluate_tests→export_project。加载simulation_feedback了解通用观察流程及当前验收缺口；无业务专用固定输出协议。
 vscode固定配置由scaffold生成，导出包含真实固件的simulation文件夹；按build_and_delivery技能执行。
 以下为兼容旧arduino/platformio源码模式的流程，不能将其中“编译未运行”或旧.pio固件路径套用到vscode模式。
 

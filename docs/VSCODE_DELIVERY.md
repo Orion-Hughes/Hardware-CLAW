@@ -10,14 +10,14 @@
 4. scaffold_project将固定构建配置、Wokwi配置和按设计组装的diagram写入新修订；业务C++与README由Agent生成。
 5. check_project_files检查基础错误；新增串口连线、波特率与启动标记、固定配置一致性检查。启动标记检查只是文本存在性，不证明运行时可达；真正观察仍需仿真。
 6. compile_project对快照进行实际PlatformIO编译，捕获日志/退出码，保存源码摘要和真实固件哈希。失败诊断返回Agent，修复后重新检查编译；相同修订失败禁止无改动重试。
-7. simulate_project运行Wokwi CLI；evaluate_tests独立判定当前受支持的DHT22串口场景，详见[自主仿真](AGENT_SIMULATION.md)。失败证据回到Agent，可在预算内修改并重测。
+7. simulate_project统一限时运行Wokwi CLI采集日志；evaluate_tests核验证据并报告自动功能验收未实现，不再使用任何工程专用场景，详见[自主仿真](AGENT_SIMULATION.md)。日志支持提出诊断，不能替代验收。
 8. export_project必须具有当前版本通过的基础检查及匹配固件，交付文件夹与ZIP；行为失败也可交付，但必须保留失败状态。宿主独立核对，不能靠模型口头宣布成功。预算退出时宿主尝试打包已经编译且检查通过的当前文件，不修改源码或判定。
 
 ## 文件位置
 
 ```text
 LangChain/skills/                         5个领域技能（含流程入口和仿真反馈）
-LangChain/templates/                      固定JSON模板、DHT固件示例
+LangChain/templates/                      固定平台配置，无业务固件示例
 LangChain/hardware_claw/projects/scaffold.py
 LangChain/hardware_claw/adapters/compiler.py
 LangChain/hardware_claw/projects/vscode_delivery.py

@@ -1,6 +1,6 @@
 # Hardware-CLAW 工具清单与实现状态
 
-更新：2026-10-27。默认vscode模式已接入真实编译、Wokwi CLI仿真、DHT22串口固定场景评估及含固件文件夹交付。显示屏、其他外设和真机验收仍待接入。详见[仿真工具与评估](AGENT_SIMULATION.md)。
+更新：2026-10-27。默认vscode模式已接入真实编译、统一Wokwi CLI限时观察及含固件文件夹交付。单工程专用验收与业务模板已删除，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
 
 ## 1. 已实现并接入Agent的15个工具
 
@@ -9,11 +9,11 @@
 | search_hardware | 从本地库存/上游索引发现元件 | tools/hardware_catalog.py → catalog/service.py | 原有离线测试、真实API；本轮与技能及设计流程联合使用 |
 | get_hardware_info | 参数、驱动、引脚、模拟模型、来源 | 同上 | 已查询DHT、板卡、屏幕与blocked/未知条目；不是实物验证 |
 | load_skill | 列出/读取维护好的开发流程 | tools/skills.py → skills/wokwi_generation.md | 真实Agent联合搜索/详情查询通过；不可安装或修改技能 |
-| load_template | 列出/读取只读固定配置与固件示例 | tools/templates.py → templates/ | 白名单ID与SHA256；真实Agent读取验证 |
+| load_template | 列出/读取只读平台配置 | tools/templates.py → templates/ | 白名单ID与SHA256；不提供专用业务示例 |
 | scaffold_project | 从设计生成固定配置与电路图 | projects/scaffold.py | 自动串口连接；固定构建配置；真实Agent综合生成 |
 | compile_project | 编译当前已检查修订 | adapters/compiler.py | 真实PlatformIO、420秒时限、取消进程树、源码/固件哈希绑定 |
-| simulate_project | 运行当前固件与电路的受控Wokwi场景 | adapters/simulator.py | CLI、凭据隔离、25秒模拟/90秒墙钟、每轮最多3次，原始证据与哈希 |
-| evaluate_tests | 固定预期对比实际串口流 | validation/scenarios.py | DHT22变化/恢复场景；pass/fail/timeout/tool_error/unsupported；非全功能验收 |
+| simulate_project | 当前固件与电路的统一限时观察 | adapters/simulator.py | CLI、凭据隔离、25秒模拟/90秒墙钟、每轮最多3次，原始证据与哈希；无元件条件 |
+| evaluate_tests | 核验证据与报告执行状态、验收缺口 | validation/observation.py | 正常观察返回unsupported，功能未验证；不再使用专用预期和解析器 |
 | get_project | 查看绑定工程、需求、设计、版本、文件及报告 | tools/project_tools.py → projects/service.py | 初始空工程、设计后、写入后、恢复工程的真实查询 |
 | update_project_design | 保存选型、元件实例、端点、依赖、假设 | 同上；contracts/project.py | 查询真实资料后保存设计再读回；拒绝未知端点、重复ID、blocked硬件及过期版本 |
 | read_project_file | 读取files内文本与哈希 | 同上 | 不存在文件、越界拒绝、写入后读回；不开放任意文件系统 |
@@ -28,7 +28,7 @@
 
 | 工具 | 输入/输出方向 | 现状与前置工作 |
 |---|---|---|
-| install_driver_variant（建议下一步） | 登记驱动变体ID→受控复制源码、依赖及必需外围电路 | 尚未实现；用于DHTesp本地修订等，需适用范围、许可证、哈希和兼容性证据 |
+| 通用需求验收机制（待设计） | 需求、可观察能力→经核对的验收计划与证据判定 | 尚未实现；禁止以专用驱动补丁、单工程固定场景替代 |
 | detect_devices | 受控接口→串口/设备与识别置信度 | 真机阶段；不把串口名等同准确型号 |
 | flash_firmware | 明确设备、固件修订和授权→烧录日志 | 真机阶段；不得用仿真基线直接保证N32R16V可烧录 |
 | monitor_serial | 设备、波特率、受控时限→日志 | 真机阶段；串口锁、超时、取消与日志上限 |
@@ -39,7 +39,7 @@
 
 ## 3. 实际数据流与目录
 
-入口创建/恢复工程 → LangChain循环 → 查询/技能/模板 → 保存设计 → 脚手架 → 业务文件 → 基础检查 → 编译 → 仿真 → 固定场景评估 → 有依据的有限修正或报告能力缺口 → 导出。宿主核对版本、固件、证据及交付物，不依赖模型口头宣布通过。
+入口创建/恢复工程 → LangChain循环 → 查询/技能/配置模板 → 保存设计 → 脚手架 → 业务文件 → 基础检查 → 编译 → 统一仿真观察 → 核验证据并报告验收缺口 → 有依据的有限修正或导出。宿主核对版本、固件、证据及交付物，不依赖模型口头宣布通过。
 
 ```text
 LangChain/

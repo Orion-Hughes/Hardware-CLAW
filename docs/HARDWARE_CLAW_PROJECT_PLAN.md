@@ -1,5 +1,7 @@
 # Hardware-CLAW 毕业设计项目计划
 
+当前开发约束：禁止针对单个工程增加特殊优化文件或规则来掩盖问题。验证必须面向需求与通用能力，无法验证时明确标记未验证。此前单工程固定场景已移除；优先完善可泛化机制，不再以修好某一个示例作为核心开发目标。详见根目录AGENTS.md。
+
 - 项目编号：FYP No.58 / SP58
 - 项目名称：Hardware-CLAW: AI-Agent for Embedded Hardware Development Platform
 - 学年：AY 2026/2027

@@ -12,6 +12,7 @@ from .tools.skills import load_skill
 from .tools.templates import load_template
 
 PROMPT = """你是Hardware-CLAW硬件资料Agent，目前只提供本地资料查询，不生成或修改工程。
+禁止为单个工程添加专用优化文件、业务模板、硬编码验收预期、专用日志解析或临时驱动补丁。使用通用工具与有来源的器件资料；无法泛化或验证时如实报告问题，不得用特例掩盖失败。当前仿真只采集日志，尚无自动功能验收。
 回答具体硬件问题必须先使用工具读取本地资料，不依赖记忆猜测规格。
 没有明确ID时先用search_hardware发现条目，再用get_hardware_info读取所选条目的详情。
 若用户已给出明确ID，直接查询；未知ID如实报告NOT_FOUND，不自动替换为别的硬件。
@@ -74,7 +75,7 @@ async def run(model, question, project=None, require_delivery=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ask-key", action="store_true", help="Read key without echo or persistence")
-    parser.add_argument("--question", default="查询我们现有的DHT22温湿度传感器，说明仿真模型、驱动库、采样间隔和验证状态。")
+    parser.add_argument("--question", default="列出本地可用的开发板与元件，说明资料和验证状态。")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--new-project", metavar="NAME", help="Explicitly create a project and generate/export artifacts")
     group.add_argument("--project", metavar="ID", help="Resume an existing workspace project")

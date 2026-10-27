@@ -1,10 +1,10 @@
 # Hardware-CLAW：硬件工程生成Agent
 
-当前功能：通过API运行LangChain Agent，查询硬件、读取技能/模板、生成文件、检查、编译、Wokwi CLI仿真、固定DHT22场景评估，并交付VS Code仿真文件夹。见[仿真工具说明](../docs/AGENT_SIMULATION.md)和[工具状态](../docs/TOOLS_IMPLEMENTATION_STATUS.md)。
+当前功能：通过API运行LangChain Agent，查询硬件、读取通用技能/配置模板、生成文件、检查、编译、Wokwi CLI限时观察，并交付VS Code仿真文件夹。工程专用验收规则已移除，通用功能验收尚未实现。见[仿真工具说明](../docs/AGENT_SIMULATION.md)和[工具状态](../docs/TOOLS_IMPLEMENTATION_STATUS.md)。
 
 网页支持同一工程持续修改与原生历史侧栏；聊天和工程绑定保存在本地SQLite，详见[会话管理](../docs/CHAT_HISTORY.md)。
 
-正式第一版建设方向为完整的需求到工程生成程序，见[程序架构与数据流](../docs/GENERATOR_ARCHITECTURE.md)。工程操作、修订、检查、编译、仿真、DHT22场景评估与交付已实现；其他行为场景后续扩展。
+正式第一版建设方向为完整的需求到工程生成程序，见[程序架构与数据流](../docs/GENERATOR_ARCHITECTURE.md)。工程操作、修订、检查、编译、仿真日志采集与交付已实现；需求驱动的通用验收待实现，禁止用单工程特例替代。
 
 2026-10-27更新：主Agent已注册`search_hardware` / `get_hardware_info`，使用现有API配置进行真实模型调用。原`get_board_info`教学工具不再注册。只测试工具而不调用LLM的方式仍保留，见 [硬件查询工具说明](hardware_claw/catalog/README.md)。
 
@@ -18,7 +18,7 @@ Chainlit 2.12.0已安装在本项目`.venv`，网页已接入现有Agent、工�
 - 双击 `Stop-Agent.cmd`：停止本项目服务。关闭网页不会停止服务；未设置开机自启。
 - 网页输入问题即可。工具步骤可展开查看参数与结果，每轮显示耗时、Token与状态；停止按钮取消当前任务，已经发送的API请求仍可能计费。
 - 每个聊天独立保存工程绑定和最近三轮完成问答；完整消息及工具步骤持久化到本地历史，工具原始结果不全部跨轮发送给模型。侧栏可切换历史，重启服务后仍可恢复。
-- 支持文本查询、工程生成和Wokwi CLI仿真；当前自动行为评估限DHT22串口场景，不支持真机上传。
+- 支持文本查询、工程生成和Wokwi CLI仿真观察；当前没有自动功能验收，不支持真机上传。
 
 网页默认生成模式，直接输入需求即可创建含固件的VS Code工程；`/new 需求`另建工程；`/new-arduino 需求`、`/new-pio 需求`保留源码模式；`/project 工程ID`恢复；`/query`切换只读查询。绑定工程后可要求修改、检查、编译和导出；结果附simulation文件夹路径和ZIP。CLI仍通过`--new-project`显式创建工程。
 
@@ -56,7 +56,7 @@ $env:DEEPSEEK_MODEL = '你的可用模型名'
 
 真实运行会产生 API 用量，需要有效密钥和账户余额。模型兼容性、网络及真实工具调用效果必须通过这一步验证。程序未配置云端追踪；问题与工具结果会发送给 DeepSeek。
 
-默认问题查询DHT22；自定义问题使用`--question "你的问题"`。观察 `[tool request]`、`[tool result]`、`[model]`。最后显示耗时和服务端提供的Token数据；`Query round trip completed`只表示工具请求已回填且模型给出最终回答，不是事实正确性或硬件验收结论。
+默认问题查询可用开发板与元件；自定义问题使用`--question "你的问题"`。观察 `[tool request]`、`[tool result]`、`[model]`。最后显示耗时和服务端提供的Token数据；`Query round trip completed`只表示工具请求已回填且模型给出最终回答，不是事实正确性或硬件验收结论。
 
 ## 文件与学习顺序
 

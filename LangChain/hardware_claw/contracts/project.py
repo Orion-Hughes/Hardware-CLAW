@@ -14,7 +14,7 @@ class Component(StrictModel):
 
 class Connection(StrictModel):
     a: str = Field(min_length=3, max_length=80, description="Wokwi完整端点，例如mcu:4")
-    b: str = Field(min_length=3, max_length=80, description="Wokwi完整端点，例如dht:SDA")
+    b: str = Field(min_length=3, max_length=80, description="Wokwi完整端点，格式为元件实例ID:引脚名")
 
 
 class Dependency(StrictModel):
@@ -30,7 +30,7 @@ class Design(StrictModel):
     connections: list[Connection] = Field(max_length=80)
     dependencies: list[Dependency] = Field(max_length=20)
     assumptions: list[str] = Field(max_length=20)
-    pin_defines: dict[str, int] = Field(default_factory=dict, description="源码需显式定义的GPIO常量，如DHT_PIN:4；检查器只验证简单整数定义。")
+    pin_defines: dict[str, int] = Field(default_factory=dict, description="源码需显式定义的GPIO常量名称与整数引脚编号；检查器只验证简单整数定义。")
 
 
 class UpdateDesignInput(StrictModel):

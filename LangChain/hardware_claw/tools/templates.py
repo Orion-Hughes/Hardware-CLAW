@@ -4,7 +4,7 @@ from pathlib import Path
 from langchain.tools import tool
 
 ROOT = Path(__file__).resolve().parents[2] / "templates"
-TEMPLATES = {"esp32s3_vscode": "esp32s3_vscode.json", "dht22_uart_example": "dht22_uart_example.cpp"}
+TEMPLATES = {"esp32s3_vscode": "esp32s3_vscode.json"}
 
 
 def read_template(template_id):
@@ -17,7 +17,7 @@ def read_template(template_id):
 @tool
 def load_template(template_id: str = "") -> dict:
     """List/read maintained examples; empty ID lists. esp32s3_vscode contains fixed
-    build/serial config; dht22_uart_example is illustrative firmware. Read-only.
+    build/serial config only. No project-specific business firmware. Read-only.
     Use scaffold_project to instantiate fixed configuration, not hand-written copies.
     """
     if not template_id:

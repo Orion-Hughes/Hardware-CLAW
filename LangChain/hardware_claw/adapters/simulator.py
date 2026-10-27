@@ -12,7 +12,7 @@ from .compiler import kill_tree, compiler_env
 from ..projects.service import ROOT, atomic_json, digest, fail
 from ..projects.vscode_delivery import verified_build
 from ..validation.files import check
-from ..validation.scenarios import get_plan, scenario, assess
+from ..validation.observation import OBSERVATION, assess
 
 CLI = Path.home() / ".wokwi/bin/wokwi-cli.exe"
 TOKEN_FILE = ROOT / ".secrets/wokwi-cli-token.txt"
@@ -35,7 +35,7 @@ async def run_cli(work, token, *, timeout=90):
     """Bounded stdout in memory; redact before persistence. Token only in child env."""
     env = compiler_env(work)
     env["WOKWI_CLI_TOKEN"] = token
-    command = [str(CLI), str(work), "--scenario", str(work / "scenario.yaml"), "--timeout", "25000",
+    command = [str(CLI), str(work), "--timeout", str(OBSERVATION["simulation_timeout_ms"]),
                "--serial-log-file", str(work / "serial.txt")]
     options = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {"start_new_session": True}
     proc = None
@@ -59,7 +59,7 @@ async def run_cli(work, token, *, timeout=90):
                     break
             else:
                 code = await proc.wait()
-                verdict = "completed"
+                verdict = "observation_limit" if code == 42 else "completed" if code == 0 else "tool_error"
     except TimeoutError:
         verdict = "timeout"
         if proc:
@@ -99,13 +99,15 @@ def current_report(project, state):
     if not path.exists():
         return None
     value = json.loads(path.read_text(encoding="utf-8"))
+    if value.get("mode") != OBSERVATION["mode"]:
+        return None  # Legacy project-specific verdicts remain historical evidence only.
     if value.get("version") != state["version"]:
         return None
     if value.get("subject_sha256"):
         from ..projects.service import ProjectError
         try:
             build, _ = verified_build(project, state)
-            if subject(state, build, get_plan(project, state)) != value["subject_sha256"]:
+            if subject(state, build, OBSERVATION) != value["subject_sha256"]:
                 return None
         except ProjectError:
             return None
@@ -121,22 +123,16 @@ async def simulate(project, expected_version):
         if state["template"] != "vscode" or check(state)["verdict"] != "pass":
             fail("CHECK_REQUIRED", "仿真需要通过基础检查的vscode工程。")
         build, blobs = verified_build(project, state)
-        plan = get_plan(project, state)
-        if not plan["contract_id"]:
-            result = {"version": expected_version, "execution_verdict": "unsupported", "exit_code": None,
-                      "reason": plan["reason"], "scope": "no_supported_behavior_scenario"}
-            atomic_json(project.meta / "simulation.json", result)
-            return result
-        scenario_text = scenario(state, plan)
+        plan = OBSERVATION
         identity = subject(state, build, plan)
         previous = current_report(project, state)
         if not previous:
             for path in sorted((project.meta / "simulations").glob("*/result.json")):
                 candidate = json.loads(path.read_text(encoding="utf-8"))
-                if candidate.get("subject_sha256") == identity and candidate["execution_verdict"] == "completed":
+                if candidate.get("mode") == OBSERVATION["mode"] and candidate.get("subject_sha256") == identity and candidate["execution_verdict"] in {"completed", "observation_limit"}:
                     previous = candidate
                     break
-        if previous and previous.get("subject_sha256") == identity and previous["execution_verdict"] == "completed":
+        if previous and previous.get("subject_sha256") == identity and previous["execution_verdict"] in {"completed", "observation_limit"}:
             cached = {**previous, "version": expected_version, "build_source_sha256": build["source_sha256"],
                       "reused_from_version": previous["version"], "cached": True,
                       "note": "相同固件/电路已有证据；请evaluate_tests。修正后才重新运行。"}
@@ -154,14 +150,13 @@ async def simulate(project, expected_version):
             path = work / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
-        (work / "scenario.yaml").write_text(scenario_text, encoding="utf-8")
     verdict, code = await run_cli(work, token)
     cli_log = (work / "cli.log").read_text(encoding="utf-8")
     serial = (work / "serial.txt").read_text(encoding="utf-8")
     result = {"version": expected_version, "attempt": attempt, "subject_sha256": identity,
-              "build_source_sha256": build["source_sha256"], "contract_id": plan["contract_id"],
+              "build_source_sha256": build["source_sha256"], "mode": plan["mode"],
               "execution_verdict": verdict, "exit_code": code,
-              "wall_seconds": round(time.monotonic() - started, 2), "simulation_limit_ms": 25000,
+              "wall_seconds": round(time.monotonic() - started, 2), "simulation_limit_ms": plan["simulation_timeout_ms"],
               "serial_tail": serial[-2000:], "cli_tail": cli_log[-1500:],
               "scope": plan["scope"], "uncovered": plan["uncovered"], "evaluation": "not_run"}
     with project.locked():
@@ -169,11 +164,11 @@ async def simulate(project, expected_version):
         project._check_version(current, expected_version)
         project._check_live_files(current)
         fresh, _ = verified_build(project, current)
-        if subject(current, fresh, get_plan(project, current)) != identity:
+        if subject(current, fresh, OBSERVATION) != identity:
             fail("STALE_SIMULATION", "仿真期间工程或固件变化，证据保留在temp，不用于当前版本。")
         folder = project.meta / "simulations" / attempt
         folder.mkdir(parents=True)
-        evidence = {"scenario.yaml": scenario_text, "serial.txt": serial, "cli.log": cli_log}
+        evidence = {"observation.json": json.dumps(plan, sort_keys=True), "serial.txt": serial, "cli.log": cli_log}
         result["evidence_sha256"] = {name: digest(text) for name, text in evidence.items()}
         for name, content in evidence.items():
             (folder / name).write_text(content, encoding="utf-8", newline="")
@@ -195,7 +190,7 @@ def evaluate(project, expected_version):
             result = {"version": expected_version, "verdict": "unsupported", "reason": record["reason"], "full_project_acceptance": "not_evaluated"}
         else:
             build, _ = verified_build(project, state)
-            plan = get_plan(project, state)
+            plan = OBSERVATION
             if subject(state, build, plan) != record["subject_sha256"]:
                 fail("STALE_SIMULATION", "仿真证据与当前固件/电路/契约不匹配。")
             folder = project.meta / "simulations" / record["attempt"]
@@ -206,6 +201,6 @@ def evaluate(project, expected_version):
                     fail("EVIDENCE_CHANGED", "仿真证据哈希变化，拒绝评估。")
                 evidence[name] = data.decode("utf-8")
             result = {"version": expected_version, "attempt": record["attempt"], "subject_sha256": record["subject_sha256"],
-                      "contract_id": plan["contract_id"], **assess(record, evidence["serial.txt"], evidence["cli.log"], plan)}
+                      "mode": plan["mode"], **assess(record, evidence["serial.txt"], evidence["cli.log"])}
         atomic_json(project.meta / "evaluation.json", result)
         return result

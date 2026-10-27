@@ -1,6 +1,6 @@
 # Hardware-CLAW
 
-在输入框用中文提问。Agent查询硬件、读取技能与模板、生成工程、检查、编译、运行Wokwi CLI并评估登记场景，交付含固件的VS Code文件夹。当前行为测试覆盖DHT22串口变化，其他功能尚未覆盖；失败工程也可导出查看。
+在输入框用中文提问。Agent查询硬件、读取通用技能与配置模板、生成工程、检查、编译并运行Wokwi CLI，交付含固件的VS Code文件夹。仿真只采集原始日志；通用功能验收尚未实现，不会标记功能通过。没有任何工程专用测试或业务模板。
 
 - `/new 用ESP32-S3与DHT22每2秒采样并输出串口`：生成并编译VS Code工程。打开返回的simulation文件夹，F1 → Wokwi: Start Simulator。
 - `/new-arduino 工程需求`：仅生成Arduino网页源码工程。

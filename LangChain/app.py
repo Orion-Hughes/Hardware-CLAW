@@ -105,7 +105,7 @@ async def start():
     cl.user_session.set("project", None)
     cl.user_session.set("mode", "generate")
     await save_chat()
-    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。自动行为评估目前覆盖DHT22串口，其他功能不标记验收通过。每轮显示工具、耗时、Token及真实验证状态。").send()
+    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。仿真统一采集原始日志，自动功能验收尚未实现，不标记功能通过。每轮显示工具、耗时、Token及真实验证状态。").send()
 
 
 @cl.on_message
@@ -186,7 +186,7 @@ async def respond(message: cl.Message):
                 elements = [cl.File(name="project.zip", path=delivery["archive"], display="inline")] if delivery.get("archive") else []
                 folder = delivery.get("simulation_folder")
                 instructions = f"\n\nVS Code打开 `{folder}`，F1 → `Wokwi: Start Simulator`。" if folder else ""
-                await cl.Message(content=f"工程 `{delivery['project_id']}` · 版本 {delivery['version']} · {delivery['delivery_status']}\n编译：{delivery['build']}；仿真执行：{delivery['simulation']}；行为判定：{delivery['behavior']}。仅覆盖登记场景，非全功能验收。{instructions}", elements=elements).send()
+                await cl.Message(content=f"工程 `{delivery['project_id']}` · 版本 {delivery['version']} · {delivery['delivery_status']}\n编译：{delivery['build']}；仿真执行：{delivery['simulation']}；行为判定：{delivery['behavior']}。当前仅采集仿真证据，功能未验证。{instructions}", elements=elements).send()
 
     history = cl.user_session.get("history")
     if history is None:

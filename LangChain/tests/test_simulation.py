@@ -1,41 +1,25 @@
-import copy
 import json
 import unittest
 from pathlib import Path
-from unittest.mock import patch
-from hardware_claw.validation.scenarios import assess, CONTRACT_ID, VALUES, LINE_FORMAT
-from hardware_claw.adapters.simulator import simulate, evaluate
-from hardware_claw.projects.service import ProjectError, ProjectService
+from unittest.mock import patch, AsyncMock, Mock
+from hardware_claw.validation.observation import assess, OBSERVATION
+from hardware_claw.adapters.simulator import simulate, evaluate, current_report, run_cli
+from hardware_claw.projects.service import ProjectError, ProjectService, atomic_json
 from tests import test_vscode_delivery as fixtures
-
-PLAN = {"expected": VALUES, "scope": "test", "uncovered": ["other functions"]}
-GOOD = '\n'.join(LINE_FORMAT.format(t=t,h=h) for t,h in VALUES)
-DONE = f'Starting simulation...\n[{CONTRACT_ID}] Scenario completed successfully'
-RECORD = {"exit_code": 0, "execution_verdict": "completed"}
 
 
 class EvaluationTests(unittest.TestCase):
-    def test_changed_and_restored_values_pass(self):
-        result = assess(RECORD, GOOD, DONE, PLAN)
-        self.assertEqual(result["verdict"], "pass")
-        self.assertEqual(result["full_project_acceptance"], "not_evaluated")
+    def test_observation_never_claims_acceptance(self):
+        for code in (0, 42):
+            for serial in ("", "Hello", "Temperature: 24.0 C | Humidity: 40.0 %", "ERROR is a quoted example"):
+                result = assess({"exit_code": code, "execution_verdict": "completed"}, serial, "arbitrary log")
+                self.assertEqual(result["verdict"], "unsupported")
+                self.assertEqual(result["checks"], [])
+                self.assertEqual(result["full_project_acceptance"], "not_evaluated")
 
-    def test_constant_sensor_and_fake_cli_echo_fail(self):
-        constant = '\n'.join([LINE_FORMAT.format(t=24,h=40)]*10)
-        self.assertEqual(assess(RECORD, constant, DONE, PLAN)["verdict"], "fail")
-        self.assertEqual(assess(RECORD, '', DONE + GOOD, PLAN)["verdict"], "fail")
-
-    def test_cli_serial_file_without_line_endings(self):
-        self.assertEqual(assess(RECORD, GOOD.replace('\n',''), DONE, PLAN)['verdict'],'pass')
-
-    def test_missing_restore_and_error_are_failures(self):
-        self.assertEqual(assess(RECORD, '\n'.join(GOOD.splitlines()[:2]), DONE, PLAN)["verdict"], "fail")
-        self.assertEqual(assess(RECORD, GOOD + '\nDHT_ERROR: TIMEOUT', DONE, PLAN)["verdict"], "fail")
-
-    def test_timeout_auth_failure_distinct(self):
-        self.assertEqual(assess({"exit_code":42,"execution_verdict":"completed"},'', 'Starting simulation...',PLAN)["verdict"],"timeout")
-        self.assertEqual(assess({"exit_code":1,"execution_verdict":"completed"},'', 'Unauthorized',PLAN)["verdict"],"tool_error")
-        self.assertEqual(assess({"exit_code":None,"execution_verdict":"timeout"},'', '',PLAN)["verdict"],"timeout")
+    def test_infrastructure_failures_are_not_business_verdicts(self):
+        self.assertEqual(assess({"exit_code":1,"execution_verdict":"completed"},'', 'Unauthorized')["verdict"],"tool_error")
+        self.assertEqual(assess({"exit_code":None,"execution_verdict":"timeout"},'', '')["verdict"],"timeout")
 
 
 class SimulationStorageTests(unittest.IsolatedAsyncioTestCase):
@@ -47,23 +31,45 @@ class SimulationStorageTests(unittest.IsolatedAsyncioTestCase):
         self.fixture.fake_build()
 
     async def fake_cli(self, work, token):
-        (work/'serial.txt').write_text(GOOD,encoding='utf-8')
-        (work/'cli.log').write_text(DONE,encoding='utf-8')
-        return "completed", 0
+        self.assertFalse((work/'scenario.yaml').exists())
+        (work/'serial.txt').write_text('arbitrary device output',encoding='utf-8')
+        (work/'cli.log').write_text('observation window reached',encoding='utf-8')
+        return "observation_limit", 42
 
     async def run_fake(self):
-        with patch('hardware_claw.adapters.simulator.read_token',return_value='TEST_ONLY_TOKEN'), patch('hardware_claw.adapters.simulator.run_cli',side_effect=self.fake_cli):
+        with patch('hardware_claw.adapters.simulator.read_token',return_value='TEST_ONLY_TOKEN'), patch('hardware_claw.adapters.simulator.run_cli',side_effect=self.fake_cli), patch('hardware_claw.adapters.simulator.CLI', Path(__file__)):
             return await simulate(self.p, 3)
 
     async def test_default_is_vscode(self):
         p = ProjectService.create('default','example',workspace=self.fixture.base)
         self.assertEqual(p.get()['template'],'vscode')
 
+    async def test_cli_command_has_no_special_scenario(self):
+        work = self.fixture.base / 'cli-observation'
+        work.mkdir()
+        process = Mock(returncode=42)
+        process.stdout.read = AsyncMock(side_effect=[b'observation ended', b''])
+        process.wait = AsyncMock(return_value=42)
+        with patch('hardware_claw.adapters.simulator.asyncio.create_subprocess_exec', new_callable=AsyncMock, return_value=process) as spawn:
+            verdict, code = await run_cli(work, 'TEST_ONLY_TOKEN')
+        self.assertEqual((verdict, code), ('observation_limit', 42))
+        args = spawn.call_args.args
+        self.assertNotIn('--scenario', args)
+        self.assertIn('--serial-log-file', args)
+        self.assertEqual(spawn.call_args.kwargs['env']['WOKWI_CLI_TOKEN'], 'TEST_ONLY_TOKEN')
+        self.assertNotIn('TEST_ONLY_TOKEN', (work/'cli.log').read_text())
+
+    async def test_board_only_runs_and_no_test_plan_is_created(self):
+        self.assertEqual(self.p._load()['design']['components'], [])
+        result = await self.run_fake()
+        self.assertEqual(result['execution_verdict'], 'observation_limit')
+        self.assertFalse((self.p.meta/'test_plan.json').exists())
+        self.assertEqual(evaluate(self.p, 3)['verdict'], 'unsupported')
+
     async def test_report_round_trip_cache_and_invalidation(self):
         first = await self.run_fake()
-        report = evaluate(self.p, 3)
-        self.assertEqual(report['verdict'],'pass')
-        self.assertEqual(self.p.get()['behavior'],'pass')
+        self.assertEqual(evaluate(self.p, 3)['verdict'],'unsupported')
+        self.assertEqual(self.p.get()['behavior'],'unsupported')
         second = await self.run_fake()
         self.assertTrue(second['cached'])
         self.assertEqual(first['attempt'],second['attempt'])
@@ -85,17 +91,18 @@ class SimulationStorageTests(unittest.IsolatedAsyncioTestCase):
             evaluate(self.p,3)
         await self.run_fake()
         evaluate(self.p,3)
-        path = next((self.p.meta/'builds').rglob('firmware.bin'))
-        path.write_bytes(b'changed')
+        next((self.p.meta/'builds').rglob('firmware.bin')).write_bytes(b'changed')
         self.assertEqual(self.p.get()['behavior'],'not_run')
         with self.assertRaises(ProjectError):
             evaluate(self.p,3)
 
-    async def test_cannot_weaken_plan(self):
+    async def test_legacy_report_is_not_current_and_plan_untouched(self):
+        legacy = {'version':3, 'execution_verdict':'completed', 'contract_id':'legacy_specific', 'attempt':'old'}
+        atomic_json(self.p.meta/'simulation.json', legacy)
+        atomic_json(self.p.meta/'evaluation.json', {'version':3,'attempt':'old','verdict':'pass'})
+        atomic_json(self.p.meta/'test_plan.json', {'contract_id':'legacy_specific'})
+        self.assertIsNone(current_report(self.p, self.p._load()))
+        self.assertEqual(self.p.get()['behavior'], 'not_run')
         await self.run_fake()
-        path = self.p.meta/'test_plan.json'
-        plan=json.loads(path.read_text(encoding='utf-8'))
-        plan['expected']=[[24,40]]
-        path.write_text(json.dumps(plan),encoding='utf-8')
-        with self.assertRaises(ProjectError):
-            evaluate(self.p,3)
+        self.assertEqual(evaluate(self.p, 3)['verdict'], 'unsupported')
+        self.assertEqual(json.loads((self.p.meta/'test_plan.json').read_text())['contract_id'], 'legacy_specific')
