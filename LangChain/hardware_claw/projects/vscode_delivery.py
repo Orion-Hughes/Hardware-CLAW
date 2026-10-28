@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import uuid
+import time
 import zipfile
 from pathlib import Path
 from .service import TEMP, atomic_json, fail
@@ -13,6 +14,20 @@ from ..validation.files import check
 
 def sha(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def publish_directory(stage, target):
+    """Bounded retries for Windows transient directory access/sharing failures."""
+    for attempt in range(5):
+        if target.exists():
+            fail("EXPORT_CONFLICT", "交付目录已存在，不覆盖。")
+        try:
+            os.replace(stage, target)
+            return
+        except PermissionError as exc:
+            if getattr(exc, "winerror", None) not in {5, 32} or attempt == 4:
+                raise
+            time.sleep(0.05 * 2 ** attempt)
 
 
 def verified_build(project, state):
@@ -87,7 +102,7 @@ def export(project, expected_version):
                     z.writestr(name, data)
             (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
             target.parent.mkdir(exist_ok=True)
-            os.replace(stage, target)
+            publish_directory(stage, target)
         data = {"version": expected_version, "archive": str(target / "project.zip"),
                 "manifest": str(target / "manifest.json"), "simulation_folder": str(target / "simulation"),
                 "sha256": sha((target / "project.zip").read_bytes()), "folder_hashes": hashes,

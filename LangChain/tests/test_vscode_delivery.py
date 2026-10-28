@@ -7,15 +7,34 @@ import sys
 import unittest
 import uuid
 import zipfile
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from hardware_claw.projects.service import ProjectService, ProjectError, ROOT, atomic_json
 from hardware_claw.adapters.compiler import compile_project, fingerprint, run_process
 from hardware_claw.tools.templates import load_template, read_template
 from tests.test_projects import DESIGN
+from hardware_claw.projects.vscode_delivery import publish_directory
 
 
 class VSCodeTests(unittest.IsolatedAsyncioTestCase):
+    def test_publish_retries_only_bounded_windows_access_errors(self):
+        destination = Mock()
+        destination.exists.return_value = False
+        error = PermissionError('temporary lock')
+        error.winerror = 5
+        with patch('hardware_claw.projects.vscode_delivery.os.replace', side_effect=[error, None]) as move, patch('hardware_claw.projects.vscode_delivery.time.sleep') as sleep:
+            publish_directory('stage', destination)
+            self.assertEqual(move.call_count, 2)
+            sleep.assert_called_once_with(0.05)
+        with patch('hardware_claw.projects.vscode_delivery.os.replace', side_effect=error) as move, patch('hardware_claw.projects.vscode_delivery.time.sleep'):
+            with self.assertRaises(PermissionError):
+                publish_directory('stage', destination)
+            self.assertEqual(move.call_count, 5)
+        destination.exists.return_value = True
+        with patch('hardware_claw.projects.vscode_delivery.os.replace') as move, self.assertRaises(ProjectError):
+            publish_directory('stage', destination)
+        move.assert_not_called()
+
     def setUp(self):
         self.base = ROOT / "temp/vscode-tests" / uuid.uuid4().hex
         self.p = ProjectService.create("delivery-test", "Build delivery fixture", "vscode", workspace=self.base)

@@ -14,7 +14,7 @@
 
 ## 迁移与边界
 
-后续方向（2026-10-28）：优先通过官方`wokwi-cli mcp`获得交互控制与多种观测能力，不重复编写底层协议。先验证官方接口，再由现有项目工具适配，并保留版本绑定、权限、预算、超时及证据管理。MCP适配和通用需求验收均尚未实现，完整计划见TOOLS_IMPLEMENTATION_STATUS.md。
+官方MCP现已通过inspect_simulation接入，read_simulation_evidence支持完整证据分页读取。原限时观察与交付状态保持独立；截图截断、引脚电压缺失等实测限制见[官方MCP接入](WOKWI_MCP_INTEGRATION.md)。通用需求验收仍未实现。
 
 旧工程的专用test_plan.json及历史报告不删除、不继续使用。当前报告必须匹配observation_v1；旧通过记录不能被用作新流程的结果。历史导出包保持原样。
 

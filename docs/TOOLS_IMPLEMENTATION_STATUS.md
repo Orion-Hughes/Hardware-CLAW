@@ -2,7 +2,7 @@
 
 更新：2026-10-27。默认vscode模式已接入真实编译、统一Wokwi CLI限时观察及含固件文件夹交付。单工程专用验收与业务模板已删除，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
 
-## 1. 已实现并接入Agent的15个工具
+## 1. 已实现并接入Agent的17个工具
 
 | 工具 | 作用 | 实现位置 | 当前验证范围 |
 |---|---|---|---|
@@ -13,6 +13,8 @@
 | scaffold_project | 从设计生成固定配置与电路图 | projects/scaffold.py | 自动串口连接；固定构建配置；真实Agent综合生成 |
 | compile_project | 编译当前已检查修订 | adapters/compiler.py | 真实PlatformIO、900秒时限、取消进程树、源码/固件哈希绑定 |
 | simulate_project | 当前固件与电路的统一限时观察 | adapters/simulator.py | CLI、凭据隔离、30秒模拟/180秒墙钟、每轮最多10次，原始证据与哈希；无元件条件 |
+| inspect_simulation | 官方MCP交互批次，自动关闭会话 | adapters/wokwi_mcp.py | 11个官方工具逐项实测；截图不完整、电压缺失，详见WOKWI_MCP_INTEGRATION.md |
+| read_simulation_evidence | 当前修订MCP证据分页读取 | 同上 | 哈希/修订检查、路径拒绝、分页测试与真实Agent回填 |
 | evaluate_tests | 核验证据与报告执行状态、验收缺口 | validation/observation.py | 正常观察返回unsupported，功能未验证；不再使用专用预期和解析器 |
 | get_project | 查看绑定工程、需求、设计、版本、文件及报告 | tools/project_tools.py → projects/service.py | 初始空工程、设计后、写入后、恢复工程的真实查询 |
 | update_project_design | 保存选型、元件实例、端点、依赖、假设 | 同上；contracts/project.py | 查询真实资料后保存设计再读回；拒绝未知端点、重复ID、blocked硬件及过期版本 |
@@ -22,19 +24,15 @@
 | check_project_files | Python基础文件与部分一致性检查 | tools/project_tools.py → validation/files.py | 缺文件→Agent补齐→pass；错误GPIO定义、端点/连线不符、电源短接、依赖、配置检查 |
 | export_project | 当前修订ZIP与哈希清单 | tools/project_tools.py → projects/service.py | 真实检查→导出；离线验证旧检查不能导出、包不含密钥/环境/日志 |
 
-查询模式注册search_hardware/get_hardware_info/load_skill/load_template；绑定工程后注册全部15个。execution_status表示工具是否正常执行；行为读取evaluate_tests的verdict。默认底层服务、CLI及网页/new均使用vscode。导出可含失败工程供调试，ready_for_vscode不是行为通过。
+查询模式注册search_hardware/get_hardware_info/load_skill/load_template；绑定工程后注册全部17个。execution_status表示工具是否正常执行；行为读取evaluate_tests的verdict。默认底层服务、CLI及网页/new均使用vscode。导出可含失败工程供调试，ready_for_vscode不是行为通过。
 
 ## 2. 后续要实现的工具
 
-### 优先接入Wokwi官方MCP（2026-10-28决定）
+### 官方MCP已接入，存在已确认的数据缺口
 
-优先复用官方实验性`wokwi-cli mcp`，不重新实现其已有的底层仿真控制和观测协议。已查阅官方工具源码并确认本机CLI有mcp命令；尚未接入本项目或实测MCP调用。
+通过官方stdio MCP + Python SDK新增inspect_simulation和read_simulation_evidence。保留原simulate_project/evaluate_tests；新观测不冒充功能验收。11个官方工具、两个资源已实测，详细记录与边界见[官方MCP接入](WOKWI_MCP_INTEGRATION.md)。
 
-计划接入：启动/停止/重启/恢复、状态查询、串口读写、引脚读取、元件控制、显示截图与VCD导出。具体覆盖和返回格式须逐项实测；元件控制项和截图支持、逻辑分析仪接线等前置条件不能省略。
-
-现有simulate_project先保留，后续可作为稳定的项目级入口委托官方MCP。我们只维护必要适配与harness：绑定工程及固件版本、限制路径与权限、凭据隔离、超时/取消、输出上限、证据保存和工具错误分类。先验证适配后再替换现有CLI执行路径，不把官方工具未验证地全部开放给模型。
-
-官方来源：https://github.com/wokwi/wokwi-cli/blob/main/packages/cli/src/mcp/WokwiMCPTools.ts 。experimental意味着接口仍可能变化，应记录并固定已测试版本。官方接口本身不保证所有观测完整、所有模型准确或工程通过验收。
+状态、串口读写、控制、暂停/恢复/重启可用；VCD需接线分析仪。截图只返回100字符Base64，不能获得完整图像；pinRead电压undefined。官方对未知control也可能返回成功，宿主按统一知识库检查控制名和范围。完整波形分析和需求验收仍待实现。
 
 ### 观测之后：通用评估与修正（待实现）
 

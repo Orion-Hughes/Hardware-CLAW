@@ -6,6 +6,7 @@ from .hardware_catalog import _invalid_input
 from ..projects.service import ProjectError
 from .. import limits
 from ..contracts.project import UpdateDesignInput, ReadFileRangeInput, WriteFilesInput, PatchInput, VersionInput
+from ..contracts.simulation_mcp import InspectSimulationInput, ReadSimulationEvidenceInput
 
 
 def compact_build(data):
@@ -167,6 +168,43 @@ def make_project_tools(project):
         from ..adapters.simulator import evaluate
         return result(lambda: evaluate(project, expected_version))
 
+    @tool(args_schema=InspectSimulationInput)
+    async def inspect_simulation(expected_version: int, actions: list) -> dict:
+        """Interact with official Wokwi MCP on current checked and compiled firmware.
+
+        Each call starts an independent simulation, executes actions sequentially, then
+        closes the server. Use status/read_serial/read_pin/set_control, pause (stop),
+        resume/restart, screenshot or VCD; use official wokwi_ operation names.
+        Host binds paths; no SD card/custom chip filesystem access. wait is wall time.
+        Screenshots are incomplete in CLI 0.29.0 (reported unsupported); VCD requires
+        a wired logic analyzer. No full functional acceptance. Raw evidence is saved.
+        This supplements simulate_project/evaluate_tests, does not replace their reports.
+        """
+        from ..adapters.wokwi_mcp import inspect
+        nonlocal simulation_calls
+        async with simulation_lock:
+            if simulation_calls >= limits.SIMULATION_CALLS:
+                return {"execution_status": "error", "error_code": "SIMULATION_BUDGET", "summary": "本轮仿真预算已用完。", "data": None}
+            simulation_calls += 1
+            try:
+                data = await inspect(project, expected_version, actions)
+                return {"execution_status": "ok", "error_code": None, "summary": "读取data.execution_status及逐项status；不代表功能验收通过。", "data": data}
+            except ProjectError as exc:
+                return {"execution_status": "error", "error_code": exc.code, "summary": str(exc), "data": None}
+            except (OSError, ValueError):
+                return {"execution_status": "error", "error_code": "MCP_IO_ERROR", "summary": "MCP配置或证据操作失败。", "data": None}
+
+    @tool(args_schema=ReadSimulationEvidenceInput)
+    def read_simulation_evidence(expected_version: int, attempt: str, filename: str, offset: int = 0, limit: int = 4000) -> dict:
+        """Read a page of saved MCP JSON/serial response, server log or VCD waveform.
+
+        Use attempt and filenames from inspect_simulation. Verifies current version,
+        firmware/circuit identity and file hash. Follow next_offset to read all pages.
+        No arbitrary paths; old evidence remains on disk but cannot validate new firmware.
+        """
+        from ..adapters.wokwi_mcp import read_evidence
+        return result(lambda: read_evidence(project, expected_version, attempt, filename, offset, limit))
+
     @tool(args_schema=VersionInput)
     def export_project(expected_version: int) -> dict:
         """Export a revision-bound ZIP and manifest after the current basic file check passes.
@@ -178,7 +216,7 @@ def make_project_tools(project):
         """
         return result(lambda: project.export(expected_version))
 
-    tools = [get_project, update_project_design, scaffold_project, read_project_file, write_project_files, apply_project_patch, check_project_files, compile_project, simulate_project, evaluate_tests, export_project]
+    tools = [get_project, update_project_design, scaffold_project, read_project_file, write_project_files, apply_project_patch, check_project_files, compile_project, simulate_project, inspect_simulation, read_simulation_evidence, evaluate_tests, export_project]
     for item in tools:
         item.handle_validation_error = _invalid_input
     return tools

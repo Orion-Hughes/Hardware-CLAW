@@ -8,6 +8,8 @@
 
 2026-10-27更新：主Agent已注册`search_hardware` / `get_hardware_info`，使用现有API配置进行真实模型调用。原`get_board_info`教学工具不再注册。只测试工具而不调用LLM的方式仍保留，见 [硬件查询工具说明](hardware_claw/catalog/README.md)。
 
+官方MCP交互观测已接入：inspect_simulation与read_simulation_evidence支持交互批次及完整证据分页读取；已确认的截图、电压等限制见[接入与实测](../docs/WOKWI_MCP_INTEGRATION.md)。
+
 ## 运行
 
 ### 网页前端依赖
