@@ -43,6 +43,11 @@ class ReadFileInput(StrictModel):
     path: str = Field(min_length=1, max_length=180, description="files内相对路径；例如sketch.ino，不能访问项目外或.hwclaw。")
 
 
+class ReadFileRangeInput(ReadFileInput):
+    start_line: int = Field(default=1, ge=1, description="从1开始的行号。")
+    end_line: int | None = Field(default=None, ge=1, description="包含末行；null读到文件末尾。修改局部时按需读取行范围。")
+
+
 class WriteFilesInput(StrictModel):
     expected_version: int = Field(ge=0)
     files: dict[str, str] = Field(description=f"相对路径到完整UTF-8文本的映射；最多{limits.PROJECT_FILES}文件、每文件{limits.FILE_BYTES}字节。受单次模型输出上限约束，应分批生成。")

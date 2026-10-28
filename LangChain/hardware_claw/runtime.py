@@ -2,6 +2,7 @@
 import asyncio
 import time
 import uuid
+import json
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
@@ -38,6 +39,8 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
     answer = ""
     model_calls = 0
     response_metrics = []
+    tool_payloads = {}
+    tool_names = {}
     status = "error"
     invalid_calls = False
     run_id = uuid.uuid4().hex
@@ -78,12 +81,20 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
                                 await emit("error", {"text": "模型返回了无法解析的工具参数；该调用未执行，请重试并缩小文件批次。"})
                             for call in msg.tool_calls:
                                 requested.add(call["id"])
+                                tool_names[call["id"]] = call["name"]
+                                metric = tool_payloads.setdefault(call["name"], {"requests": 0, "argument_characters": 0, "result_characters": 0})
+                                metric["requests"] += 1
+                                metric["argument_characters"] += len(json.dumps(call["args"], ensure_ascii=False))
                                 await emit("tool_request", call)
                             if msg.content:
                                 await emit("model", {"text": msg.content, "final": not msg.tool_calls})
                             answer = msg.content if not msg.tool_calls else ""
                         elif isinstance(msg, ToolMessage):
                             returned.add(msg.tool_call_id)
+                            name = tool_names.get(msg.tool_call_id)
+                            if name:
+                                content = msg.content if isinstance(msg.content, str) else json.dumps(msg.content, ensure_ascii=False)
+                                tool_payloads[name]["result_characters"] += len(content)
                             await emit("tool_result", {"id": msg.tool_call_id, "content": msg.content})
         status = "completed" if answer and requested <= returned and not invalid_calls else "incomplete"
         if project:
@@ -120,6 +131,7 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
             "model_responses": model_calls, "usage": usage,
             "budget_profile": limits.snapshot(), "effective_timeout_seconds": timeout,
             "response_metrics": response_metrics,
+            "tool_payload_characters": tool_payloads,
             "input_tokens_reported": sum(u.get("input_tokens", 0) for u in usage) if usage else None,
             "output_tokens_reported": sum(u.get("output_tokens", 0) for u in usage) if usage else None,
             "tokens_reported": sum(u.get("total_tokens", 0) for u in usage) if usage else None,

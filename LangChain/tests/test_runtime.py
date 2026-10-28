@@ -69,6 +69,10 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         result = next(v for k, v in self.events if k == "tool_result")
         self.assertEqual(request["id"], result["id"])
         self.assertIsNone(self.events[-1][1]["tokens_reported"])
+        payload = self.events[-1][1]["tool_payload_characters"]["get_hardware_info"]
+        self.assertEqual(payload["requests"], 1)
+        self.assertGreater(payload["argument_characters"], 0)
+        self.assertGreater(payload["result_characters"], 0)
 
     async def test_budget_does_not_commit_partial_history(self):
         history = []
