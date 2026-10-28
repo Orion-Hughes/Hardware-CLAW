@@ -1,8 +1,14 @@
 # 官方 Wokwi MCP 接入与实测
 
+## 暂缓事项（用户决定）
+
+ST7789仿真模型截图仍返回`Part does not have a valid framebuffer`。按用户要求暂停排查，后续单独处理，不阻塞其他开发；不修改生成工程规避此问题。相关证据保留在本文件列出的MCP会话目录。
+
+当前交付边界：通用PNG截断已修复并用SSD1306验证；引脚工具只承诺数字高低电平，不读取电压；文本Agent的自动视觉分析尚未接入。此次收尾109项离线测试通过，未新增LLM API调用。
+
 ## 实现边界
 
-使用本机官方 `wokwi-cli 0.29.0 (940b7237d26f)` 的 stdio MCP，通过 Python MCP SDK 1.30.0 连接。没有自行实现仿真底层协议，也没有修改官方CLI。官方将此功能标记为 experimental；适配层拒绝未经验证的新服务版本。
+使用本机官方 `wokwi-cli 0.29.0 (940b7237d26f)` 的 stdio MCP，通过 Python MCP SDK 1.30.0 连接。没有自行实现仿真底层协议。原版CLI未覆盖；现另构建带通用返回格式补丁的本地版本，见下方更新。官方将此功能标记为 experimental；适配层拒绝未经验证的新服务版本。
 
 新增两个工程工具：
 
@@ -11,7 +17,22 @@
 
 `simulate_project/evaluate_tests`原有流程保持独立。新MCP观测不覆盖其报告、不生成业务pass，也不改变导出工程。查看画面、逻辑和需求是否正确仍需要通用验收机制。
 
-## 11个官方工具的真实测试
+## 返回格式修复（当前状态）
+
+在固定上游提交上增加通用补丁，MCP标识为`wokwi-cli-hwclaw / 0.29.0-hwclaw.1`，不是官方发布版本。其仿真协议和API版本仍来自原上游，未改任何生成工程或驱动。
+
+- 截图改为标准MCP `image/png`内容块，完整Base64落盘为PNG。宿主验证PNG签名、完整分块CRC、结束标记、像素流大小和尺寸，再保存SHA256。Chainlit读取经哈希校验的图片供用户预览。
+- 读取引脚明确限定为**数字高低电平**。实测原始响应含pin/direction/value/pullUp/pullDown，没有voltage。工具说明、Schema及每次返回均声明不能读取电压、ADC数值或PWM占空比；不再显示undefinedV，voltage=null。
+- MCP原始响应仍完整保存；PNG可通过read_simulation_evidence获取校验后的路径与尺寸。当前模型收到的是文本工具结果，不是视觉输入，不能声称自动看懂了画面。
+- 通用Windows资源核对修正为按原始UTF-8字节比较，避免CRLF被Python读取时归一化后产生假不一致。
+
+实测完整SSD1306图片：`temp/mcp-probes/dc1c2102b0d14593b40c56a84d6c711a/screenshot-020.png`，128×64、220字节，已实际打开查看；同会话其他10项传输检查通过。原始pin响应也保存在同目录，确认没有电压字段。
+
+ST7789游戏保持原第6版；`workspace/web-project-f12d321cc23b/.hwclaw/mcp/97a92d2d5bc64248885e0ffe7101e0c4/`再次确认电平说明正确，但服务仍返回`Part does not have a valid framebuffer: display1`。完整PNG返回修复不等于解决所有显示模型支持问题，不把此项标为通过。
+
+补丁构建脚本：[build_backend.py](../LangChain/integrations/wokwi_mcp/build_backend.py)。原始文件/归档均校验固定哈希，构建临时文件在temp，产物在忽略提交的`tools/wokwi-mcp/0.29.0-hwclaw.1/`，manifest记录补丁和bundle哈希。安装产物存在时优先使用并验证哈希；未安装时保留原版CLI行为；哈希错误不静默回退。需要Node.js及npm，使用项目Python运行该脚本即可下载固定源码并构建。详见[构建说明](../LangChain/integrations/wokwi_mcp/README.md)。
+
+## 原版11个官方工具的真实测试（历史基线）
 
 | 官方工具 | 实测 | 数据与限制 |
 | --- | --- | --- |

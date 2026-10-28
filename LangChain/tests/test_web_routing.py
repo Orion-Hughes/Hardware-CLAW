@@ -1,5 +1,6 @@
 """Exercise the real Chainlit handler without paid API calls or file creation."""
 import unittest
+import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -67,3 +68,16 @@ class WebRoutingTests(unittest.IsolatedAsyncioTestCase):
         await self.send("检查工程")
         self.create.assert_not_called()
         self.assertIs(self.execute.call_args.kwargs["project"], self.project)
+
+    async def test_mcp_preview_uses_verified_path_and_ignores_null_artifacts(self):
+        step = SimpleNamespace(name="inspect_simulation", send=AsyncMock(), update=AsyncMock())
+        async def execute(model, question, history, emit, **kwargs):
+            await emit("tool_request", {"id":"image-call", "name":"inspect_simulation", "args":{}})
+            await emit("tool_result", {"id":"image-call", "content":json.dumps({"data":{
+                "version":1,"attempt":"a"*32,"evidence_directory":"untrusted-path",
+                "records":[{"artifact":None},{"artifact":"screenshot-001.png"}]}})})
+        self.execute.side_effect = execute
+        with patch.object(app.cl,"Step",return_value=step), patch.object(app.cl,"Image") as image, patch('hardware_claw.adapters.wokwi_mcp.read_evidence',return_value={"image_path":"verified.png"}) as read:
+            await self.send("查看截图")
+            read.assert_called_once_with(self.project,1,"a"*32,"screenshot-001.png")
+            image.assert_called_once_with(name="screenshot-001.png",path="verified.png",display="inline")

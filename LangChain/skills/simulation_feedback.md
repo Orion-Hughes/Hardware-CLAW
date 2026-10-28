@@ -2,9 +2,9 @@
 
 需要交互观测时可用inspect_simulation(expected_version, actions)：宿主通过官方Wokwi MCP启动独立会话，顺序执行动作并关闭。每次调用重新启动，跨调用不保留状态。操作名以wokwi_开头：get_status、read_serial、write_serial、read_pin、set_control、take_screenshot、export_vcd、stop_simulation（暂停）、resume_simulation、restart_simulation、start_simulation。参数遵循工具Schema，不传文件路径。wait动作的milliseconds是墙钟等待；模拟时间以get_status的nanos为准。read_resource仅允许name=diagram.json或wokwi.toml。
 
-仅根据已知器件资料选择control/pin；接口不存在或缺少覆盖时报告，不猜测成功。当前官方0.29.0截图返回截断Base64，不能看到完整画面；VCD需要工程已有接线正确的逻辑分析仪，没有数据如实报告。串口是官方有限缓冲区，可能丢失较早输出；不要声称拿到完整历史。inspect_simulation保存逐项原始证据，但不产生功能pass，也不替代现有simulate_project/evaluate_tests交付状态。
+仅根据已知器件资料选择control/pin；接口不存在或缺少覆盖时报告，不猜测成功。原版CLI 0.29.0截图会截断Base64；安装通用MCP补丁后可保存并展示完整PNG，但仅限仿真服务支持framebuffer的模型。当前文本Agent未接收视觉输入，不能声称看懂了截图。VCD需要工程已有接线正确的逻辑分析仪，没有数据如实报告。串口是官方有限缓冲区，可能丢失较早输出；不要声称拿到完整历史。inspect_simulation保存逐项原始证据，但不产生功能pass，也不替代现有simulate_project/evaluate_tests交付状态。
 
-工具摘要不是全部数据；用read_simulation_evidence(expected_version, attempt, filename, offset, limit)按页读取证据清单中的完整响应或VCD，next_offset为null才到末尾。控制工具确认不等于固件实际接收/执行；需后续状态或串口/引脚证据。宿主会拒绝没有本地来源的控制名及超范围值。引脚读数的voltage=null表示官方未提供电压，不能用逻辑值推断模拟量。
+工具摘要不是全部数据；用read_simulation_evidence(expected_version, attempt, filename, offset, limit)按页读取证据清单中的完整响应或VCD，next_offset为null才到末尾。PNG文件返回经过哈希与格式校验的图片路径和尺寸，前端可展示；不把Base64塞进模型上下文。控制工具确认不等于固件实际接收/执行；需后续状态或串口/引脚证据。宿主会拒绝没有本地来源的控制名及超范围值。wokwi_read_pin只能判断数字高低电平，不能读取电压值、ADC数值或PWM占空比；voltage始终标为null，不得用逻辑值推断模拟量。
 
 所有工程使用同一流程：check_project_files→compile_project→simulate_project→evaluate_tests→export_project。
 

@@ -11,7 +11,7 @@ OPERATIONS = ("wokwi_start_simulation", "wokwi_stop_simulation", "wokwi_resume_s
 
 
 class MCPAction(StrictModel):
-    operation: Literal[*OPERATIONS]
+    operation: Literal[*OPERATIONS] = Field(description="wokwi_read_pin只读取数字高低电平，不能读取电压值或ADC数值。")
     arguments: dict = Field(default_factory=dict, description="read_pin: partId/string, pin/string（数字脚也传字符串）；set_control: partId/string, control/string, value/number；take_screenshot: partId/string；write_serial: text/string；read_serial: clear/bool可选；wait: milliseconds/int；read_resource: name=diagram.json或wokwi.toml。其他操作传{}。禁止projectPath、sdcard、sdcardOut、outputPath，路径由宿主绑定。")
 
     @model_validator(mode="after")
@@ -59,6 +59,6 @@ class InspectSimulationInput(StrictModel):
 class ReadSimulationEvidenceInput(StrictModel):
     expected_version: int = Field(ge=0)
     attempt: str = Field(pattern=r"^[a-f0-9]{32}$")
-    filename: str = Field(pattern=r"^[a-z0-9-]+\.(json|log|vcd)$", description="inspect_simulation.evidence_sha256中登记的文件名。")
+    filename: str = Field(pattern=r"^[a-z0-9-]+\.(json|log|vcd|png)$", description="inspect_simulation.evidence_sha256中登记的文件名。PNG返回校验后的图片路径与尺寸，不返回Base64文本。")
     offset: int = Field(default=0, ge=0)
     limit: int = Field(default=4000, ge=1, le=16000)

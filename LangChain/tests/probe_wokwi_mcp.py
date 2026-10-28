@@ -13,6 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from hardware_claw.adapters.wokwi_mcp import run_session
+from hardware_claw.adapters.png_evidence import png_info
 from hardware_claw.adapters.simulator import read_token
 from hardware_claw.contracts.simulation_mcp import InspectSimulationInput
 from hardware_claw.projects.service import ROOT, atomic_json
@@ -61,6 +62,11 @@ async def main():
         'vcd_has_timestamps': any('$enddefinitions' in p.read_text() and '\n#' in p.read_text() for p in work.glob('waveform-*.vcd')),
         'resources_match_snapshot': sum(r['status']=='ok' for r in records if r['operation']=='read_resource')==2,
     }
+    if result.get('backend', {}).get('kind') == 'upstream_with_local_generic_patch':
+        screenshots = [r for r in records if r['operation']=='wokwi_take_screenshot']
+        checks['complete_png'] = bool(screenshots) and all(r['status']=='ok' and png_info((work/r['artifact']).read_bytes())['complete'] for r in screenshots)
+        pins = [r for r in records if r['operation']=='wokwi_read_pin']
+        checks['explicit_digital_only_scope'] = bool(pins) and all(r.get('scope')=='digital_logic_only' and r.get('pin_state',{}).get('voltage') is None for r in pins)
     atomic_json(work/'probe-checks.json',checks)
     print(json.dumps({'evidence':str(work),'execution_status':result['execution_status'],'checks':checks,
                       'operations':[{'operation':r['operation'],'status':r['status'],'text':r.get('text','')[:250]} for r in records]},ensure_ascii=False))

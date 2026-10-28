@@ -170,6 +170,21 @@ async def respond(message: cl.Message):
                 step.end = datetime.now(timezone.utc).isoformat()
                 step.language = "json"
                 await step.update()
+                if step.name in {"inspect_simulation", "read_simulation_evidence"}:
+                    try:
+                        from hardware_claw.adapters.wokwi_mcp import read_evidence
+                        payload = json.loads(data["content"]).get("data") or {}
+                        names = [r.get("artifact", "") for r in payload.get("records", [])]
+                        if payload.get("image"):
+                            names.append(payload.get("filename", ""))
+                        bound_project = cl.user_session.get("project")
+                        for name in dict.fromkeys(n for n in names if isinstance(n, str) and n.endswith(".png")):
+                            verified = read_evidence(bound_project, payload["version"], payload["attempt"], name)
+                            await cl.Message(content="MCP截图（原始观测，尚未做视觉验收）", elements=[
+                                cl.Image(name=name, path=verified["image_path"], display="inline")
+                            ]).send()
+                    except (ValueError, KeyError, OSError, ProjectError):
+                        await cl.Message(content="截图预览未能通过证据校验，请查看工具记录；未使用未校验路径。").send()
         elif kind in ("model", "error", "host_export"):
             await cl.Message(content=data["text"]).send()
         elif kind == "summary":

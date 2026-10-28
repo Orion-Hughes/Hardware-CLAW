@@ -13,7 +13,7 @@
 | scaffold_project | 从设计生成固定配置与电路图 | projects/scaffold.py | 自动串口连接；固定构建配置；真实Agent综合生成 |
 | compile_project | 编译当前已检查修订 | adapters/compiler.py | 真实PlatformIO、900秒时限、取消进程树、源码/固件哈希绑定 |
 | simulate_project | 当前固件与电路的统一限时观察 | adapters/simulator.py | CLI、凭据隔离、30秒模拟/180秒墙钟、每轮最多10次，原始证据与哈希；无元件条件 |
-| inspect_simulation | 官方MCP交互批次，自动关闭会话 | adapters/wokwi_mcp.py | 11个官方工具逐项实测；截图不完整、电压缺失，详见WOKWI_MCP_INTEGRATION.md |
+| inspect_simulation | 官方MCP交互批次，自动关闭会话 | adapters/wokwi_mcp.py | 11个官方工具逐项实测；补丁版支持完整PNG；引脚仅数字电平，不测电压；详见WOKWI_MCP_INTEGRATION.md |
 | read_simulation_evidence | 当前修订MCP证据分页读取 | 同上 | 哈希/修订检查、路径拒绝、分页测试与真实Agent回填 |
 | evaluate_tests | 核验证据与报告执行状态、验收缺口 | validation/observation.py | 正常观察返回unsupported，功能未验证；不再使用专用预期和解析器 |
 | get_project | 查看绑定工程、需求、设计、版本、文件及报告 | tools/project_tools.py → projects/service.py | 初始空工程、设计后、写入后、恢复工程的真实查询 |
@@ -32,7 +32,7 @@
 
 通过官方stdio MCP + Python SDK新增inspect_simulation和read_simulation_evidence。保留原simulate_project/evaluate_tests；新观测不冒充功能验收。11个官方工具、两个资源已实测，详细记录与边界见[官方MCP接入](WOKWI_MCP_INTEGRATION.md)。
 
-状态、串口读写、控制、暂停/恢复/重启可用；VCD需接线分析仪。截图只返回100字符Base64，不能获得完整图像；pinRead电压undefined。官方对未知control也可能返回成功，宿主按统一知识库检查控制名和范围。完整波形分析和需求验收仍待实现。
+状态、串口读写、控制、暂停/恢复/重启可用；VCD需接线分析仪。原版截图截断已通过通用MCP返回补丁修复；仍取决于模型framebuffer支持。pinRead明确只提供数字高低电平，不读取电压。官方对未知control也可能返回成功，宿主按统一知识库检查控制名和范围。完整波形分析和需求验收仍待实现。
 
 ### 观测之后：通用评估与修正（待实现）
 

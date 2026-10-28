@@ -176,7 +176,9 @@ def make_project_tools(project):
         closes the server. Use status/read_serial/read_pin/set_control, pause (stop),
         resume/restart, screenshot or VCD; use official wokwi_ operation names.
         Host binds paths; no SD card/custom chip filesystem access. wait is wall time.
-        Screenshots are incomplete in CLI 0.29.0 (reported unsupported); VCD requires
+        read_pin ONLY reads digital high/low: cannot measure voltage, ADC or PWM.
+        Complete PNGs require the installed generic upstream MCP patch; stock CLI
+        0.29.0 truncates images. Screenshot support depends on the display model. VCD requires
         a wired logic analyzer. No full functional acceptance. Raw evidence is saved.
         This supplements simulate_project/evaluate_tests, does not replace their reports.
         """
@@ -197,6 +199,7 @@ def make_project_tools(project):
     @tool(args_schema=ReadSimulationEvidenceInput)
     def read_simulation_evidence(expected_version: int, attempt: str, filename: str, offset: int = 0, limit: int = 4000) -> dict:
         """Read a page of saved MCP JSON/serial response, server log or VCD waveform.
+        PNG filenames return verified image path and dimensions, not base64 text.
 
         Use attempt and filenames from inspect_simulation. Verifies current version,
         firmware/circuit identity and file hash. Follow next_offset to read all pages.

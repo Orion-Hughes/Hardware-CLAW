@@ -26,6 +26,8 @@ from ..projects.vscode_delivery import verified_build
 from ..validation.files import check
 from ..catalog import KnowledgeCatalog
 from .. import limits
+from .mcp_backend import select_backend
+from .png_evidence import decode_png, png_info
 
 TESTED_CLI_VERSION = "0.29.0"
 CALL_TIMEOUT = limits.MCP_CALL_SECONDS
@@ -52,6 +54,16 @@ def decode_result(raw, operation):
         except ValueError:
             data.update(status="tool_error", reason="Malformed official status response")
     if operation == "wokwi_read_pin" and status == "ok":
+        data["scope"] = "digital_logic_only"
+        data["limitation"] = "只能判断数字高低电平，不能读取电压值、ADC数值或PWM占空比。"
+        structured = raw.get("structuredContent") or {}
+        if structured.get("scope") == "digital_logic_only":
+            value = structured.get("value")
+            if type(value) is bool or type(value) in {int,float} and value in {0,1}:
+                data["pin_state"] = {"value": bool(value), "voltage": None}
+            else:
+                data.update(status="partial", reason="Official response lacks a valid digital level")
+            return data
         match = re.fullmatch(r"Pin .+ on .+: (true|false|[\d.+-]+) \(([^)]+)V\)", text)
         if match:
             value, voltage = match.groups()
@@ -108,7 +120,9 @@ async def run_session(work, actions, token, *, timeout=SESSION_TIMEOUT):
               "full_project_acceptance": "not_evaluated"}
     env = compiler_env(work)
     env["WOKWI_CLI_TOKEN"] = token
-    params = StdioServerParameters(command=str(CLI), args=["mcp", "--quiet", str(work)], cwd=str(work), env=env)
+    backend = select_backend()
+    result["backend"] = {k:v for k,v in backend.items() if k not in {"command", "prefix"}}
+    params = StdioServerParameters(command=backend["command"], args=[*backend["prefix"], "mcp", "--quiet", str(work)], cwd=str(work), env=env)
     used_bytes = 0
 
     def persist(name, value):
@@ -131,7 +145,7 @@ async def run_session(work, actions, token, *, timeout=SESSION_TIMEOUT):
                         result["tools"] = [t.name for t in listing.tools]
                         result["resources"] = [r.name for r in resources.resources]
                         persist("inventory.json", {"initialize": init.model_dump(mode="json"), "tools": listing.model_dump(mode="json"), "resources": resources.model_dump(mode="json")})
-                        if init.serverInfo.version != TESTED_CLI_VERSION:
+                        if init.serverInfo.version != backend["version"]:
                             fail("MCP_VERSION_UNTESTED", "Wokwi MCP版本变化，请重新验证接口后再启用。")
                         resource_uris = {r.name: str(r.uri) for r in resources.resources if r.name in {"diagram.json", "wokwi.toml"}}
 
@@ -162,7 +176,7 @@ async def run_session(work, actions, token, *, timeout=SESSION_TIMEOUT):
                                         try:
                                             response = await session.read_resource(f"file://./{name}")
                                             raw = response.model_dump(mode="json", by_alias=True)
-                                            if len(response.contents) != 1 or getattr(response.contents[0], "text", None) != (work/name).read_text(encoding="utf-8"):
+                                            if len(response.contents) != 1 or getattr(response.contents[0], "text", None) != (work/name).read_bytes().decode("utf-8"):
                                                 fail("MCP_RESOURCE_MISMATCH", "资源内容与绑定快照不一致。")
                                             raw["advertised_uri_error"] = original_error
                                             raw["compatibility_uri"] = f"file://./{name}"
@@ -187,6 +201,18 @@ async def run_session(work, actions, token, *, timeout=SESSION_TIMEOUT):
                             raw = json.loads(json.dumps(raw, ensure_ascii=False).replace(token, "[REDACTED]"))
                             record.update(decode_result(raw, operation))
                             record.update(evidence=evidence_name, duration_seconds=round(time.monotonic() - begin, 3))
+                            if operation == "wokwi_take_screenshot" and record["status"] == "ok":
+                                images = [c for c in raw.get("content", []) if c.get("type") == "image" and c.get("mimeType") == "image/png"]
+                                if len(images) != 1:
+                                    record.update(status="unsupported", reason="No complete PNG image block returned")
+                                else:
+                                    try:
+                                        image_data, info = decode_png(images[0]["data"])
+                                        filename = f"screenshot-{number:03d}.png"
+                                        (work / filename).write_bytes(image_data)
+                                        record.update(artifact=filename, image=info, text="完整PNG已保存；图片内容尚未经过视觉验收。")
+                                    except (ValueError, KeyError) as exc:
+                                        record.update(status="tool_error", reason=f"Invalid image evidence: {type(exc).__name__}")
                             if operation == "wokwi_export_vcd":
                                 vcd = work / f"waveform-{number:03d}.vcd"
                                 record["artifact"] = vcd.name if vcd.is_file() else None
@@ -274,7 +300,8 @@ async def inspect(project, expected_version, actions):
         for path in work.iterdir():
             if path.is_file() and (path.name in {"binding.json", "inventory.json", "server.log", "result.json", "progress.json", "error.json"}
                                   or path.name.startswith("response-") and path.suffix == ".json"
-                                  or path.name.startswith("waveform-") and path.suffix == ".vcd"):
+                                  or path.name.startswith("waveform-") and path.suffix == ".vcd"
+                                  or path.name.startswith("screenshot-") and path.suffix == ".png"):
                 data = path.read_bytes()
                 if len(data) > MAX_EVIDENCE_BYTES:
                     fail("MCP_OUTPUT_LIMIT", "MCP证据文件超过保存预算，原始数据保留在temp。")
@@ -310,6 +337,11 @@ def read_evidence(project, expected_version, attempt, filename, offset=0, limit=
         raw = path.read_bytes()
         if hashlib.sha256(raw).hexdigest() != checksum:
             fail("EVIDENCE_CHANGED", "证据哈希不匹配。")
+        if filename.endswith(".png"):
+            return {"version": expected_version, "attempt": attempt, "filename": filename,
+                    "sha256": checksum, "image_path": str(path), "image": png_info(raw),
+                    "content": "完整图片可由前端显示；当前文本工具未向模型提供视觉输入。", "next_offset": None,
+                    "full_project_acceptance": "not_evaluated"}
         text = raw.decode("utf-8")
         if offset > len(text):
             fail("INVALID_ARGUMENT", "offset超过证据末尾。")
