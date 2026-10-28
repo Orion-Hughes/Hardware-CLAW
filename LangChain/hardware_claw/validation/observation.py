@@ -1,8 +1,9 @@
 """Report bounded simulator execution; no project-specific acceptance rules."""
+from .. import limits
 
 OBSERVATION = {
     "mode": "observation_v1",
-    "simulation_timeout_ms": 25000,
+    "simulation_timeout_ms": limits.SIMULATION_MS,
     "scope": "bounded simulation and raw log collection; no functional acceptance",
     "uncovered": ["需求符合性", "外设功能", "时序正确性", "真机电气正确性"],
 }

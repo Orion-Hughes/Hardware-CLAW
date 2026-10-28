@@ -9,6 +9,7 @@ import uuid
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+from .. import limits
 
 ROOT = Path(__file__).resolve().parents[3]
 WORKSPACE = ROOT / "workspace"
@@ -16,8 +17,8 @@ TEMP = ROOT / "temp" / "project-service"
 ID = re.compile(r"[a-z0-9][a-z0-9_-]{0,95}\Z")
 LOCKS = {}
 LOCKS_GUARD = threading.Lock()
-MAX_FILE = 64000
-MAX_TOTAL = 256000
+MAX_FILE = limits.FILE_BYTES
+MAX_TOTAL = limits.PROJECT_BYTES
 ALLOWED_EXTENSIONS = {".ino", ".cpp", ".h", ".hpp", ".c", ".json", ".toml", ".ini", ".txt", ".md"}
 
 
@@ -67,7 +68,7 @@ class ProjectService:
 
     @classmethod
     def create(cls, title, requirement, template="vscode", *, workspace=WORKSPACE):
-        if template not in {"arduino", "platformio", "vscode"} or not requirement.strip() or len(requirement) > 12000:
+        if template not in {"arduino", "platformio", "vscode"} or not requirement.strip() or len(requirement) > limits.INPUT_CHARACTERS:
             fail("INVALID_ARGUMENT", "需要有效需求和vscode/arduino/platformio模板。")
         slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:32] or "project"
         ident = f"{slug}-{uuid.uuid4().hex[:12]}"
@@ -254,17 +255,17 @@ class ProjectService:
             self._check_live_files(state)
             if state["design"] is None:
                 fail("DESIGN_REQUIRED", "先保存设计，再生成工程文件。")
-            if not isinstance(files, dict) or not files or len(files) > 32:
-                fail("INVALID_FILES", "一次写入1到32个文本文件。")
+            if not isinstance(files, dict) or not files or len(files) > limits.PROJECT_FILES:
+                fail("INVALID_FILES", f"一次写入1到{limits.PROJECT_FILES}个文本文件。")
             for name, content in files.items():
                 path = safe_path(self.files, name)
                 if path.suffix.lower() not in ALLOWED_EXTENSIONS:
                     fail("UNSUPPORTED_FILE", "仅支持源码、配置和说明文本，不能写脚本或二进制。")
                 if not isinstance(content, str) or "\x00" in content or len(content.encode("utf-8")) > MAX_FILE:
-                    fail("FILE_TOO_LARGE", "文件必须为不超过64000字节的UTF-8文本。")
+                    fail("FILE_TOO_LARGE", f"文件必须为不超过{MAX_FILE}字节的UTF-8文本。")
             merged = state["files"] | files
-            if len(merged) > 32 or sum(len(c.encode()) for c in merged.values()) > MAX_TOTAL:
-                fail("PROJECT_TOO_LARGE", "工程超过32文件或256000字节上限。")
+            if len(merged) > limits.PROJECT_FILES or sum(len(c.encode()) for c in merged.values()) > MAX_TOTAL:
+                fail("PROJECT_TOO_LARGE", f"工程超过{limits.PROJECT_FILES}文件或{MAX_TOTAL}字节上限。")
             old = state["files"].copy()
             try:
                 for name, content in files.items():

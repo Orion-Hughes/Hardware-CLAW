@@ -6,7 +6,7 @@
 
 `simulate_project(expected_version)`检查修订、基础检查和真实编译固件，在temp复制电路、配置与固件，调用Wokwi CLI进行限时观察。无需特定元件，不传scenario，不改变元件控制值，不要求业务串口格式。Token只进入子进程环境。
 
-所有受支持构建配置的工程使用相同观察参数：25秒模拟窗口、90秒宿主墙钟、1MiB日志上限，每轮最多3次。CLI退出42表示模拟观察窗口到期，记录observation_limit；退出0为completed，其他退出为tool_error，宿主超时单独记录timeout。这些都是执行状态，不是功能判定。
+所有受支持构建配置的工程使用相同观察参数：30秒模拟窗口、180秒宿主墙钟、4MiB日志上限，每轮最多10次（统一配置见 DEVELOPMENT_LIMITS.md）。CLI退出42表示模拟观察窗口到期，记录observation_limit；退出0为completed，其他退出为tool_error，宿主超时单独记录timeout。这些都是执行状态，不是功能判定。
 
 保存原始serial.txt、cli.log和通用observation.json；固件、电路、观察配置和证据绑定哈希。相同输入可复用证据；修改或证据篡改使旧报告失效。超时/取消保留现有进程回收机制。
 

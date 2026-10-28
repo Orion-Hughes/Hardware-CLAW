@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from langchain_core.messages import AIMessage, HumanMessage
 from hardware_claw.runtime import execute_turn
+from hardware_claw import limits
 from test_agent import ScriptedModel
 
 
@@ -78,10 +79,10 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("调用预算", error["text"])
 
     async def test_history_bounded_and_isolated(self):
-        history = [m for i in range(3) for m in (HumanMessage(content=str(i)), AIMessage(content="old"))]
+        history = [m for i in range(limits.HISTORY_TURNS + 2) for m in (HumanMessage(content=str(i)), AIMessage(content="old"))]
         other = []
         await execute_turn(ScriptedModel(), "next", history, self.emit)
-        self.assertEqual(len(history), 6)
+        self.assertEqual(len(history), 2 * limits.HISTORY_TURNS)
         self.assertEqual(other, [])
         self.assertEqual(history[-2].content, "next")
 
@@ -125,3 +126,22 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         with patch("hardware_claw.runtime.build_agent", return_value=ClaimGraph()):
             status = await execute_turn(None, "generate", [], self.emit, project=project, require_delivery=True)
             self.assertEqual(status, "incomplete")
+
+    async def test_truncated_response_metrics_preserved(self):
+        class TruncatedGraph:
+            async def astream(self, *args, **kwargs):
+                yield {"model": {"messages": [AIMessage(
+                    content="", response_metadata={"finish_reason": "length"},
+                    usage_metadata={"input_tokens": 100, "output_tokens": 50, "total_tokens": 150},
+                    invalid_tool_calls=[{"name": "write_project_files", "args": "{", "id": "bad", "error": "invalid JSON", "type": "invalid_tool_call"}],
+                )]}}
+        with patch("hardware_claw.runtime.build_agent", return_value=TruncatedGraph()):
+            status = await execute_turn(None, "generate", [], self.emit)
+        self.assertEqual(status, "incomplete")
+        summary = self.events[-1][1]
+        self.assertEqual(summary["budget_profile"], limits.snapshot())
+        self.assertEqual(summary["input_tokens_reported"], 100)
+        self.assertEqual(summary["output_tokens_reported"], 50)
+        self.assertEqual(summary["response_metrics"][0]["finish_reason"], "length")
+        self.assertEqual(summary["response_metrics"][0]["invalid_tool_calls"], 1)
+        self.assertEqual(summary["tool_requests"], 0)

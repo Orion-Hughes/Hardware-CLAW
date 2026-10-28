@@ -19,6 +19,7 @@ from hardware_claw.api_config import create_model
 from hardware_claw.runtime import error_message, execute_turn
 from hardware_claw.projects.service import ProjectService, ProjectError
 from hardware_claw.chat_store import LocalChatStore, configure_local_auth
+from hardware_claw import limits
 
 configure_local_auth()
 _store = None
@@ -67,7 +68,7 @@ async def save_chat():
     chat_store().put("state", thread_id(), {
         "project_id": project.id if project else None,
         "mode": cl.user_session.get("mode") or "generate",
-        "history": [{"role": "user" if isinstance(m, HumanMessage) else "assistant", "content": m.content} for m in history[-6:]],
+        "history": [{"role": "user" if isinstance(m, HumanMessage) else "assistant", "content": m.content} for m in history[-2*limits.HISTORY_TURNS:]],
     })
 
 
@@ -76,7 +77,7 @@ async def resume(thread):
     state = chat_store().get("state", thread["id"]) or {}
     cl.user_session.set("mode", state.get("mode", "generate"))
     cl.user_session.set("project", None)
-    cl.user_session.set("history", [HumanMessage(content=m["content"]) if m["role"] == "user" else AIMessage(content=m["content"]) for m in state.get("history", [])[-6:]])
+    cl.user_session.set("history", [HumanMessage(content=m["content"]) if m["role"] == "user" else AIMessage(content=m["content"]) for m in state.get("history", [])[-2*limits.HISTORY_TURNS:]])
     if state.get("project_id"):
         try:
             project = ProjectService.open(state["project_id"])
@@ -110,8 +111,8 @@ async def start():
 
 @cl.on_message
 async def respond(message: cl.Message):
-    if len(message.content) > 12000:
-        await cl.Message(content="问题过长，请控制在 12000 字符以内。").send()
+    if len(message.content) > limits.INPUT_CHARACTERS:
+        await cl.Message(content=f"问题过长，请控制在 {limits.INPUT_CHARACTERS} 字符以内。").send()
         return
     question = message.content.strip()
     if not question:
@@ -194,7 +195,7 @@ async def respond(message: cl.Message):
         cl.user_session.set("history", history)
     try:
         project = cl.user_session.get("project")
-        model = create_model(max_tokens=4096 if project else 1024)
+        model = create_model(max_tokens=limits.PROJECT_OUTPUT_TOKENS if project else limits.QUERY_OUTPUT_TOKENS)
     except Exception as exc:
         await cl.Message(content=error_message(exc)).send()
         return

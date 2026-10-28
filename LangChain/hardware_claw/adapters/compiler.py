@@ -13,9 +13,10 @@ from pathlib import Path
 
 from ..projects.service import ROOT, atomic_json, digest, fail
 from ..validation.files import check
+from .. import limits
 
 PIO = ROOT / "tools/platformio-venv/Scripts/pio.exe"
-BUILD_TIMEOUT = 420
+BUILD_TIMEOUT = limits.BUILD_TIMEOUT_SECONDS
 MAX_LOG = 8 * 1024 * 1024
 
 

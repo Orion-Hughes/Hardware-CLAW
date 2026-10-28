@@ -13,10 +13,11 @@ from ..projects.service import ROOT, atomic_json, digest, fail
 from ..projects.vscode_delivery import verified_build
 from ..validation.files import check
 from ..validation.observation import OBSERVATION, assess
+from .. import limits
 
 CLI = Path.home() / ".wokwi/bin/wokwi-cli.exe"
 TOKEN_FILE = ROOT / ".secrets/wokwi-cli-token.txt"
-MAX_OUTPUT = 1024 * 1024
+MAX_OUTPUT = limits.SIMULATION_LOG_BYTES
 
 
 def read_token():
@@ -31,7 +32,7 @@ def read_token():
         fail("WOKWI_TOKEN_UNAVAILABLE", "Wokwi凭据文件缺失或格式不正确；不会将其内容发送给模型。")
 
 
-async def run_cli(work, token, *, timeout=90):
+async def run_cli(work, token, *, timeout=limits.SIMULATION_WALL_SECONDS):
     """Bounded stdout in memory; redact before persistence. Token only in child env."""
     env = compiler_env(work)
     env["WOKWI_CLI_TOKEN"] = token

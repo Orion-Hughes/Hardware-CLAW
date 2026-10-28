@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from langchain_deepseek import ChatDeepSeek
+from . import limits
 
 KEY_FILE = Path(__file__).resolve().parents[1] / "DS_Api.txt"
 DEFAULT_MODEL = "deepseek-flash"
@@ -35,13 +36,13 @@ def load_api_key(*, ask_key: bool = False) -> str:
     return key
 
 
-def create_model(*, ask_key: bool = False, max_tokens: int = 1024):
+def create_model(*, ask_key: bool = False, max_tokens: int = limits.QUERY_OUTPUT_TOKENS):
     """Construct the client; actual API traffic begins when the agent runs."""
     return ChatDeepSeek(
         model=os.environ.get("DEEPSEEK_MODEL", DEFAULT_MODEL),
         api_key=load_api_key(ask_key=ask_key),
         api_base=BASE_URL,
-        timeout=30,
+        timeout=limits.API_TIMEOUT_SECONDS,
         max_retries=0,
         max_tokens=max_tokens,
         extra_body={"thinking": {"type": "disabled"}},

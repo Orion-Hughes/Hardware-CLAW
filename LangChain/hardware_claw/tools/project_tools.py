@@ -4,6 +4,7 @@ import asyncio
 from langchain.tools import tool
 from .hardware_catalog import _invalid_input
 from ..projects.service import ProjectError
+from .. import limits
 from ..contracts.project import UpdateDesignInput, ReadFileInput, WriteFilesInput, PatchInput, VersionInput
 
 
@@ -113,13 +114,13 @@ def make_project_tools(project):
         commands, credentials, expected outputs or YAML arguments. Collects raw serial
         and CLI logs without requiring a particular component or output format.
         No functional acceptance is implemented. Call evaluate_tests to report this gap.
-        Maximum 3 calls per agent turn; 25s simulated/90s wall limit.
+        Bounded by the shared development budgets; no unlimited execution.
         """
         from ..adapters.simulator import simulate
         nonlocal simulation_calls
         async with simulation_lock:
-            if simulation_calls >= 3:
-                return {"execution_status": "error", "error_code": "SIMULATION_BUDGET", "summary": "本轮仿真预算3次已用完，停止修正并报告证据。", "data": None}
+            if simulation_calls >= limits.SIMULATION_CALLS:
+                return {"execution_status": "error", "error_code": "SIMULATION_BUDGET", "summary": f"本轮仿真预算{limits.SIMULATION_CALLS}次已用完，停止修正并报告证据。", "data": None}
             simulation_calls += 1
             try:
                 data = await simulate(project, expected_version)

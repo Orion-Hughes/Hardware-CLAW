@@ -6,6 +6,7 @@ import uuid
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from .agent import RUN_TIMEOUT_SECONDS, build_agent
+from . import limits
 
 
 def error_message(exc):
@@ -32,10 +33,11 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
     """Keep only completed user/answer pairs; never retain partial tool chains."""
     started = time.monotonic()
     if timeout is None:
-        timeout = 900 if project else RUN_TIMEOUT_SECONDS
+        timeout = limits.PROJECT_TIMEOUT_SECONDS if project else RUN_TIMEOUT_SECONDS
     usage, requested, returned = [], set(), set()
     answer = ""
     model_calls = 0
+    response_metrics = []
     status = "error"
     invalid_calls = False
     run_id = uuid.uuid4().hex
@@ -50,8 +52,8 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
         # A fresh graph invocation resets per-run middleware counters.
         async with asyncio.timeout(timeout):
             async for update in (build_agent(model, project=project) if project else build_agent(model)).astream(
-                {"messages": [*history[-6:], HumanMessage(content=question)]},
-                config={"recursion_limit": 128 if project else 40}, stream_mode="updates",
+                {"messages": [*history[-2*limits.HISTORY_TURNS:], HumanMessage(content=question)]},
+                config={"recursion_limit": limits.PROJECT_GRAPH_STEPS if project else limits.QUERY_GRAPH_STEPS}, stream_mode="updates",
             ):
                 for value in update.values():
                     if not isinstance(value, dict):
@@ -59,6 +61,15 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
                     for msg in value.get("messages", []):
                         if isinstance(msg, AIMessage):
                             model_calls += 1
+                            response_metrics.append({
+                                "response_index": model_calls,
+                                "finish_reason": msg.response_metadata.get("finish_reason"),
+                                "model_name": msg.response_metadata.get("model_name"),
+                                "input_tokens": (msg.usage_metadata or {}).get("input_tokens"),
+                                "output_tokens": (msg.usage_metadata or {}).get("output_tokens"),
+                                "invalid_tool_calls": len(msg.invalid_tool_calls),
+                                "elapsed_seconds": round(time.monotonic() - started, 3),
+                            })
                             if msg.usage_metadata:
                                 usage.append(dict(msg.usage_metadata))
                             if msg.invalid_tool_calls:
@@ -93,7 +104,7 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
                 elif verdict in {"tool_error", "unsupported"}:
                     status = "validation_unavailable"
         if status in {"completed", "validation_failed", "validation_unavailable"}:
-            history[:] = [*history[-4:], HumanMessage(content=question), AIMessage(content=answer)]
+            history[:] = [*history[-2*(limits.HISTORY_TURNS-1):], HumanMessage(content=question), AIMessage(content=answer)]
         return status
     except asyncio.CancelledError:
         status = "cancelled"
@@ -107,6 +118,10 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
             "status": status, "elapsed_seconds": round(time.monotonic() - started, 2),
             "tool_requests": len(requested), "tool_results": len(returned),
             "model_responses": model_calls, "usage": usage,
+            "budget_profile": limits.snapshot(), "effective_timeout_seconds": timeout,
+            "response_metrics": response_metrics,
+            "input_tokens_reported": sum(u.get("input_tokens", 0) for u in usage) if usage else None,
+            "output_tokens_reported": sum(u.get("output_tokens", 0) for u in usage) if usage else None,
             "tokens_reported": sum(u.get("total_tokens", 0) for u in usage) if usage else None,
             "usage_complete": bool(model_calls) and len(usage) == model_calls and status in {"completed", "validation_failed", "validation_unavailable"},
         }

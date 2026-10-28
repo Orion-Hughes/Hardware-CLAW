@@ -4,6 +4,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from hardware_claw.agent import MODEL_CALL_LIMIT, build_agent
+from hardware_claw import limits
 from hardware_claw.tools.hardware_info import get_board_info
 
 
@@ -49,7 +50,7 @@ class AgentTests(unittest.TestCase):
     def test_loop_limit(self):
         model = ScriptedModel(loop_forever=True)
         with self.assertRaises(Exception) as caught:
-            build_agent(model).invoke({"messages": [("user", "loop")]}, {"recursion_limit": 30})
+            build_agent(model).invoke({"messages": [("user", "loop")]}, {"recursion_limit": limits.QUERY_GRAPH_STEPS})
         self.assertIn("limit", str(caught.exception).lower())
         self.assertLessEqual(model._count, MODEL_CALL_LIMIT)
 

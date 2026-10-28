@@ -11,8 +11,8 @@
 | load_skill | 列出/读取维护好的开发流程 | tools/skills.py → skills/wokwi_generation.md | 真实Agent联合搜索/详情查询通过；不可安装或修改技能 |
 | load_template | 列出/读取只读平台配置 | tools/templates.py → templates/ | 白名单ID与SHA256；不提供专用业务示例 |
 | scaffold_project | 从设计生成固定配置与电路图 | projects/scaffold.py | 自动串口连接；固定构建配置；真实Agent综合生成 |
-| compile_project | 编译当前已检查修订 | adapters/compiler.py | 真实PlatformIO、420秒时限、取消进程树、源码/固件哈希绑定 |
-| simulate_project | 当前固件与电路的统一限时观察 | adapters/simulator.py | CLI、凭据隔离、25秒模拟/90秒墙钟、每轮最多3次，原始证据与哈希；无元件条件 |
+| compile_project | 编译当前已检查修订 | adapters/compiler.py | 真实PlatformIO、900秒时限、取消进程树、源码/固件哈希绑定 |
+| simulate_project | 当前固件与电路的统一限时观察 | adapters/simulator.py | CLI、凭据隔离、30秒模拟/180秒墙钟、每轮最多10次，原始证据与哈希；无元件条件 |
 | evaluate_tests | 核验证据与报告执行状态、验收缺口 | validation/observation.py | 正常观察返回unsupported，功能未验证；不再使用专用预期和解析器 |
 | get_project | 查看绑定工程、需求、设计、版本、文件及报告 | tools/project_tools.py → projects/service.py | 初始空工程、设计后、写入后、恢复工程的真实查询 |
 | update_project_design | 保存选型、元件实例、端点、依赖、假设 | 同上；contracts/project.py | 查询真实资料后保存设计再读回；拒绝未知端点、重复ID、blocked硬件及过期版本 |
@@ -130,7 +130,7 @@ CLI：`python main.py --new-project 名称 --template arduino --question "需求
 
 - Arduino布局：sketch.ino、diagram.json、libraries.txt、README.md。用于复制到Wokwi网页，不声称网页支持任意ZIP自动导入。
 - PlatformIO布局：src/main.cpp、diagram.json、platformio.ini、wokwi.toml、README.md；配置绑定共享基线，固件不存在直到编译。构建缓存重定向属于后续编译适配器。
-- 查询预算：6次模型、16次工具、40图步；工程模式按用户要求调整为20次模型、32次工具、128图步。总运行时限180秒；单次API30秒、无自动重试；输出上限分别1024/4096 tokens。
+- 当前测试预算：查询16次模型/48次工具/128图步/600秒；工程60次模型/160次工具/512图步/3600秒；单次API120秒，无自动重试；输出上限分别4096/16384 tokens。配置与统计见 DEVELOPMENT_LIMITS.md。
 - 工程创建、读写及导出由Python执行；模型没有任意Shell、密钥读取或项目外写入工具。
 - 文件最多32个、单个64000字节、总计256000字节；默认仅文本源码/配置/说明。外部直接修改files会报EXTERNAL_CHANGE，当前没有自动导入/合并外部修改功能。
 - 每次写入需expected_version；同工程线程锁+进程文件锁；旧修订与旧ZIP保留。检测符号链接、junction和硬链接。这是应用层约束，不是抵御同机恶意进程竞争的操作系统沙箱。

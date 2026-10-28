@@ -7,11 +7,11 @@
 - `workspace/<project_id>/files/`：同一工程持续编辑的位置。
 - `workspace/<project_id>/.hwclaw/revisions/`：不可变历史修订。
 - `workspace/<project_id>/exports/vNNNNNN/simulation/`：对应版本交付快照，VS Code需打开最新回复提供的路径，不自动覆盖旧目录。
-- `workspace/.chat/history.sqlite3`：本地SQLite，保存聊天、工具步骤、最近三轮完整问答和绑定project_id。正式运行数据，不放temp；已gitignore。
+- `workspace/.chat/history.sqlite3`：本地SQLite，保存聊天、工具步骤、最近六轮完整问答和绑定project_id。正式运行数据，不放temp；已gitignore。
 - `workspace/.chat/assets/`：恢复历史所需的附件副本。通过带会话认证的下载接口读取。
 - `.secrets/chainlit-auth-secret.txt`：本地会话签名密钥，运行时生成，不给LLM、不进生成包。
 
-恢复时按thread_id读取独立状态，再通过ProjectService.open打开原工程；找不到工程时明确提示并进入查询模式，绝不静默创建替代工程。框架自己的metadata回写不覆盖工程绑定。完整历史用于UI，只有最近三轮已完成问答进入模型上下文。
+恢复时按thread_id读取独立状态，再通过ProjectService.open打开原工程；找不到工程时明确提示并进入查询模式，绝不静默创建替代工程。框架自己的metadata回写不覆盖工程绑定。完整历史用于UI，只有最近六轮已完成问答进入模型上下文。
 
 ## 反馈修改
 

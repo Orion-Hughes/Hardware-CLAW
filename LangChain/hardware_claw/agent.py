@@ -6,6 +6,7 @@ import os
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelCallLimitMiddleware, ToolCallLimitMiddleware
 from .api_config import ApiConfigError, create_model
+from . import limits
 
 from .tools.hardware_catalog import HARDWARE_TOOLS
 from .tools.skills import load_skill
@@ -30,9 +31,9 @@ not_run只描述当前配置的记录，不推断用户历史上从未编译或�
 全程用中文交流。通常用不超过400个汉字回答关键结论和缺口；无需主动询问是否继续读取例程。
 """
 
-MODEL_CALL_LIMIT = 6
-TOOL_CALL_LIMIT = 16
-RUN_TIMEOUT_SECONDS = 180
+MODEL_CALL_LIMIT = limits.QUERY_MODEL_CALLS
+TOOL_CALL_LIMIT = limits.QUERY_TOOL_CALLS
+RUN_TIMEOUT_SECONDS = limits.QUERY_TIMEOUT_SECONDS
 
 
 def build_agent(model, project=None):
@@ -42,11 +43,11 @@ def build_agent(model, project=None):
         tools=[*HARDWARE_TOOLS, load_skill, load_template, *(make_project_tools(project) if project else [])],
         system_prompt=(PROMPT if project is None else PROMPT.replace("目前只提供本地资料查询，不生成或修改工程。", "当前绑定了工程，可以通过已注册工具保存仿真设计和工程文件。")
                        .replace("不要声称已生成、编译、烧录或仿真。", "只按工具实际结果报告文件、编译、仿真及行为结果；不得声称已烧录或全功能通过。")
-                       + "\n修改前先get_project读取版本，使用load_skill加载wokwi_generation；vscode工程必须加载simulation_feedback。只能使用本轮实际注册的工具。依赖版本的写操作顺序执行。源码较长时分文件写入，保持合法JSON。生成流程：基础检查→编译→simulate_project→evaluate_tests→导出。仿真失败最多修复两轮，再失败应保留原始证据和可打开工程，如实报告。不得硬编码预期读数、伪造传感器变化或削弱测试。用户明确只检查时不擅自修改。"
+                       + "\n修改前先get_project读取版本，使用load_skill加载wokwi_generation；vscode工程必须加载simulation_feedback。只能使用本轮实际注册的工具。依赖版本的写操作顺序执行。源码较长时分文件写入，保持合法JSON。生成流程：基础检查→编译→simulate_project→evaluate_tests→导出。在预算内依据证据修正；连续无进展时停止并保留原始证据和可打开工程，如实报告。不得硬编码预期读数、伪造传感器变化或削弱测试。用户明确只检查时不擅自修改。"
                        + "\n同一聊天的后续反馈针对当前绑定工程。先读取当前设计和相关源码，以当前文件为准，不依据旧回答重建工程。按反馈做最小必要修改；连线或依赖变化时同步设计与文件。解释、讨论和询问只读，不强行修改或编译。实际修改源码后重新检查、编译、运行受支持测试并导出当前版本；无测试覆盖必须说明。最终报告修改点、当前版本、验证结果和最新simulation路径，提醒旧导出目录是历史快照。"),
         middleware=[
-            ModelCallLimitMiddleware(run_limit=20 if project else MODEL_CALL_LIMIT, exit_behavior="error"),
-            ToolCallLimitMiddleware(run_limit=32 if project else TOOL_CALL_LIMIT, exit_behavior="error"),
+            ModelCallLimitMiddleware(run_limit=limits.PROJECT_MODEL_CALLS if project else MODEL_CALL_LIMIT, exit_behavior="error"),
+            ToolCallLimitMiddleware(run_limit=limits.PROJECT_TOOL_CALLS if project else TOOL_CALL_LIMIT, exit_behavior="error"),
         ],
     )
 
@@ -94,7 +95,7 @@ def main():
             project = ProjectService.open(args.project)
         if project:
             print(f"[project bound] {project.id}")
-        model = create_model(ask_key=args.ask_key, max_tokens=4096 if project else 1024)
+        model = create_model(ask_key=args.ask_key, max_tokens=limits.PROJECT_OUTPUT_TOKENS if project else limits.QUERY_OUTPUT_TOKENS)
         question = args.question
         if args.new_project or args.require_delivery:
             question += "\n请实际生成/完善绑定工程，运行基础文件检查并导出；只用已注册工具，未完成则如实说明。"

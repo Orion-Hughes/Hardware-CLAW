@@ -4,7 +4,7 @@
 
 ## 职责与顺序
 
-1. LangChain维持现有Agent循环；本轮最多20次模型、32次工具调用；工程总时限900秒、单次编译420秒，查询仍180秒。
+1. LangChain维持现有Agent循环；每轮最多60次模型、160次工具调用；工程总时限3600秒、单次编译900秒，查询600秒；统一配置见 DEVELOPMENT_LIMITS.md。
 2. load_skill提供选型、固件/观察、编译/交付规则；load_template提供固定格式与示例，两者均只能读取注册的ID。
 3. update_project_design保存设计并为当前ESP32-S3 UART0基线加入串口交叉连线。
 4. scaffold_project将固定构建配置、Wokwi配置和按设计组装的diagram写入新修订；业务C++与README由Agent生成。
