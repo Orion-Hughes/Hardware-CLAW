@@ -1,5 +1,28 @@
 # Hardware-CLAW 项目目录
 
+当前实现、验证结果和下一步统一见[进度总览](docs/CURRENT_STATUS.md)。下方保留旧目录准备记录；目录存在不代表对应功能已完成。
+
+## 当前资料库布局（2026-10-29）
+
+运行时默认读取`LangChain/hardware_library/`，不再读取旧`knowledge/`，也不在线补取资料。以下历史目录记录中的knowledge仅供追溯。当前结构：
+
+```text
+LangChain/hardware_library/
+  catalog.json                 15条关联与146个上游模型的检索入口
+  associations/                身份、驱动、仿真模型、管脚等薄关联
+  drivers/                     上游API、library.properties和例程入口
+  upstream/                    官方文档和维护者原始源码
+  supplements/sources/         已核验并复用的原始资料
+  sources.lock.json            495份原文的URL、版本、大小与哈希
+LangChain/integrations/hardware_sources/manage.py  离线校验/补取缺失原文
+LangChain/knowledge/            旧库，隐藏且不回退，原文件保留
+backups/knowledge-20261028T085405Z/  ZIP及逐文件清单，不提交Git
+```
+
+Agent通过search_hardware → get_hardware_info → get_driver_api读取原文。生成文件和证据仍写入workspace；不反写器件资料为验证通过。完整说明见[当前资料库](LangChain/hardware_library/README.md)与[迁移验证](docs/HARDWARE_LIBRARY_MIGRATION.md)。
+
+## 历史目录准备记录
+
 更新日期：2026-10-27。已实现Chainlit前端、共用runtime、10个工具、工程服务、小型契约与基础检查。最新实际目录及状态见 [TOOLS_IMPLEMENTATION_STATUS.md](docs/TOOLS_IMPLEMENTATION_STATUS.md)；以下原目录准备记录仍保留作历史。导航入口为 [README.md](README.md)，程序数据流与契约见 [GENERATOR_ARCHITECTURE.md](docs/GENERATOR_ARCHITECTURE.md)。
 
 ```text
@@ -153,3 +176,7 @@ Wokwi CLI默认从本地文件连接远程Simulation API，本布局不是离线
 随后按正式生成程序要求新增catalog、projects、contracts、validation、prompts、templates、knowledge/simulation及evaluations/cases/results目录说明，补充已有boards/adapters/harness职责README。未迁移Python代码、改写运行入口、安装依赖、运行模型/仿真或开放新的文件权限。
 
 同日按用户要求删除并重建knowledge，取代上述旧boards/components/simulation布局。新结构为upstream、owned、reference及总索引；已获取146条注册定义、建立12类已购硬件和SSD1306参考映射。导入完整性与映射离线检查通过，编译、仿真和真机测试均未运行。详见 [知识库说明](LangChain/knowledge/README.md) 与 [覆盖和缺口](LangChain/knowledge/COVERAGE_AND_GAPS.md)。
+
+## 2026-10-28：生成上下文与技能包
+
+`LangChain/prompts/`已接入独立系统规则和生成/查询模式；`hardware_claw/context.py`负责每次模型调用前的工程摘要。`skills/<id>/SKILL.md`与包内references替代原平铺技能；`get_driver_api`从现有knowledge驱动字段派生目录并读取登记原文。详见[实现说明](docs/GENERATION_CONTEXT_AND_SKILLS.md)及[真实Agent测试](docs/GENERATION_SKILLS_TEST_REPORT_20261028.md)。

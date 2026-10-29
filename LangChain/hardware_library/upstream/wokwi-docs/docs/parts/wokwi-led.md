@@ -1,0 +1,67 @@
+---
+title: wokwi-led Reference
+sidebar_label: wokwi-led
+---
+
+Standard 5mm LED.
+
+<wokwi-led />
+
+## Pin names
+
+| Name | Description            |
+| ---- | ---------------------- |
+| A    | Anode (positive pin)   |
+| C    | Cathode (negative pin) |
+
+## Attributes
+
+| Name       | Description                     | Default value        |
+| ---------- | ------------------------------- | -------------------- |
+| color      | The color of the LED body       | "red"                |
+| lightColor | The color of the light          | depends on the color |
+| label      | Text that appears below the led |                      |
+| gamma      | Gamma correction factor         | "2.8"                |
+| flip       | Flips the led horizontally      | ""                   |
+| fps        | Brightness averaging rate       | "80"                 |
+
+Note: To rotate LEDs, click on them and press "R", or set the ["rotate" property](../diagram-format#parts).
+
+### Examples
+
+| Result                                                    | Attrs                                         |
+| --------------------------------------------------------- | --------------------------------------------- |
+| <wokwi-led color="green" />                               | `{ "color": "green" }`                        |
+| <wokwi-led color="#FFFF00" />                             | `{ "color": "#FFFF00" }`                      |
+| <wokwi-led label="Status" />                              | `{ "label": "Status" }`                       |
+| <wokwi-led color="white" />                               | `{ "color": "white"}`                         |
+| <wokwi-led color="white" lightColor="orange" value="1" /> | `{ "color": "white", "lightColor": "orange"}` |
+| <wokwi-led color="red" flip="1"/>                         | `{ "color": "red", "flip": "1"}`              |
+
+### Gamma correction
+
+The LED automatically applies gamma correction. This means that even a very short burst of current will result
+in some visible light, similar to how physical LEDs work, so you get more accurate simulation in the following cases:
+
+1. Using `analogWrite()` with very small values (short duty cycle),
+2. LED scanning techniques such as [Charlieplexing](https://goodarduinocode.com/guides/charlieplexing).
+
+You can disable the gamma correction by setting the "gamma" attribute to "1.0". You can also choose a different
+gamma factor by setting this attribute to the desired value. The default gamma correction factor is 2.8.
+
+The [Gamma Correction Demo project](https://wokwi.com/projects/304762988710068800) shows the behavior of different gamma values: the LED on the left has the default gamma factor of 2.8, while the LED on the right has a gamma factor of 1.0. You can see how lower values of `analogWrite()` look much brighter on the left LED.
+
+For more information about _gamma correction_, including some code examples, check out this [great guide from Adafruit](https://learn.adafruit.com/led-tricks-gamma-correction).
+
+### FPS
+
+The simulator displays the average brightness of the LED over a short time window, so PWM (`analogWrite()`) and fast multiplexing show as steady dimmed light instead of flicker. The `fps` attribute sets the length of that window: the brightness is averaged over 8 subframes of 1/fps seconds each, so the default value of 80 averages over the last 100 ms.
+
+If you are using PWM and noticing flickering, try a smaller `fps` value (a longer window).
+
+If you are experiencing ghosting, for example on a multiplexed LED matrix, try a larger `fps` value (a shorter window). The [rotating cube](https://wokwi.com/projects/355020415991153665) project uses an `fps` value of 10000 to keep its fast-changing LEDs crisp.
+
+## Simulator examples
+
+- [Blink](https://wokwi.com/projects/344891652101374548) - Arduino's standard Blink sketch
+- [Fade](https://wokwi.com/projects/313268562698437186) - Using analogWrite() + gamma correction

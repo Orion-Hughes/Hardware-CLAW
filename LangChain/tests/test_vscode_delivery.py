@@ -11,6 +11,8 @@ from unittest.mock import patch, Mock
 
 from hardware_claw.projects.service import ProjectService, ProjectError, ROOT, atomic_json
 from hardware_claw.adapters.compiler import compile_project, fingerprint, run_process
+from hardware_claw.adapters.compiler import PIO
+from hardware_claw.adapters.build_state import FINGERPRINT_VERSION, environment_fingerprint
 from hardware_claw.tools.templates import load_template, read_template
 from tests.test_projects import DESIGN
 from hardware_claw.projects.vscode_delivery import publish_directory
@@ -55,6 +57,7 @@ class VSCodeTests(unittest.IsolatedAsyncioTestCase):
             path.write_bytes(blob)
             artifacts[name] = {"sha256": hashlib.sha256(blob).hexdigest(), "path": str(path)}
         atomic_json(self.p.meta / "build.json", {"version": state["version"], "source_sha256": fingerprint(state),
+                    "fingerprint_version": FINGERPRINT_VERSION, "environment_sha256": environment_fingerprint(ROOT, PIO),
                     "verdict": "pass", "attempt": attempt, "artifacts": artifacts})
 
     def test_templates_read_only_ids(self):
@@ -95,6 +98,10 @@ class VSCodeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.p.delivery()["delivery_status"], "ready_for_vscode")
         self.p.write_files(3, {"README.md": "new revision"})
         self.assertEqual(self.p.delivery()["delivery_status"], "incomplete")
+        self.assertEqual(self.p.get()["build"]["reused_from_version"], 3)
+        self.p.check_files()
+        self.assertEqual(self.p.export(4)["delivery_status"], "ready_for_vscode")
+        self.p.write_files(4, {"src/main.cpp": self.p.read_file("src/main.cpp")["content"] + "// source change\n"})
         self.assertEqual(self.p.get()["build"], "not_run")
 
     def test_tampered_firmware_and_folder_not_delivered(self):

@@ -11,6 +11,9 @@ from . import limits
 
 
 def error_message(exc):
+    from .token_budget import TokenBudgetLimitExceededError
+    if isinstance(exc, TokenBudgetLimitExceededError):
+        return '达到本轮调用预算：' + str(exc) + ' 已保存的工程保留；没有自动追加预算。'
     name = type(exc).__name__
     if "Limit" in name or "Recursion" in name:
         return f"达到本轮调用预算，已停止（{name}）。请缩小问题范围后重试。"
@@ -71,6 +74,7 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
                                 "input_tokens": (msg.usage_metadata or {}).get("input_tokens"),
                                 "output_tokens": (msg.usage_metadata or {}).get("output_tokens"),
                                 "invalid_tool_calls": len(msg.invalid_tool_calls),
+                                "context_view": msg.response_metadata.get('context_view'),
                                 "elapsed_seconds": round(time.monotonic() - started, 3),
                             })
                             if msg.usage_metadata:

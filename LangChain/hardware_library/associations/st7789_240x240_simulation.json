@@ -1,0 +1,64 @@
+{
+  "schema_version": 3,
+  "id": "st7789_240x240_simulation",
+  "name": "ST7789 240×240（临时仿真配置，非已购实物）",
+  "kind": "display",
+  "inventory": {
+    "owned": false,
+    "quantity": 0,
+    "unit": "块",
+    "evidence": null,
+    "scope": "user_requested_simulation_variant"
+  },
+  "record_role": "simulation_variant",
+  "simulation": {
+    "part_type": "board-st7789",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "SPI_CLOCK": "SCL",
+      "SPI_MOSI": "SDA",
+      "RESET": "RST",
+      "DATA_COMMAND": "DC",
+      "CHIP_SELECT": "CS",
+      "BACKLIGHT": "BL"
+    },
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [
+    "st7789",
+    "gfx",
+    "busio"
+  ],
+  "required_headers": [
+    "SPI.h",
+    "Adafruit_GFX.h",
+    "Adafruit_ST7789.h"
+  ],
+  "document_refs": [
+    "supplements/sources/code/chip-st7789/docs/README.md",
+    "supplements/sources/code/chip-st7789/src/main.c"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "documented_not_tested",
+  "blockers": [],
+  "controls": [],
+  "simulation_supply_v": 3.3,
+  "unknowns": [
+    "实际模型加载、编译、完整绘制与旋转2效果的运行验证"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

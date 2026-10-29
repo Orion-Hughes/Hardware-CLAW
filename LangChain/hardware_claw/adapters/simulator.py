@@ -12,6 +12,7 @@ from .compiler import kill_tree, compiler_env
 from ..projects.service import ROOT, atomic_json, digest, fail
 from ..projects.vscode_delivery import verified_build
 from ..validation.files import check
+from ..validation.report import allows
 from ..validation.observation import OBSERVATION, assess
 from .. import limits
 
@@ -121,8 +122,8 @@ async def simulate(project, expected_version):
         state = project._load()
         project._check_version(state, expected_version)
         project._check_live_files(state)
-        if state["template"] != "vscode" or check(state)["verdict"] != "pass":
-            fail("CHECK_REQUIRED", "仿真需要通过基础检查的vscode工程。")
+        if state["template"] != "vscode" or not allows(check(state), "simulation"):
+            fail("CHECK_REQUIRED", "仿真需要vscode工程且simulation阶段没有阻断项。")
         build, blobs = verified_build(project, state)
         plan = OBSERVATION
         identity = subject(state, build, plan)

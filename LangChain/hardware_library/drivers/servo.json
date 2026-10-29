@@ -1,0 +1,20 @@
+{
+  "id": "servo",
+  "properties_ref": "supplements/sources/code/ESP32Servo/library.properties",
+  "api_refs": [
+    "supplements/sources/code/ESP32Servo/library.properties",
+    "supplements/sources/code/ESP32Servo/README.md",
+    "supplements/sources/code/ESP32Servo/src/ESP32PWM.cpp",
+    "supplements/sources/code/ESP32Servo/src/ESP32PWM.h",
+    "supplements/sources/code/ESP32Servo/src/ESP32Servo.cpp",
+    "supplements/sources/code/ESP32Servo/src/ESP32Servo.h"
+  ],
+  "example_refs": [
+    "supplements/sources/code/ESP32Servo/examples/analogWriteExample/analogWriteExample.ino",
+    "supplements/sources/code/ESP32Servo/examples/Knob/Knob.ino",
+    "supplements/sources/code/ESP32Servo/examples/Multiple-Servo-Example-Arduino/Multiple-Servo-Example-Arduino.ino",
+    "supplements/sources/code/ESP32Servo/examples/PWMExample/PWMExample.ino",
+    "supplements/sources/code/ESP32Servo/examples/Sweep/Sweep.ino",
+    "supplements/sources/code/ESP32Servo/examples/ToneExample/ToneExample.ino"
+  ]
+}

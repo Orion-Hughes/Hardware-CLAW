@@ -1,0 +1,32 @@
+{
+  "id": "neopixel",
+  "properties_ref": "supplements/sources/code/Adafruit_NeoPixel/library.properties",
+  "api_refs": [
+    "supplements/sources/code/Adafruit_NeoPixel/.github/ISSUE_TEMPLATE.md",
+    "supplements/sources/code/Adafruit_NeoPixel/.github/PULL_REQUEST_TEMPLATE.md",
+    "supplements/sources/code/Adafruit_NeoPixel/Adafruit_NeoPixel.cpp",
+    "supplements/sources/code/Adafruit_NeoPixel/Adafruit_NeoPixel.h",
+    "supplements/sources/code/Adafruit_NeoPixel/Adafruit_Neopixel_RP2.cpp",
+    "supplements/sources/code/Adafruit_NeoPixel/CONTRIBUTING.md",
+    "supplements/sources/code/Adafruit_NeoPixel/esp.c",
+    "supplements/sources/code/Adafruit_NeoPixel/esp8266.c",
+    "supplements/sources/code/Adafruit_NeoPixel/kendyte_k210.c",
+    "supplements/sources/code/Adafruit_NeoPixel/library.properties",
+    "supplements/sources/code/Adafruit_NeoPixel/psoc6.c",
+    "supplements/sources/code/Adafruit_NeoPixel/README.md",
+    "supplements/sources/code/Adafruit_NeoPixel/rp2040_pio.h"
+  ],
+  "example_refs": [
+    "supplements/sources/code/Adafruit_NeoPixel/examples/buttoncycler/buttoncycler.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/RGBWstrandtest/RGBWstrandtest.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/simple/simple.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/simple_new_operator/simple_new_operator.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/strandtest/strandtest.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/strandtest_nodelay/strandtest_nodelay.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/strandtest_wheel/strandtest_wheel.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/StrandtestArduinoBLE/StrandtestArduinoBLE.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/StrandtestArduinoBLECallback/StrandtestArduinoBLECallback.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/StrandtestBLE/StrandtestBLE.ino",
+    "supplements/sources/code/Adafruit_NeoPixel/examples/StrandtestBLE_nodelay/StrandtestBLE_nodelay.ino"
+  ]
+}

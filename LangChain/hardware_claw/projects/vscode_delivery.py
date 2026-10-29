@@ -9,7 +9,9 @@ from pathlib import Path
 from .service import TEMP, atomic_json, fail
 from .scaffold import baseline
 from ..adapters.compiler import fingerprint
+from ..adapters.build_state import FINGERPRINT_VERSION
 from ..validation.files import check
+from ..validation.report import allows
 
 
 def sha(data):
@@ -32,7 +34,8 @@ def publish_directory(stage, target):
 
 def verified_build(project, state):
     build = project.build_status(state)
-    if not isinstance(build, dict) or build.get("verdict") != "pass" or build.get("source_sha256") != fingerprint(state):
+    if (not isinstance(build, dict) or build.get("fingerprint_version") != FINGERPRINT_VERSION
+            or build.get("verdict") != "pass" or build.get("source_sha256") != fingerprint(state)):
         fail("BUILD_REQUIRED", "当前版本尚无匹配的真实编译固件，先compile_project。")
     blobs = {}
     for name in ("firmware.bin", "firmware.elf"):
@@ -55,8 +58,8 @@ def export(project, expected_version):
         project._check_version(state, expected_version)
         project._check_live_files(state)
         report = project._summary(state)["file_check"]
-        if not report or report["verdict"] != "pass" or check(state)["verdict"] != "pass":
-            fail("CHECK_REQUIRED", "先对当前版本运行基础检查。")
+        if not allows(report, "delivery") or not allows(check(state), "delivery"):
+            fail("CHECK_REQUIRED", "先对当前版本运行基础检查；delivery阶段不能有阻断项。")
         build, blobs = verified_build(project, state)
         validation = project.validation_status(state)
         reserved = {"OPEN_IN_VSCODE.md", "_hwclaw_manifest.json"}
@@ -66,7 +69,7 @@ def export(project, expected_version):
         blobs[".vscode/extensions.json"] = json.dumps(baseline()["extensions"], indent=2).encode()
         blobs["OPEN_IN_VSCODE.md"] = (
             "# 运行仿真\n\n用VS Code打开本文件所在文件夹，安装Wokwi扩展并激活你自己的授权，"
-            "按F1执行 `Wokwi: Start Simulator`。固件已编译，串口面板应出现启动标记和读数/错误。\n\n"
+            "按F1执行 `Wokwi: Start Simulator`。固件已编译；串口内容取决于生成的固件及观测配置。\n\n"
             f"编译通过；仿真执行：{validation['simulation']}；行为判定：{validation['behavior']}。仅覆盖登记场景，不代表完整功能或真机验证。默认分区/4MB Flash仿真。\n\n"
             "请在工程副本中修改。仿真命令不会重新编译；推荐回到Hardware-CLAW修改并重新导出。"
             "手动重建需安装PlatformIO，执行 `pio run -e esp32s3`，将.pio/build/esp32s3/下"
@@ -74,6 +77,9 @@ def export(project, expected_version):
         ).encode()
         manifest = {"schema_version": 2, "project_id": project.id, "version": expected_version,
                     "source_sha256": build["source_sha256"], "files": {n: sha(b) for n, b in blobs.items()},
+                    "fingerprint_version": build["fingerprint_version"], "build_attempt": build["attempt"],
+                    "built_version": build.get("built_version", build["version"]),
+                    "file_check": report,
                     "build": "pass", "simulation": validation['simulation'], "behavior": validation['behavior'],
                     "evaluation": validation['evaluation']}
         blobs["_hwclaw_manifest.json"] = json.dumps(manifest, ensure_ascii=False, indent=2).encode()
@@ -117,7 +123,7 @@ def delivery(project):
         project._check_live_files(state)
         summary = project._summary(state)
         exported = summary["export"]
-        valid = bool(exported and summary["file_check"] and summary["file_check"]["verdict"] == "pass")
+        valid = bool(exported and allows(summary["file_check"], "delivery") and allows(check(state), "delivery"))
         if valid:
             from .service import ProjectError
             try:

@@ -1,0 +1,31 @@
+{
+  "id": "busio",
+  "properties_ref": "supplements/sources/code/Adafruit_BusIO/library.properties",
+  "api_refs": [
+    "supplements/sources/code/Adafruit_BusIO/.github/ISSUE_TEMPLATE.md",
+    "supplements/sources/code/Adafruit_BusIO/.github/PULL_REQUEST_TEMPLATE.md",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_BusIO_Register.cpp",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_BusIO_Register.h",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_GenericDevice.cpp",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_GenericDevice.h",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_I2CDevice.cpp",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_I2CDevice.h",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_I2CRegister.h",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_SPIDevice.cpp",
+    "supplements/sources/code/Adafruit_BusIO/Adafruit_SPIDevice.h",
+    "supplements/sources/code/Adafruit_BusIO/library.properties",
+    "supplements/sources/code/Adafruit_BusIO/README.md"
+  ],
+  "example_refs": [
+    "supplements/sources/code/Adafruit_BusIO/examples/genericdevice_uartregtest/genericdevice_uartregtest.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/genericdevice_uarttest/genericdevice_uarttest.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/i2c_address_detect/i2c_address_detect.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/i2c_readwrite/i2c_readwrite.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/i2c_registers/i2c_registers.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/i2corspi_register/i2corspi_register.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/spi_modetest/spi_modetest.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/spi_readwrite/spi_readwrite.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/spi_register_bits/spi_register_bits.ino",
+    "supplements/sources/code/Adafruit_BusIO/examples/spi_registers/spi_registers.ino"
+  ]
+}

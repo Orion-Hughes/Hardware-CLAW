@@ -23,6 +23,11 @@ class Dependency(StrictModel):
     version: str = Field(min_length=1, max_length=40)
 
 
+class Implementation(StrictModel):
+    mode: Literal["catalog", "framework"] = Field(default="catalog", description="catalog使用资料库驱动；framework自行使用所选板卡框架API，不强制该外设库；两者均非功能验收。")
+    api_refs: list[str] = Field(default_factory=list, max_length=16, description="framework必填：get_driver_api(detail=full)返回的driver_profile.framework_api_refs中的已登记原文路径；不接收任意文件或URL。")
+
+
 class Design(StrictModel):
     goal: str = Field(min_length=1, max_length=2000)
     simulation_only: Literal[True]
@@ -31,7 +36,8 @@ class Design(StrictModel):
     connections: list[Connection] = Field(max_length=limits.CONNECTIONS)
     dependencies: list[Dependency] = Field(max_length=limits.DEPENDENCIES)
     assumptions: list[str] = Field(max_length=20)
-    pin_defines: dict[str, int] = Field(default_factory=dict, description="源码需显式定义的GPIO常量名称与整数引脚编号；检查器只验证简单整数定义。")
+    implementations: dict[str, Implementation] = Field(default_factory=dict, description="按元件实例（含mcu）选择实现；未声明沿用catalog。更换实现时同步dependencies与源码。")
+    pin_defines: dict[str, int] = Field(default_factory=dict, description="声明GPIO常量名称和引脚编号；仅简单字面量可静态核对，表达式/条件编译记为未确认。")
 
 
 class UpdateDesignInput(StrictModel):

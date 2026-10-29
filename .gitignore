@@ -9,6 +9,7 @@ DS_Api.txt
 **/__pycache__/
 *.pyc
 temp/
+backups/
 workspace/.chat/
 
 # Local generated projects and personal administration (keep on disk)

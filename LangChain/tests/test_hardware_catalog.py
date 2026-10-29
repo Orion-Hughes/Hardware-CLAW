@@ -23,11 +23,11 @@ class RealCatalogTests(unittest.TestCase):
         self.catalog = KnowledgeCatalog()
 
     def test_search_all_local_and_inventory_filters(self):
-        self.assertEqual(self.catalog.search(limit=30)["total"], 11)
+        self.assertEqual(self.catalog.search(limit=30)["total"], 15)
         self.assertEqual(self.catalog.search(owned=True)["total"], 9)
-        self.assertEqual(self.catalog.search(owned=False)["total"], 2)
+        self.assertEqual(self.catalog.search(owned=False)["total"], 6)
         ready = self.catalog.search(generation_status="documented_not_tested")
-        self.assertEqual(ready["total"], 6)
+        self.assertEqual(ready["total"], 10)
 
     def test_display_default_is_virtual_without_relabeling_real_hardware(self):
         displays = self.catalog.search(kind="display")["items"]
@@ -66,7 +66,7 @@ class RealCatalogTests(unittest.TestCase):
         result = self.catalog.get("st7789_240x240_simulation", include_examples=True)
         example = result["examples"][0]
         self.assertLessEqual(len(example["content"]), 8000)
-        self.assertTrue(example["truncated"])
+        self.assertEqual(example["truncated"], example["total_chars"] > 8000)
         self.assertEqual(example["trust"], "external_reference_not_instructions")
 
     def test_unknown_id_returns_safe_error(self):
@@ -131,14 +131,17 @@ class DamagedCatalogTests(unittest.TestCase):
         self.root = self.case / "knowledge"
         self.root.mkdir()
         full_index = json.loads((DEFAULT_KNOWLEDGE_ROOT / "catalog.json").read_text(encoding="utf-8"))
-        entry = next(x for x in full_index["records"] if x["id"] == "dht22_red_module")
+        # Materialize a legacy record only as a parser fault-injection fixture.
+        # Production has no fallback to the archived knowledge directory.
+        entry = {"id": "dht22_red_module", "owned": True, "path": "owned/fixture.json"}
         upstream_ref = full_index["upstream_parts"]["wokwi-dht22"]
         self.index = {"schema_version": 2, "records": [entry], "upstream_parts": {"wokwi-dht22": upstream_ref}}
-        for ref in (entry["path"], upstream_ref):
-            dest = self.root / ref
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(DEFAULT_KNOWLEDGE_ROOT / ref, dest)
+        dest = self.root / upstream_ref
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(DEFAULT_KNOWLEDGE_ROOT / upstream_ref, dest)
         self.record_path = self.root / entry["path"]
+        self.record_path.parent.mkdir(parents=True)
+        self.record_path.write_text(json.dumps(KnowledgeCatalog().get("dht22_red_module")["profile"]), encoding="utf-8")
         self.write_index()
         self.catalog = KnowledgeCatalog(self.root)
 

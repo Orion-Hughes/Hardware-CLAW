@@ -24,6 +24,7 @@ from ..contracts.simulation_mcp import InspectSimulationInput
 from ..projects.service import ROOT, ProjectError, atomic_json, fail, safe_path
 from ..projects.vscode_delivery import verified_build
 from ..validation.files import check
+from ..validation.report import allows
 from ..catalog import KnowledgeCatalog
 from .. import limits
 from .mcp_backend import select_backend
@@ -265,8 +266,8 @@ async def inspect(project, expected_version, actions):
         state = project._load()
         project._check_version(state, expected_version)
         project._check_live_files(state)
-        if state["template"] != "vscode" or check(state)["verdict"] != "pass":
-            fail("CHECK_REQUIRED", "MCP需要通过基础检查的VS Code工程。")
+        if state["template"] != "vscode" or not allows(check(state), "simulation"):
+            fail("CHECK_REQUIRED", "MCP需要VS Code工程且simulation阶段没有阻断项。")
         build, blobs = verified_build(project, state)
         validate_controls(state, request.actions)
         validate_config(state["files"]["wokwi.toml"])

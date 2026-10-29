@@ -1,0 +1,60 @@
+{
+  "schema_version": 3,
+  "id": "ws2812_ring_8",
+  "name": "WS2812 5V 8灯灯环（3P）",
+  "kind": "led",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": "wokwi-led-ring",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "DATA_IN": "DIN"
+    },
+    "proposed_attrs": {
+      "pixels": "8"
+    }
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [
+    "neopixel"
+  ],
+  "required_headers": [
+    "Adafruit_NeoPixel.h"
+  ],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/parts/wokwi-led-ring.md",
+    "supplements/sources/neopixel-best-practices.html",
+    "supplements/sources/neopixel-power.html"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "documented_not_tested",
+  "blockers": [],
+  "controls": [],
+  "simulation_supply_v": 5,
+  "unknowns": [
+    "采购芯片版本、真实颜色顺序和电流预算",
+    "真实电平转换/供电措施",
+    "固定库版本实际编译和仿真结果"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

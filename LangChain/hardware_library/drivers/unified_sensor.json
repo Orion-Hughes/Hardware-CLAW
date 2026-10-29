@@ -1,0 +1,13 @@
+{
+  "id": "unified_sensor",
+  "properties_ref": "upstream/libraries/Adafruit_Sensor/library.properties",
+  "api_refs": [
+    "upstream/libraries/Adafruit_Sensor/Adafruit_Sensor.cpp",
+    "upstream/libraries/Adafruit_Sensor/Adafruit_Sensor.h",
+    "upstream/libraries/Adafruit_Sensor/library.properties",
+    "upstream/libraries/Adafruit_Sensor/README.md"
+  ],
+  "example_refs": [
+    "upstream/libraries/Adafruit_Sensor/examples/sensortest/sensortest.ino"
+  ]
+}

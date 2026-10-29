@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <title>Learn to Control Servo motor using PWM - Wokwi Style</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preload" as="style" href="/assets/built/screen.css?v=FnB2fxM57KctsQub" />
+    <link rel="preload" as="script" href="/assets/built/casper.js?v=Wk5PDoc8JwHVIPbN" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/built/screen.css?v=FnB2fxM57KctsQub" />
+
+    <meta name="description" content="Experiment with PWM and servo angle to understand the relationship and explore other aspects of Servo motor control in a hands-on approach.">
+    <link rel="icon" href="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2019/10/github-avatar.png" type="image/png">
+    <link rel="canonical" href="https://blog.wokwi.com/learn-servo-motor-using-wokwi-logic-analyzer/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <meta property="og:site_name" content="Wokwi Makers Blog">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Learn to Control Servo motor using PWM - Wokwi Style">
+    <meta property="og:description" content="Experiment with PWM and servo angle to understand the relationship and explore other aspects of Servo motor control in a hands-on approach.">
+    <meta property="og:url" content="https://blog.wokwi.com/learn-servo-motor-using-wokwi-logic-analyzer/">
+    <meta property="og:image" content="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/01/Servo-motor-cover--1-.png">
+    <meta property="article:published_time" content="2023-03-05T16:25:34.000Z">
+    <meta property="article:modified_time" content="2023-03-05T16:25:34.000Z">
+    <meta property="article:tag" content="Logic Analyzer">
+    <meta property="article:tag" content="PWM">
+    <meta property="article:tag" content="servo">
+    
+    <meta property="article:publisher" content="https://www.facebook.com/Wokwi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Learn to Control Servo motor using PWM - Wokwi Style">
+    <meta name="twitter:description" content="Experiment with PWM and servo angle to understand the relationship and explore other aspects of Servo motor control in a hands-on approach.">
+    <meta name="twitter:url" content="https://blog.wokwi.com/learn-servo-motor-using-wokwi-logic-analyzer/">
+    <meta name="twitter:image" content="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/01/Servo-motor-cover--1-.png">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Puneeth">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="Logic Analyzer, PWM, servo">
+    <meta name="twitter:site" content="@WokwiMakes">
+    <meta property="og:image:width" content="1128">
+    <meta property="og:image:height" content="686">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Wokwi Makers Blog",
+        "url": "https://blog.wokwi.com/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2021/03/logo-1.svg",
+            "width": 69.532,
+            "height": 16.413
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Puneeth",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/01/2023-01-09_20h51_06.png",
+            "width": 640,
+            "height": 690
+        },
+        "url": "https://blog.wokwi.com/author/puneeth/",
+        "sameAs": []
+    },
+    "headline": "Learn to Control Servo motor using PWM - Wokwi Style",
+    "url": "https://blog.wokwi.com/learn-servo-motor-using-wokwi-logic-analyzer/",
+    "datePublished": "2023-03-05T16:25:34.000Z",
+    "dateModified": "2023-03-05T16:25:34.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/01/Servo-motor-cover--1-.png",
+        "width": 1128,
+        "height": 686
+    },
+    "keywords": "Logic Analyzer, PWM, servo",
+    "description": "Experiment with PWM and servo angle to understand the relationship and explore other aspects of Servo motor control in a hands-on approach.",
+    "mainEntityOfPage": "https://blog.wokwi.com/learn-servo-motor-using-wokwi-logic-analyzer/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 6.72">
+    <link rel="alternate" type="application/rss+xml" title="Wokwi Makers Blog" href="https://blog.wokwi.com/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.72/umd/portal.min.js" data-i18n="true" data-ghost="https://blog.wokwi.com/" data-key="94cbb031e2f05d83617aa0d1af" data-api="https://blog.wokwi.com/ghost/api/content/" data-locale="en" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.9/umd/sodo-search.min.js" data-key="94cbb031e2f05d83617aa0d1af" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.9/umd/main.css" data-sodo-search="https://blog.wokwi.com/" data-locale="en" crossorigin="anonymous"></script>
+    
+    <link href="https://blog.wokwi.com/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=ShRHxgy4po8zN-Wf"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=WwnU9jw5ancNC8Gc">
+    <script defer src="/public/member-attribution.min.js?v=AKG4hWena9j3yX3I"></script>
+    <script defer src="/public/ghost-stats.min.js?v=vFcCUf6ZQ0Hyhc8h" data-stringify-payload="false" data-datasource="analytics_events" data-storage="localStorage" data-host="/.ghost/analytics/api/v1/page_hit"  tb_site_uuid="c5511637-d67a-4fe3-84d2-80e83a63eb11" tb_post_uuid="6f261684-dcde-4044-b6f1-a71e4d8509fa" tb_post_type="post" tb_member_uuid="undefined" tb_member_status="undefined" tb_gift_link=""></script><style>:root {--ghost-accent-color: #15171A;}</style>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism.min.css">
+<link href="//cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+<style>
+    pre[class*=language-] {
+        margin: 1.75em 0;
+    }
+</style>
+
+<!-- table styling -->
+<style>
+    .gh-content table th {
+        color: var(--color-darkgrey);
+    	font-size: 1.2rem;
+    	font-weight: 700;
+    	letter-spacing: .2px;
+	    text-align: left;
+	    text-transform: uppercase;
+	    background-color: #f4f8fb;
+    }
+    
+    .gh-content table td, .gh-content table th {
+    	padding: 6px 12px;
+    	border: 1px solid #e2ecf3;
+    }
+    
+	.gh-content table tr:nth-child(2n) {
+    	background-color: #f6f8fa;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .gh-content table tr:nth-child(2n) {
+            background-color: #333;
+        }
+    }
+</style>
+
+<!-- convertkit form -->
+<style>
+    .formkit-form { margin-top: 32px; line-height: initial; }
+</style>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-150413053-1"></script>
+<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-150413053-1');</script>
+
+</head>
+<body class="post-template tag-logic-analyzer-2 tag-pwm tag-servo is-head-left-logo has-cover">
+<div class="viewport">
+
+    <header id="gh-head" class="gh-head outer">
+        <div class="gh-head-inner inner">
+            <div class="gh-head-brand">
+                <a class="gh-head-logo" href="https://blog.wokwi.com">
+                        <img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2021/03/logo-1.svg" alt="Wokwi Makers Blog">
+                </a>
+                <button class="gh-search gh-icon-btn" aria-label="Search this site" data-ghost-search><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></button>
+                <button class="gh-burger" aria-label="Main Menu"></button>
+            </div>
+
+            <nav class="gh-head-menu">
+                <ul class="nav">
+    <li class="nav-home"><a href="https://blog.wokwi.com/">Home</a></li>
+    <li class="nav-wokwi"><a href="https://wokwi.com/?utm_medium=blog&utm_source=wokwi-blog">Wokwi</a></li>
+</ul>
+
+            </nav>
+
+            <div class="gh-head-actions">
+                    <button class="gh-search gh-icon-btn" aria-label="Search this site" data-ghost-search><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></button>
+                    <div class="gh-head-members">
+                                <a class="gh-head-link" href="#/portal/signin" data-portal="signin">Sign in</a>
+                                <a class="gh-head-button" href="#/portal/signup" data-portal="signup">Subscribe</a>
+                    </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="site-content">
+        
+
+
+
+<main id="site-main" class="site-main">
+<article class="article post tag-logic-analyzer-2 tag-pwm tag-servo ">
+
+    <header class="article-header gh-canvas">
+
+        <div class="article-tag post-card-tags">
+                <span class="post-card-primary-tag">
+                    <a href="/tag/logic-analyzer-2/">Logic Analyzer</a>
+                </span>
+        </div>
+
+        <h1 class="article-title">Learn to Control Servo motor using PWM - Wokwi Style</h1>
+
+            <p class="article-excerpt">Experiment with PWM and servo angle to understand the relationship and explore other aspects of Servo motor control in a hands-on approach.</p>
+
+        <div class="article-byline">
+        <section class="article-byline-content">
+
+            <ul class="author-list instapaper_ignore">
+                <li class="author-list-item">
+                    <a href="/author/puneeth/" class="author-avatar" aria-label="Read more of Puneeth">
+                        <img class="author-profile-image" src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w300/2023/01/2023-01-09_20h51_06.png" alt="Puneeth" loading="eager" />
+                    </a>
+                </li>
+            </ul>
+
+            <div class="article-byline-meta">
+                <h4 class="author-name"><a href="/author/puneeth/">Puneeth</a></h4>
+                <div class="byline-meta-content">
+                    <time class="byline-meta-date" datetime="2023-03-05">05 Mar 2023</time>
+                        <span class="byline-reading-time"><span class="bull">&bull;</span> 7 min read</span>
+                </div>
+            </div>
+
+        </section>
+        <a href="#/share" class="gh-button gh-button-share">Share</a>
+        </div>
+
+            <figure class="article-image">
+                <img
+                    class="gh-feature-image"
+                    srcset="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w300/2023/01/Servo-motor-cover--1-.png 300w,
+                            https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w600/2023/01/Servo-motor-cover--1-.png 600w,
+                            https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w1000/2023/01/Servo-motor-cover--1-.png 1000w,
+                            https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/01/Servo-motor-cover--1-.png 2000w"
+                    sizes="(min-width: 1400px) 1400px, 92vw"
+                    src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/01/Servo-motor-cover--1-.png"
+                    alt="Learn to Control Servo motor using PWM - Wokwi Style"
+                    fetchpriority="high"
+                    loading="eager"
+                />
+                    <figcaption>Servo motors: the power behind precision movement</figcaption>
+            </figure>
+
+    </header>
+
+    <section class="gh-content gh-canvas">
+        <p></p><h2 id="introduction">Introduction</h2><p>The Servo motor is a versatile device used for motion control in electromechanical projects. You can use it in various fields, including robotics, medical devices, and security. </p><p>The Servo motor uses only one IO pin to control the position. You can understand the basics of servo motor control by monitoring it using the Wokwi logic analyzer. The logic analyzer is a simulated instrument that shows the voltage status on the pins, measures pulse widths, observes timings between two events, and more!</p><p>Let's get started!</p><div class="kg-card kg-callout-card kg-callout-card-green"><div class="kg-callout-emoji">💡</div><div class="kg-callout-text">This article is part of the blog series on understanding UART, SPI, I2C, PWM, WS2812 protocols, and more in a hands-on approach using the logic analyzer.</div></div><hr><h2 id="basics-of-a-servo-motor">Basics of a Servo Motor</h2><p></p><h3 id="how-does-a-servo-motor-work">How does a Servo motor work?</h3><p>A servo motor is an electromechanical device. It has an electronic board that accepts <a href="https://blog.wokwi.com/explore-pwm-with-logic-analyzer/">PWM</a> (Pulse Width Modulation) signals and measures its on-time pulse width. The servo motor also has a potentiometer that helps in keeping track of the shaft position. </p><p>The embedded board continuously detects and corrects the unintended shift in the shaft position. The target position is maintained by continuous error correction between the shaft position and the user input.</p><p>In the image below, you see a very common hobby servo motor. It has three pins:</p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/03/Servo-image-with-3-pins.png" class="kg-image" alt loading="lazy" width="550" height="280"></figure><!--kg-card-begin: markdown--><table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Wire Color</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PWM</td>
+<td>Yellow</td>
+<td>Input control signal for the motor</td>
+</tr>
+<tr>
+<td>V+</td>
+<td>Red</td>
+<td>Positive supply terminal</td>
+</tr>
+<tr>
+<td>Ground</td>
+<td>Brown</td>
+<td>Ground terminal</td>
+</tr>
+</tbody>
+</table>
+<!--kg-card-end: markdown--><p></p><p>To control the servo motor, you send a PWM signal with a frequency of <code>50 Hz</code>. The usual frequency can be between <code>40 Hz</code> and <code>400 Hz</code>.</p><div class="kg-card kg-callout-card kg-callout-card-green"><div class="kg-callout-emoji">💡</div><div class="kg-callout-text">Why would one pick <code>40 Hz</code> over <code>400 Hz</code>? (or viceversa)<br><br>As you increase the frequency of the PWM signal, the time given for the servo to reach new posistion reduces. <code>400 Hz</code> implies a latency of <code>2.5 ms</code> versus <code>25 ms</code> latency ( <code>40 Hz</code> ). It's a tradeoff between better precision( <code>40 Hz</code> ) and faster operation( <code>400 Hz</code> ).</div></div><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/2023-02-26_10h09_14.png" class="kg-image" alt loading="lazy" width="1180" height="570"></figure><p></p><p>You can rotate the servo motor shaft from <code>0°</code><strong> </strong>to <code>180°</code> by varying the PWM pulse width from <code>1 ms</code> to <code>2 ms</code>.  </p><p></p><figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/ServoGif.gif" class="kg-image" alt loading="lazy" width="1041" height="593"><figcaption>A Typical Servo motor application - Controlling a robotic arm</figcaption></figure><p></p><p>Here’s a cheat sheet for the shaft’s position in a typical hobby servo motor:</p><ul><li>"<code>0°</code>" (<code>~1 ms</code> pulse)</li><li>"<code>90°</code>” (<code>~1.5 ms</code> pulse)</li><li>"<code>180°</code>" (<code>~2 ms</code> pulse)</li></ul><div class="kg-card kg-callout-card kg-callout-card-pink"><div class="kg-callout-emoji">💡</div><div class="kg-callout-text"><strong>Did you know? </strong><br><br><em>Continuous servo motors</em> are a type of servo motor that can rotate a full 360 degrees continuously in either direction rather than moving to only specific positions. In this case, you can control the direction but not the position using PWM.</div></div><h2 id="monitoring-the-servo-motor-signal-on-the-wokwi-logic-analyzer">Monitoring the Servo motor signal on the Wokwi logic analyzer</h2><p></p><p>You can start faster with a pre-built <a href="https://wokwi.com/projects/348294774061531730?ref=blog.wokwi.com">Servo motor project</a>. The control signal of the servo motor is connected to <code>Pin 9</code> of the Arduino and <code>D0</code> of the logic analyzer. The brown wire goes to  ground, while the red wire is connected to Arduino’s <code>5 V</code> source. </p><div class="kg-card kg-callout-card kg-callout-card-green"><div class="kg-callout-emoji">💡</div><div class="kg-callout-text">For an easy step-by-step procedure for setting up the logic analyzer and reading the data, please look at the Introduction <a href="https://blog.wokwi.com/wokwi-logic-analyzer-uart-part-1/">article</a>.</div></div><p></p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2022/12/image-1.png" class="kg-image" alt loading="lazy" width="778" height="536"></figure><p></p><p>Let’s drive the stepper motor to <code>0°</code>, <code>90°</code>, and <code>180°</code> and observe the waveform on the Servo control signal pin. <br></p><h3 id="case-1-servo-at-0%C2%B0-position">Case 1: Servo at 0° position<br></h3><p>Copy and paste the below code into the editor window of the prebuilt project above.<br></p><pre><code class="language-Arduino">#include &lt;Servo.h&gt;
+
+Servo myservo;  // create servo object to control a servo
+
+int pos = 0;    // variable to store the servo position
+
+void setup() {
+  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+}
+
+void loop() {
+  myservo.write(0);
+}</code></pre><p></p><p>The line below sets the servo motor's shaft position.</p><pre><code class="language-Arduino">myservo.write(0);
+</code></pre><p></p><p>Run the simulation and observe the servo motor’s shaft position. It’s now in the extreme left position, as shown in the image below.</p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/Servo-image-with-pins.png" class="kg-image" alt loading="lazy" width="267" height="139"></figure><p><br>Observing the pulse width of the PWM signal using the logic analyzer data shows that the ON width is about <code>0.5 ms</code>.<br></p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/on-width-0.5-ms.png" class="kg-image" alt loading="lazy" width="1370" height="151"></figure><p><br>The frequency is about <code>50 Hz</code>.<br></p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/frequency-50Hz.png" class="kg-image" alt loading="lazy" width="909" height="167"></figure><div class="kg-card kg-callout-card kg-callout-card-grey"><div class="kg-callout-emoji">💡</div><div class="kg-callout-text">You might have heard PWM and PPM terminologies associated with the Servo motor. PPM stands for Pulse Position Modulation. <br><br>Did you notice that the servo motor angle only depends on the <code>ON</code> time of the signal? Even if you change the frequency from <code>50 Hz</code> to <code>100 Hz</code>, the servo motor angle will remain the same. Hence servo motor is not a true PWM controlled device.<br><br>PWM conveys the information on the power delivered which doesnt reflect in the servo motor position. <br><br>take an example - A PWM signal with <code>2 ms</code> on time and <code>2.5 ms</code> period ( <code>80%</code> dutycycle), delivers more power than a PWM signal with <code>2 ms</code> on time and a <code>50 ms</code> period ( <code>5%</code> duty cycle). <br><br>The servo would resond in the same way for both PWM signals. <br></div></div><p></p><h3 id="case-2-servo-at-90%C2%B0-position">Case 2: Servo at 90° position<br></h3><p>Update the parameter you send in the <code>myservo.write</code> function to turn the servo motor by <code>90°</code>. </p><pre><code class="language-Arduino">myservo.write(90);</code></pre><p></p><p>Rerun the simulation and look at the servo motor position. It’s now in the center position.</p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/Servo-image-with-rotated-horn.png" class="kg-image" alt loading="lazy" width="380" height="152"></figure><p><br></p><p>Let’s now observe the pulse width of the PWM signal using the logic analyzer data that corresponds to the center position of the motor. <br></p><p>The ON width is about <code>1.5 ms</code>. <br></p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/on-width-1.5-ms.png" class="kg-image" alt loading="lazy" width="890" height="115"></figure><p><br>The frequency is still <code>50 Hz</code> (<code>20 ms</code>). The frequency never change. Only the PWM on time pulse width changes.<br></p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/frequency-50Hz-2.png" class="kg-image" alt loading="lazy" width="1011" height="103"></figure><p></p><h3 id="case-3-servo-at-180%C2%B0-position">Case 3: Servo at 180° position</h3><p></p><p>Update the parameter you send in the <code>myservo.write</code> function to turn the servo motor by <code>180°</code>. </p><pre><code class="language-Arduino">myservo.write(180);</code></pre><p><br>Rerun the simulation and look at the servo motor position. It has now moved to the extreme right position.</p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/Servo-image-180.png" class="kg-image" alt loading="lazy" width="310" height="174"></figure><p><br></p><p>Now, please look at the PWM signal's pulse width using the logic analyzer data that corresponds to the extreme right position of the motor shaft.<br></p><p>The ON width is <code>2.4 ms</code>.<br></p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/on-width-2.4-ms.png" class="kg-image" alt loading="lazy" width="669" height="117"></figure><p><br>The frequency is still <code>50 Hz</code> (<code>20 ms</code>). No change in the frequency. <br></p><figure class="kg-card kg-image-card"><img src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/02/frequency-50Hz-3.png" class="kg-image" alt loading="lazy" width="1039" height="101"></figure><div class="kg-card kg-callout-card kg-callout-card-green"><div class="kg-callout-emoji">💡</div><div class="kg-callout-text"><strong>Did you notice?</strong><br><br>The pulse width expected was <code>2 ms</code> for a rotation of <code>180°</code>, but we measured <code>2.4 ms</code> here. The actual pulse widths vary by type and make of servo motor. You may even notice the differences in the same batch of servo motors. Depending on the precision you need, you may have to <a href="https://www.hackster.io/jeremy-lindsay/calibrating-my-servos-fa27ce?ref=blog.wokwi.com">calibrate</a> the servo motor first, one time.</div></div><h2 id="bonus-sectionservo-motor-with-feedback"><br>Bonus section - Servo motor with feedback</h2><p>A servo motor includes feedback circuitry that helps the motor to continuously adjust the shaft position. Specific servo motors also feature an additional fourth line that outputs an analog value indicating the current shaft position.</p><p>The servo motor controls the position of the shaft based on the PWM pulse width, but why should I still read the feedback if the servo control circuitry already takes care of position precision?</p><p>The additional feedback signal is useful in many situations. </p><p><strong>Insufficient power </strong>- Insufficient power to drive the load can cause the servo motor to stop at a position other than the intended one. </p><p>Why would this happen? This can occur if the power supply to the motor is not strong enough to overcome the resistance of the load, causing the motor to stall or stop before reaching the desired position. </p><p>Other factors that can cause this issue include improper voltage⚡ or current settings, mechanical issues with the motor or load, and electronic problems with the control circuit.</p><p><strong>Wiring issue</strong> - One potential issue that could cause the servo motor to stop at the wrong position due to insufficient power is a disconnected control wire. This can be difficult to detect in a three-wire servo as there is no direct way to check the connection status.</p><p><strong>Save Time</strong> - Here is the snippet of the prebuilt project. We set the target position using <code>myservo.write()</code> . Did you notice that we had given a delay right after setting the position?</p><pre><code class="language-Arduino">    myservo.write(pos);    // tell servo to go to position in variable 'pos'
+    delay(15);             // waits 15ms for the servo to reach the position</code></pre><p>You know what, the delay is important for our servo motor. It needs enough time to get to where it's going. If we don't give it enough time, it won't reach the target position, and that's just no good. Imagine not activating a switch or only getting a partial movement from a robotic arm in a complex project. 😨</p><p>But, on the other hand, if we give it too much time, we're just wasting time , and the whole operation will be slower. So, it's all about finding that sweet spot. 😉</p><p>Feedback pin can be a lifesaver in this situation. Here's the deal, you set the target position and then start keeping an eye on the feedback pin. Once you're sure that the servo has reached where it's supposed to be, you can move on to the next step. This way, you ensure that your project works efficiently. <br></p><h2 id="conclusion">Conclusion</h2><p>In this article, we observed the Servo Motor data line using the Wokwi logic analyzer. You have learned how a servo motor work and how the control signal changes for the desired rotation angle now debug the servo motor control signal in your next project. </p><p>The article demonstrated the relationship between the drive sginal's “ON” time and motor's shaft position.</p><p>If you have any feedback or suggestions to make the simulator more helpful, you can always connect with us on <a href="https://www.facebook.com/groups/wokwi/?mibextid=HsNCOg">Facebook</a>, <a href="https://discord.com/invite/e5yFaayXkK?ref=blog.wokwi.com">Discord</a>, and <a href="https://twitter.com/wokwimakes?ref=blog.wokwi.com">Twitter</a>.</p>
+    </section>
+
+
+</article>
+</main>
+
+    <section class="footer-cta outer">
+        <div class="inner">
+            <h2 class="footer-cta-title">Sign up for more like this.</h2>
+            <a class="footer-cta-button" href="#/portal" data-portal>
+                <div class="footer-cta-input">Enter your email</div>
+                <span>Subscribe</span>
+            </a>
+        </div>
+    </section>
+
+
+
+            <aside class="read-more-wrap outer">
+                <div class="read-more inner">
+                        
+<article class="post-card post">
+
+    <a class="post-card-image-link" href="/explore-pwm-with-logic-analyzer/">
+
+        <img class="post-card-image"
+            srcset="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w300/2023/01/Pwm3-1.png 300w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w600/2023/01/Pwm3-1.png 600w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w1000/2023/01/Pwm3-1.png 1000w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/01/Pwm3-1.png 2000w"
+            sizes="(max-width: 1000px) 400px, 800px"
+            src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w600/2023/01/Pwm3-1.png"
+            alt="Learn PWM signal using Wokwi Logic Analyzer"
+            loading="lazy"
+        />
+
+
+    </a>
+
+    <div class="post-card-content">
+
+        <a class="post-card-content-link" href="/explore-pwm-with-logic-analyzer/">
+            <header class="post-card-header">
+                <div class="post-card-tags">
+                </div>
+                <h2 class="post-card-title">
+                    Learn PWM signal using Wokwi Logic Analyzer
+                </h2>
+            </header>
+                <div class="post-card-excerpt">Experience PWM duty cycle and frequency in a visual way and level up your signal analysis skills</div>
+        </a>
+
+        <footer class="post-card-meta">
+            <time class="post-card-meta-date" datetime="2023-01-22">22 Jan 2023</time>
+                <span class="post-card-meta-length">8 min read</span>
+        </footer>
+
+    </div>
+
+</article>
+                        
+<article class="post-card post">
+
+    <a class="post-card-image-link" href="/learn-arduino-using-ai-chatgpt/">
+
+        <img class="post-card-image"
+            srcset="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w300/2023/01/ai-helps-users-with-suggestions-and-solutions-wokwi.png 300w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w600/2023/01/ai-helps-users-with-suggestions-and-solutions-wokwi.png 600w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w1000/2023/01/ai-helps-users-with-suggestions-and-solutions-wokwi.png 1000w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2023/01/ai-helps-users-with-suggestions-and-solutions-wokwi.png 2000w"
+            sizes="(max-width: 1000px) 400px, 800px"
+            src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w600/2023/01/ai-helps-users-with-suggestions-and-solutions-wokwi.png"
+            alt="I tried ChatGPT for Arduino - It’s Surprising"
+            loading="lazy"
+        />
+
+
+    </a>
+
+    <div class="post-card-content">
+
+        <a class="post-card-content-link" href="/learn-arduino-using-ai-chatgpt/">
+            <header class="post-card-header">
+                <div class="post-card-tags">
+                </div>
+                <h2 class="post-card-title">
+                    I tried ChatGPT for Arduino - It’s Surprising
+                </h2>
+            </header>
+                <div class="post-card-excerpt">Learn how to use AI’s help to learn Arduino programming faster, find bugs, and understand programs line-by-line!</div>
+        </a>
+
+        <footer class="post-card-meta">
+            <time class="post-card-meta-date" datetime="2023-01-09">09 Jan 2023</time>
+                <span class="post-card-meta-length">16 min read</span>
+        </footer>
+
+    </div>
+
+</article>
+                        
+<article class="post-card post">
+
+    <a class="post-card-image-link" href="/wokwi-logic-analyzer-uart-part-2/">
+
+        <img class="post-card-image"
+            srcset="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w300/2022/12/Uartpart2.png 300w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w600/2022/12/Uartpart2.png 600w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w1000/2022/12/Uartpart2.png 1000w,
+                    https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/2022/12/Uartpart2.png 2000w"
+            sizes="(max-width: 1000px) 400px, 800px"
+            src="https://cdn.getmidnight.com/84f7b02a8128f5f5775611244c24b941/size/w600/2022/12/Uartpart2.png"
+            alt="Analyzing UART Messages on Wokwi Logic Analyzer Part 2"
+            loading="lazy"
+        />
+
+
+    </a>
+
+    <div class="post-card-content">
+
+        <a class="post-card-content-link" href="/wokwi-logic-analyzer-uart-part-2/">
+            <header class="post-card-header">
+                <div class="post-card-tags">
+                </div>
+                <h2 class="post-card-title">
+                    Analyzing UART Messages on Wokwi Logic Analyzer Part 2
+                </h2>
+            </header>
+                <div class="post-card-excerpt">What&#39;s baud rate, parity, start and stop bits? Join us for a journey diving deep into UART internals</div>
+        </a>
+
+        <footer class="post-card-meta">
+            <time class="post-card-meta-date" datetime="2023-01-04">04 Jan 2023</time>
+                <span class="post-card-meta-length">11 min read</span>
+        </footer>
+
+    </div>
+
+</article>
+                </div>
+            </aside>
+
+
+
+    </div>
+
+    <footer class="site-footer outer">
+        <div class="inner">
+            <section class="copyright"><a href="https://blog.wokwi.com">Wokwi Makers Blog</a> &copy; 2026</section>
+            <div class="site-footer-center">
+                <div class="site-footer-social-links">
+                        <a href="https://x.com/WokwiMakes" target="_blank" rel="noopener" aria-label="X">
+<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18.2439 2.25H21.5519L14.3249 10.51L22.8269 21.75H16.1699L10.9559 14.933L4.98991 21.75H1.67991L9.40991 12.915L1.25391 2.25H8.07991L12.7929 8.481L18.2439 2.25ZM17.0829 19.77H18.9159L7.08391 4.126H5.11691L17.0829 19.77Z" fill="currentColor"/>
+</svg>                        </a>
+                        <a href="https://www.facebook.com/Wokwi" target="_blank" rel="noopener" aria-label="Facebook">
+<svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M23.9981 11.9991C23.9981 5.37216 18.626 0 11.9991 0C5.37216 0 0 5.37216 0 11.9991C0 17.9882 4.38789 22.9522 10.1242 23.8524V15.4676H7.07758V11.9991H10.1242V9.35553C10.1242 6.34826 11.9156 4.68714 14.6564 4.68714C15.9692 4.68714 17.3424 4.92149 17.3424 4.92149V7.87439H15.8294C14.3388 7.87439 13.8739 8.79933 13.8739 9.74824V11.9991H17.2018L16.6698 15.4676H13.8739V23.8524C19.6103 22.9522 23.9981 17.9882 23.9981 11.9991Z"/></svg>                        </a>
+                </div>
+                <nav class="site-footer-nav">
+                    
+                </nav>
+            </div>
+            <div class="gh-powered-by"><a href="https://ghost.org/" target="_blank" rel="noopener">Powered by Ghost</a></div>
+        </div>
+    </footer>
+
+</div>
+
+    <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="pswp__bg"></div>
+
+    <div class="pswp__scroll-wrap">
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/assets/built/casper.js?v=Wk5PDoc8JwHVIPbN" defer></script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/prism.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/autoloader/prism-autoloader.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+<!-- convertkit form -->
+<script>
+    (function() {
+        const container = document.querySelector('.post-full-content');
+        const script = document.createElement('script');
+        script.src = 'https://wokwi.ck.page/376ddc373b/index.js';
+        script.setAttribute('async', 'async');
+        script.setAttribute('data-uid', '376ddc373b');
+        container.appendChild(script);
+    })();
+</script>
+
+<!-- members analytics -->
+<script>
+Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form){
+    function submitHandler(event) {
+        form.removeEventListener('submit', submitHandler);
+		gtag('event', 'subscribe_click', {event_category: 'members'});
+    }
+    form.addEventListener('submit', submitHandler);
+});
+</script>
+
+</body>
+</html>

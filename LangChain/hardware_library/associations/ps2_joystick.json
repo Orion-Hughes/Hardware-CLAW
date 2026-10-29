@@ -1,0 +1,85 @@
+{
+  "schema_version": 3,
+  "id": "ps2_joystick",
+  "name": "PS2双轴按键摇杆模块",
+  "kind": "input",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": "wokwi-analog-joystick",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "VERTICAL": "VERT",
+      "HORIZONTAL": "HORZ",
+      "BUTTON": "SEL"
+    },
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [],
+  "required_headers": [
+    "Arduino.h"
+  ],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md",
+    "supplements/sources/arduino-adc.html"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "documented_not_tested",
+  "blockers": [],
+  "controls": [
+    {
+      "name": "x",
+      "type": "float",
+      "range": [
+        -1,
+        1
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md"
+    },
+    {
+      "name": "y",
+      "type": "float",
+      "range": [
+        -1,
+        1
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md"
+    },
+    {
+      "name": "pressed",
+      "type": "int",
+      "range": [
+        0,
+        1
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md"
+    }
+  ],
+  "simulation_supply_v": 3.3,
+  "unknowns": [
+    "实物VRx/VRy方向和针序",
+    "实物模块供电兼容性及ADC标定",
+    "当前仿真平台的中心值和范围验证"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

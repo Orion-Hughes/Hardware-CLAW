@@ -1,0 +1,51 @@
+{
+  "schema_version": 3,
+  "id": "electret_microphone",
+  "name": "4.5×2.2mm驻极体咪头（采购文字灵敏度52dB）",
+  "kind": "audio_input",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": null,
+    "candidate_part_type": "wokwi-microphone",
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [],
+  "required_headers": [],
+  "document_refs": [
+    "supplements/sources/electret-reference.html"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "blocked",
+  "blockers": [
+    "wokwi-microphone只有未文档化的1/2端点，输入与模型行为未确认。",
+    "模拟偏置/放大链路、输出范围及采样方式未定义。"
+  ],
+  "controls": [],
+  "simulation_supply_v": null,
+  "unknowns": [
+    "确切胶囊型号、极性、偏置与灵敏度单位",
+    "前置放大/滤波/ADC接口和采样参数",
+    "可操作的仿真声源和模型行为说明"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": 3,
+  "id": "sg90_180",
+  "name": "SG90 9g 180度舵机",
+  "kind": "actuator",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": "wokwi-servo",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "V+",
+      "GROUND": "GND",
+      "CONTROL": "PWM"
+    },
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [
+    "servo"
+  ],
+  "required_headers": [
+    "ESP32Servo.h"
+  ],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/parts/wokwi-servo.md",
+    "supplements/sources/towerpro-sg90.html",
+    "supplements/sources/code/ESP32Servo/examples/Sweep/Sweep.ino"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "documented_not_tested",
+  "blockers": [],
+  "controls": [],
+  "simulation_supply_v": 5,
+  "unknowns": [
+    "采购SG90厂家/版本、实际电流和机械行程",
+    "模拟模型的脉宽到角度标定及实际运行结果"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

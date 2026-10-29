@@ -1,0 +1,53 @@
+{
+  "schema_version": 3,
+  "id": "usb_camera",
+  "name": "ESP-CLAW USB摄像头（含转接线）",
+  "kind": "camera",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "套",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": null,
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [],
+  "required_headers": [],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/guides/esp32.md",
+    "supplements/sources/espressif-devkitc.html",
+    "supplements/sources/espressif-usb-stream.html"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "blocked",
+  "blockers": [
+    "当前快照无对应USB摄像头模型。",
+    "Wokwi S3的USB支持描述不构成UVC Host及摄像头仿真支持证据。"
+  ],
+  "controls": [],
+  "simulation_supply_v": null,
+  "unknowns": [
+    "摄像头型号/VID/PID、UVC描述符与格式/分辨率/帧率",
+    "转接板和VBUS供电方案",
+    "新UVC驱动的IDF版本适配及仿真方案"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

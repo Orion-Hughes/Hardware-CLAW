@@ -1,7 +1,11 @@
 # 正式生成程序：模块、工程布局与数据流
 > 当前预算以 [DEVELOPMENT_LIMITS.md](DEVELOPMENT_LIMITS.md) 和 limits.py 为准；以下阶段记录中的旧预算不再生效。
 
-更新：2026-10-27。正式程序已接入15个工具，默认vscode模式交付可直接打开的simulation文件夹。持久化、修订、基础检查、编译、统一Wokwi CLI观察与导出已实现；单工程专用场景已删除，通用功能验收和真机验收未实现。禁止针对某个工程添加特殊优化文件或分支。当前结构以[自主仿真](AGENT_SIMULATION.md)、[VS Code交付](VSCODE_DELIVERY.md)和[工具实现状态](TOOLS_IMPLEMENTATION_STATUS.md)为准，以下未同步的“待实现”描述为此前规划。
+更新：2026-10-29。正式程序已接入18个工具，默认vscode模式交付可直接打开的simulation文件夹。持久化、修订、基础检查、编译、Wokwi CLI/MCP观测、导出与累计token预算已实现；单工程专用场景已删除，通用功能验收和真机验收未实现。禁止针对某个工程添加特殊优化文件或分支。最新成果与缺口见[当前进度](CURRENT_STATUS.md)；以下早期规划不代表全部实现。
+
+2026-10-28：技能包、驱动/API入口与Context Provider已接入，见[实现说明](GENERATION_CONTEXT_AND_SKILLS.md)。
+
+2026-10-29：基础检查改为error/warning/unverified与build/simulation/delivery阶段门槛；设计可声明catalog/framework实现，编译按输入/环境身份复用并跨修订识别重复失败。详见[审核调整](REVIEW_POLICY_REFACTOR_20261029.md)。以下早期规划中的全局检查门槛以该说明为准；本次仅离线验证，未重跑付费生成。
 
 ## 1. 保留与扩展
 
@@ -23,9 +27,9 @@
 | `hardware_claw/harness/` | 路径、权限、预算、取消、超时和资源管理 | 已有预留；约束所有工具，不只验证工具 |
 | `hardware_claw/adapters/` | 编译器、Wokwi、串口等外部程序适配 | 已有预留；将来复用/改造现有runner |
 | `hardware_claw/validation/` | 文件结构检查、测试模板和确定性判定 | 本轮建目录；第一版先做工具参数/文件完整性检查，行为验证后续加入 |
-| `prompts/` | 版本化生成角色、工具使用与交付提示词 | 本轮建目录；未接入，当前PROMPT仍在agent.py |
+| `prompts/` | 版本化生成角色、工具使用与交付提示词 | 已接入独立system/generation/query提示词，由context.py组装动态上下文 |
 | `templates/` | 框架相关工程骨架、必需文件清单 | 本轮建目录；不预置未经验证的接线 |
-| `knowledge/` / `skills/` | 器件事实及开发方法 | knowledge已接入查询Agent；skills仍待实现，与事实分开 |
+| `hardware_library/` / `skills/` | 上游原文、薄关联及开发方法 | 新库与5个技能包已接入；驱动API按需读取原文，旧knowledge隐藏归档，不作回退 |
 
 依赖方向：入口/Agent → tools → catalog或projects或adapters/validation；上述实现共用contracts与harness。catalog不导入Agent，projects不请求模型，验证器不修改需求。
 
@@ -118,16 +122,16 @@ Tool schema不暴露任意主机路径、shell或密钥。工程由入口绑定�
 
 ### 后续控制LangChain时必须应用的约定
 
-1. 只有收到明确的新建生成任务才由入口创建project_id和run_id，写入workspace中的原始需求；启动空界面不创建空工程。继续已有工程时复用project_id，新建run_id。该工程服务尚未实现。
+1. 只有收到明确的新建生成任务才由入口创建project_id和run_id，写入workspace中的原始需求；启动空界面不创建空工程。继续已有工程时复用project_id，新建run_id。工程服务和运行记录已实现。
 2. 运行上下文在程序侧绑定工程根、预算和取消信号。模型不决定任意主机路径；普通文件tool只能访问绑定工程的files目录，.hwclaw元数据由工程服务维护。
 3. LangChain负责模型请求→工具执行→ToolMessage回填→模型继续。流式事件用于UI与脱敏日志，不在astream之外另写无界修复循环。资料在维护阶段准备，任务运行中不联网补硬件规格。
 4. 工具执行成功与任务结论分开：execution_status=ok不代表generation_status可用，也不代表检查通过。失败结果提供稳定错误码、具体文件/端点及可修正信息。
 5. 存在依赖的工具调用必须先后执行，同工程写入串行化并检查版本；修改文件后旧检查结果失效，检查与导出绑定当前修订。
 6. 模型最终回答不决定交付成功。程序核对必需文件、当前修订的基础检查及导出结果；缺失则标记incomplete/failed。编译、仿真未运行继续记not_run。不得沿用当前教学代码“出现一次tool调用就成功”的判据。
-7. 达到截止时间/调用预算、取消或出现阻塞时保存已有进度并退出。当前查询阶段已调整为6次模型调用、8次tool调用、180秒总时限、图步数24；单次API仍30秒且不自动重试。正式工程的进度持久化仍待实现，不取消预算上限。
+7. 达到截止时间/调用预算、取消或出现阻塞时保留已保存进度并退出。当前每轮累计token预算为查询8万、工程50万，模型调用分别8/20次；单次API120秒，不自动重试。完整参数及估算边界见[运行预算](DEVELOPMENT_LIMITS.md)，不自动追加额度。
 8. 2026-10-27已注册hardware_catalog.HARDWARE_TOOLS并替换旧Prompt。主程序只判断工具请求已回填且出现最终回答来报告查询往返完成，不把它当回答正确性或工程交付成功的证明。
 
-生成阶段建议：collecting → designing → generating → checking_files → generated；分支可进入needs_input、failed、cancelled、timed_out或budget_exceeded。文件检查失败可反馈修正格式，不等于已经接通编译/仿真纠错。
+生成阶段的collecting → designing → generating → checking_files → generated等名称仍属流程建模建议，不应冒充现有状态枚举。现在编译/仿真结果已能回填并触发Agent修改，但通用独立验收仍缺失，不能据此宣称可靠纠错闭环已完成。
 
 生成状态与验证结果分开：未运行的build/simulation/behavior明确为not_run；supported范围外为unsupported，证据不足为inconclusive。不能因模型发出最终消息或调用过一个tool就判定工程交付成功；后续必须由工程服务核对必需文件、修订和交付清单。
 

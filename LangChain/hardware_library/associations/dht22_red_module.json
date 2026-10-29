@@ -1,0 +1,70 @@
+{
+  "schema_version": 3,
+  "id": "dht22_red_module",
+  "name": "DHT22/AM2302 温湿度传感器（红板采购记录）",
+  "kind": "sensor",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": "wokwi-dht22",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "DATA": "SDA",
+      "GROUND": "GND"
+    },
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [
+    "dhtesp"
+  ],
+  "required_headers": [
+    "DHTesp.h"
+  ],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/parts/wokwi-dht22.md",
+    "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md",
+    "supplements/sources/waveshare-dht-reference.html"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "documented_not_tested",
+  "blockers": [],
+  "controls": [
+    {
+      "name": "temperature",
+      "type": "number",
+      "unit": "celsius",
+      "source_ref": "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md"
+    },
+    {
+      "name": "humidity",
+      "type": "number",
+      "unit": "percent_rh",
+      "source_ref": "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md"
+    }
+  ],
+  "simulation_supply_v": 3.3,
+  "unknowns": [
+    "真实红板供电/接头与板载上拉",
+    "固定DHTesp版本在所选S3仿真构建基线的运行验证"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

@@ -51,7 +51,7 @@ class AgentTests(unittest.TestCase):
         model = ScriptedModel(loop_forever=True)
         with self.assertRaises(Exception) as caught:
             build_agent(model).invoke({"messages": [("user", "loop")]}, {"recursion_limit": limits.QUERY_GRAPH_STEPS})
-        self.assertIn("limit", str(caught.exception).lower())
+        self.assertIn("limit", type(caught.exception).__name__.lower())
         self.assertLessEqual(model._count, MODEL_CALL_LIMIT)
 
 

@@ -1,10 +1,14 @@
 # Hardware-CLAW：硬件工程生成Agent
 
+当前资料入口为[hardware_library](hardware_library/README.md)：上游原文、驱动源码与薄关联分离，默认不回退旧库。旧knowledge已经备份并隐藏，原文件保留；新增MPU6050、DS1307、HC-SR04、电位器资料关联，仍只支持现有ESP32-S3构建基线。关联存在不代表功能验证通过，见[迁移与实测](../docs/HARDWARE_LIBRARY_MIGRATION.md)。
+
 当前功能：通过API运行LangChain Agent，查询硬件、读取通用技能/配置模板、生成文件、检查、编译、Wokwi CLI限时观察，并交付VS Code仿真文件夹。工程专用验收规则已移除，通用功能验收尚未实现。见[仿真工具说明](../docs/AGENT_SIMULATION.md)和[工具状态](../docs/TOOLS_IMPLEMENTATION_STATUS.md)。
 
 网页支持同一工程持续修改与原生历史侧栏；聊天和工程绑定保存在本地SQLite，详见[会话管理](../docs/CHAT_HISTORY.md)。
 
 正式第一版建设方向为完整的需求到工程生成程序，见[程序架构与数据流](../docs/GENERATOR_ARCHITECTURE.md)。工程操作、修订、检查、编译、仿真日志采集与交付已实现；需求驱动的通用验收待实现，禁止用单工程特例替代。
+
+资料工具现默认精简索引，支持按函数/章节关键词读取可追溯原文；模型消息视图减少旧大结果，原始记录保留。完整离线回归147项通过，见[上下文优化与测试记录](../docs/CONTEXT_EFFICIENCY_TEST_REPORT_20261029.md)。用户将工程预算提高到50万后，Agent已生成电位器＋舵机源码，但编译/修正未完成，最终达到20次模型调用上限；见[最新复测](../docs/AGENT_500K_RETRY_20261029.md)。
 
 2026-10-27更新：主Agent已注册`search_hardware` / `get_hardware_info`，使用现有API配置进行真实模型调用。原`get_board_info`教学工具不再注册。只测试工具而不调用LLM的方式仍保留，见 [硬件查询工具说明](hardware_claw/catalog/README.md)。
 
@@ -75,10 +79,10 @@ API 配置单独放在 `hardware_claw/api_config.py`，由 Agent 调用 `create_
 ## 最小 Harness
 
 - 每次模型请求超时120秒，不自动重试；查询总时限600秒、工程3600秒、单次编译900秒。
-- 查询模式最多16次模型、48次工具、128图步；工程模式最多60次模型、160次工具、512图步。预算统一在 hardware_claw/limits.py 中配置，见 [测试阶段预算](../docs/DEVELOPMENT_LIMITS.md)。达到上限退出并保留已保存工程。
+- 每轮累计输入+输出token预算：查询8万、工程50万；发送前保守估算并预留输出，超额停止。查询最多8次模型、48次工具、128图步；工程最多20次模型、160次工具、512图步。预算统一在hardware_claw/limits.py，见[预算与计费边界](../docs/DEVELOPMENT_LIMITS.md)。停止后保留已保存工程。
 - 查询模式只读；绑定工程后提供受控files写入。没有任意Shell和真机操作工具。
 - 不输出密钥或原始异常请求；Token 缺失标记为 unavailable，不伪造为零。
-- 编译/仿真进程支持超时和取消回收；尚未实现 Token 硬预算与真机验收。`ready_for_vscode`只表示交付完整，行为判定单独展示；不支持的测试场景不会标记通过。
+- 编译/仿真进程支持超时和取消回收；已实现本地累计token预算阻断，真机验收尚未实现。`ready_for_vscode`只表示交付完整，行为判定单独展示；不支持的测试场景不会标记通过。
 
 ## 离线测试
 
@@ -101,11 +105,11 @@ API 配置单独放在 `hardware_claw/api_config.py`，由 Agent 调用 `create_
 ## 整理后的目录（2026-10-24）
 
 - `main.py`：新的统一启动入口；`agent.py` 仅兼容旧命令。
-- `hardware_claw/tools/`：硬件查询、技能/模板读取和工程工具，完整工程模式共15个工具。
+- `hardware_claw/tools/`：硬件查询、技能/模板读取和工程工具，完整工程模式共18个工具。
 - `hardware_claw/adapters/`：PlatformIO编译器和Wokwi CLI适配器。
 - `hardware_claw/harness/`：预留公共约束，现有调用上限暂留 Agent 配置中。
 - `knowledge/`：upstream保存146条Wokwi定义，owned记录9类已购硬件及临时240×240屏幕，reference保留SSD1306，supplements保存公共配置/来源。已由查询tools接入主Agent，不代表真实接线已验证。见 [知识库说明](knowledge/README.md)。
-- `skills/`：待编写的项目领域指导，不自动加载参考文档。
+- `skills/`：已接入5个领域技能包；目录自动发现，正文及参考资料按需读取。详见[生成上下文与技能](../docs/GENERATION_CONTEXT_AND_SKILLS.md)。
 - `tests/`：开发工具自身的离线测试。
 
 总目录用途见 `../PROJECT_STRUCTURE.md`；采购硬件清单见 `../references/HARDWARE_INVENTORY.md`；网络资料索引见 `../references/SOURCES.md`。

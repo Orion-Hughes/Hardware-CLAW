@@ -1,0 +1,33 @@
+{
+  "id": "st7789",
+  "properties_ref": "supplements/sources/code/Adafruit-ST7735-Library/library.properties",
+  "api_refs": [
+    "supplements/sources/code/Adafruit-ST7735-Library/.github/ISSUE_TEMPLATE.md",
+    "supplements/sources/code/Adafruit-ST7735-Library/.github/PULL_REQUEST_TEMPLATE.md",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7735.cpp",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7735.h",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7789.cpp",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7789.h",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7796S.cpp",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST7796S.h",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST77xx.cpp",
+    "supplements/sources/code/Adafruit-ST7735-Library/Adafruit_ST77xx.h",
+    "supplements/sources/code/Adafruit-ST7735-Library/library.properties"
+  ],
+  "example_refs": [
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/displayOnOffTest/displayOnOffTest.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest/graphicstest.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest_feather_esp32s2_tft/graphicstest_feather_esp32s2_tft.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest_hallowing_m0/graphicstest_hallowing_m0.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest_hallowing_m4/graphicstest_hallowing_m4.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest_pybadge_pygamer/graphicstest_pybadge_pygamer.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest_st7789/graphicstest_st7789.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/graphicstest_tft_gizmo/graphicstest_tft_gizmo.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/miniTFTWing/basic/basic.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/miniTFTWing/graphicstest_v1_160x80/graphicstest_v1_160x80.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/rotationtest/rotationtest.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/seesaw_shield18_test/seesaw_shield18_test.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/shieldtest/shieldtest.ino",
+    "supplements/sources/code/Adafruit-ST7735-Library/examples/ST7796S_demo/ST7796S_demo.ino"
+  ]
+}

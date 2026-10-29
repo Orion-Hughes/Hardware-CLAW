@@ -1,0 +1,25 @@
+{
+  "id": "gfx",
+  "properties_ref": "supplements/sources/code/Adafruit-GFX-Library/library.properties",
+  "api_refs": [
+    "supplements/sources/code/Adafruit-GFX-Library/.github/ISSUE_TEMPLATE.md",
+    "supplements/sources/code/Adafruit-GFX-Library/.github/PULL_REQUEST_TEMPLATE.md",
+    "supplements/sources/code/Adafruit-GFX-Library/Adafruit_GFX.cpp",
+    "supplements/sources/code/Adafruit-GFX-Library/Adafruit_GFX.h",
+    "supplements/sources/code/Adafruit-GFX-Library/Adafruit_GrayOLED.cpp",
+    "supplements/sources/code/Adafruit-GFX-Library/Adafruit_GrayOLED.h",
+    "supplements/sources/code/Adafruit-GFX-Library/Adafruit_SPITFT.cpp",
+    "supplements/sources/code/Adafruit-GFX-Library/Adafruit_SPITFT.h",
+    "supplements/sources/code/Adafruit-GFX-Library/Adafruit_SPITFT_Macros.h",
+    "supplements/sources/code/Adafruit-GFX-Library/fontconvert/fontconvert.c",
+    "supplements/sources/code/Adafruit-GFX-Library/fontconvert/fontconvert_win.md",
+    "supplements/sources/code/Adafruit-GFX-Library/gfxfont.h",
+    "supplements/sources/code/Adafruit-GFX-Library/glcdfont.c",
+    "supplements/sources/code/Adafruit-GFX-Library/library.properties",
+    "supplements/sources/code/Adafruit-GFX-Library/README.md"
+  ],
+  "example_refs": [
+    "supplements/sources/code/Adafruit-GFX-Library/examples/GFXcanvas/GFXcanvas.ino",
+    "supplements/sources/code/Adafruit-GFX-Library/examples/mock_ili9341/mock_ili9341.ino"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": 3,
+  "id": "ds1307",
+  "name": "DS1307 I2C 实时时钟 RTC",
+  "kind": "sensor",
+  "inventory": {
+    "owned": false,
+    "scope": "simulation_reference_not_purchased"
+  },
+  "record_role": "reference",
+  "simulation": {
+    "part_type": "wokwi-ds1307",
+    "logical_signal_to_model_pin": {
+      "POWER": "5V",
+      "GROUND": "GND",
+      "I2C_SDA": "SDA",
+      "I2C_SCL": "SCL"
+    },
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only"
+  },
+  "driver_ids": [
+    "rtclib",
+    "busio"
+  ],
+  "required_headers": [
+    "RTClib.h",
+    "Wire.h"
+  ],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/parts/wokwi-ds1307.md"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "documented_not_tested",
+  "blockers": [],
+  "controls": [],
+  "simulation_supply_v": 5,
+  "unknowns": [
+    "采购模块电气/接头未验证；此条目仅覆盖Wokwi模型。"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

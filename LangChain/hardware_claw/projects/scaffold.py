@@ -1,6 +1,5 @@
 """Deterministic configuration, assembled from maintained templates and saved design."""
 import json
-import re
 from ..tools.templates import read_template
 from .service import fail
 
@@ -30,11 +29,10 @@ def render(state):
     if state["template"] != "vscode":
         fail("UNSUPPORTED_TEMPLATE", "scaffold仅用于vscode交付模式。")
     # Dependencies must come from the pinned hardware snapshot, not arbitrary URLs/scripts.
-    known = {(d["name"], d["version"]) for info in state["hardware"].values()
-             for d in info["profile"].get("driver_profile", {}).get("dependencies", [])}
-    for dep in design["dependencies"]:
-        if (dep["name"], dep["version"]) not in known or not re.fullmatch(r"[A-Za-z0-9 _./+-]+", dep["name"]) or not re.fullmatch(r"[0-9][0-9A-Za-z.+-]*", dep["version"]):
-            fail("UNSUPPORTED_DEPENDENCY", "编译依赖必须是所选硬件资料中登记的固定库版本。")
+    from .implementations import dependency_problems
+    problems = dependency_problems(state)
+    if problems:
+        fail(*problems[0])
     data = baseline()
     dependencies = "\n".join("    " + d["name"] + "@" + d["version"] for d in design["dependencies"])
     diagram = {"version": 1, "author": "Hardware-CLAW", "editor": "wokwi",

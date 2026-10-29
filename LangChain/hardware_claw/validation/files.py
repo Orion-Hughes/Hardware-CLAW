@@ -1,14 +1,11 @@
-"""Deterministic BASIC artifact checks; never a compilation/behavior verdict."""
-import configparser
+"""Stage-scoped structural checks and explicit uncertainty; never functional acceptance."""
 import json
 import re
-import tomllib
-
-REQUIRED = {
-    "vscode": {"src/main.cpp", "diagram.json", "platformio.ini", "wokwi.toml", "README.md"},
-    "arduino": {"sketch.ino", "diagram.json", "libraries.txt", "README.md"},
-    "platformio": {"src/main.cpp", "diagram.json", "platformio.ini", "wokwi.toml", "README.md"},
-}
+from pathlib import PurePosixPath
+from .report import STAGES, make_report
+from .build_config import validate_config
+from .source_hints import source_hints, strip_comments
+from ..projects.implementations import choice, dependency_problems
 
 
 def strict_json(text):
@@ -25,18 +22,31 @@ def strict_json(text):
 
 
 def check(state):
-    issues = []
-    def issue(code, path, message):
-        issues.append({"code": code, "path": path, "message": message})
+    findings = []
+    def issue(code, path, message, *, severity="error", blocks=None):
+        if blocks is None:
+            blocks = ("simulation", "delivery") if path in {"diagram.json", "wokwi.toml"} else STAGES
+        findings.append({"code": code, "path": path, "message": message, "severity": severity,
+                         "blocks": list(blocks) if severity == "error" else []})
     files, design = state["files"], state["design"]
     template = state["template"]
-    for name in sorted(REQUIRED[template]):
-        if not files.get(name, "").strip():
-            issue("MISSING_FILE", name, "缺少必需文件或内容为空。")
+    required = {"diagram.json"}
+    if template == "arduino":
+        required |= {"sketch.ino", "libraries.txt"}
+    else:
+        required |= {"platformio.ini", "wokwi.toml"}
+        if not any(name.startswith("src/") and PurePosixPath(name).suffix in {".c", ".cpp", ".ino"}
+                   and text.strip() for name, text in files.items()):
+            issue("MISSING_SOURCE", "src/", "src下缺少可编译的源文件。")
+    for name in sorted(required):
+        if name not in files or (name != "libraries.txt" and not files[name].strip()):
+            issue("MISSING_FILE", name, "缺少该阶段必需文件或内容为空。")
+    if not files.get("README.md", "").strip():
+        issue("MISSING_DOCUMENTATION", "README.md", "交付说明尚未补齐；不阻断编译和仿真。", severity="warning")
     if not design:
         issue("MISSING_DESIGN", "design", "未保存设计。")
     if state["files_design_version"] != state["design_version"]:
-        issue("STALE_FILES", "design", "文件未对应当前设计版本，需重新生成并检查。")
+        issue("STALE_FILES", "design", "文件未对应当前设计版本，需同步并检查。")
     hardware = state.get("hardware", {})
     if design:
         try:
@@ -100,11 +110,17 @@ def check(state):
             if groups["ground"] & (groups["3v3"] | groups["5v"]) or groups["3v3"] & groups["5v"]:
                 issue("POWER_SHORT", "diagram.json", "供电轨与地或不同供电轨相连。")
             shared = hardware.get("mcu", {}).get("shared_configuration") or {}
-            preferred = set(shared.get("gpio_policy", {}).get("preferred_digital_gpio", []))
-            for a, b in pairs:
-                for endpoint in (a, b):
-                    if endpoint.startswith("mcu:") and endpoint[4:].isdigit() and int(endpoint[4:]) not in preferred:
-                        issue("RESERVED_GPIO", "diagram.json", f"{endpoint}不在当前保守GPIO分配范围。")
+            policy = shared.get("gpio_policy", {})
+            preferred = set(policy.get("preferred_digital_gpio", []))
+            pins = {int(endpoint[4:]) for pair in pairs for endpoint in pair
+                    if endpoint.startswith("mcu:") and endpoint[4:].isdigit()}
+            for pin in sorted(pins):
+                if pin in policy.get("unavailable_gpio", []):
+                    issue("GPIO_UNAVAILABLE", "diagram.json", f"GPIO{pin}在当前板卡资料中明确不可用。")
+                elif template == "vscode" and pin in policy.get("reserve_uart0_gpio", []):
+                    issue("GPIO_RESOURCE_CONFLICT", "diagram.json", f"GPIO{pin}被当前UART0观测配置占用。")
+                elif preferred and pin not in preferred:
+                    issue("GPIO_NOT_PREFERRED", "diagram.json", f"GPIO{pin}不在默认推荐列表；需核对复用/启动/板卡变体限制。", severity="warning")
             for ident, info in hardware.items():
                 if ident == "mcu":
                     continue
@@ -118,79 +134,40 @@ def check(state):
                             issue("POWER_NOT_CONNECTED", "diagram.json", f"{endpoint}未连接对应供电或地。")
         except (ValueError, KeyError, TypeError, RecursionError):
             issue("INVALID_DIAGRAM", "diagram.json", "diagram不是合法的Wokwi基础结构；检查JSON、version、parts和connections。")
-        source_name = "sketch.ino" if template == "arduino" else "src/main.cpp"
-        source = files.get(source_name, "")
-        for func in ("setup", "loop"):
-            if not re.search(r"\bvoid\s+" + func + r"\s*\(\s*\)", source):
-                issue("MISSING_ENTRY", source_name, f"缺少void {func}()入口。")
-        for name, pin in design["pin_defines"].items():
-            pattern = r"(?:#define\s+" + re.escape(name) + r"\s+|\b" + re.escape(name) + r"\s*=\s*)" + str(pin) + r"\b"
-            if not re.search(pattern, source):
-                issue("PIN_DEFINE_MISMATCH", source_name, f"未发现简单整数定义{name}={pin}；不能推断复杂表达式。")
-        for info in hardware.values():
-            for header in info["profile"].get("driver_profile", {}).get("headers", []):
-                if header == "Arduino.h" and template == "arduino":
-                    continue
-                if not re.search(r'#\s*include\s*[<"]' + re.escape(header) + r'[>"]', source):
-                    issue("MISSING_INCLUDE", source_name, f"缺少驱动头文件{header}。")
-            for dep in info["profile"].get("driver_profile", {}).get("dependencies", []):
-                if not any(d["name"] == dep["name"] and d["version"] == dep["version"] for d in design["dependencies"]):
-                    issue("MISSING_DESIGN_DEPENDENCY", "design", f"设计未包含资料中的依赖{dep['name']}@{dep['version']}。")
-        dependency_text = re.sub(r"[ \t]*@[ \t]*", "@", files.get("libraries.txt" if template == "arduino" else "platformio.ini", ""))
-        for dep in design["dependencies"]:
-            if dep["name"] + "@" + dep["version"] not in dependency_text:
-                issue("MISSING_DEPENDENCY", "libraries.txt" if template == "arduino" else "platformio.ini", f"缺少固定依赖{dep['name']}@{dep['version']}。")
-    if template == "vscode":
-        try:
-            from ..projects.scaffold import render, baseline
-            expected_files = render(state)
-            for name in ("platformio.ini", "wokwi.toml"):
-                if files.get(name) != expected_files[name]:
-                    issue("FIXED_CONFIG_MISMATCH", name, "运行scaffold_project恢复受控模板，不手写构建配置。")
-            diagram = strict_json(files.get("diagram.json", ""))
-            required = {tuple(sorted(e[:2])) for e in baseline()["serial_connections"]}
-            present = {tuple(sorted(e[:2])) for e in diagram.get("connections", [])}
-            if not required <= present:
-                issue("SERIAL_CONNECTION_REQUIRED", "diagram.json", "缺少UART0到serialMonitor的交叉连接。")
-            if diagram.get("serialMonitor", {}).get("display") != "always":
-                issue("SERIAL_DISPLAY_REQUIRED", "diagram.json", "serialMonitor.display必须为always。")
-            source = files.get("src/main.cpp", "")
-            if not re.search(r"Serial\s*\.\s*begin\s*\(\s*115200\s*\)", source) or "HWCLAW_BOOT" not in source:
-                issue("OBSERVATION_REQUIRED", "src/main.cpp", "初始化Serial.begin(115200)并输出HWCLAW_BOOT启动标记。")
-        except (ValueError, KeyError, TypeError):
-            issue("INVALID_VSCODE_CONFIG", "design", "vscode配置不符合受控基线；检查依赖、串口和设计。")
-    if template == "platformio":
-        try:
-            ini = configparser.ConfigParser(interpolation=None)
-            ini.read_string(files.get("platformio.ini", ""))
-            envs = [s for s in ini.sections() if s.startswith("env:")]
-            if len(envs) != 1 or len(ini.sections()) != 1 or ini.defaults():
-                raise ValueError("one env section only")
-            env = envs[0]
-            if not re.fullmatch(r"env:[a-zA-Z0-9_-]+", env):
-                raise ValueError("invalid env")
-            allowed = {"platform", "board", "framework", "monitor_speed", "lib_deps"}
-            if set(ini[env]) - allowed:
-                issue("UNSUPPORTED_BUILD_OPTION", "platformio.ini", "只允许platform/board/framework/monitor_speed/lib_deps；禁止脚本与外部路径。")
-            baseline = (hardware.get("mcu", {}).get("shared_configuration") or {}).get("build", {})
-            for key, expected_value in {"platform": baseline.get("platformio_platform"), "board": baseline.get("board"), "framework": "arduino"}.items():
-                if ini[env].get(key) != expected_value:
-                    issue("BUILD_BASELINE_MISMATCH", "platformio.ini", f"{key}与共享构建基线不一致。")
-            expected_deps = {d["name"] + "@" + d["version"] for d in (design or {}).get("dependencies", [])}
-            if {re.sub(r"[ \t]*@[ \t]*", "@", x.strip()) for x in ini[env].get("lib_deps", "").splitlines() if x.strip()} != expected_deps:
-                issue("BUILD_DEPENDENCY_MISMATCH", "platformio.ini", "lib_deps必须与设计中的名称和版本一致。")
-            config = tomllib.loads(files.get("wokwi.toml", ""))
-            wokwi = config.get("wokwi", {})
-            if set(config) != {"wokwi"} or not isinstance(wokwi, dict):
-                issue("INVALID_WOKWI_SECTION", "wokwi.toml", "当前支持的配置需要且仅包含[wokwi]表。")
-                wokwi = {}
-            if wokwi.get("version") != 1:
-                issue("WOKWI_VERSION_REQUIRED", "wokwi.toml", "在[wokwi]表下添加整数version = 1。")
-            for key, ext in (("firmware", "bin"), ("elf", "elf")):
-                if wokwi.get(key) != f".pio/build/{env[4:]}/firmware.{ext}":
-                    issue("FIRMWARE_PATH_MISMATCH", "wokwi.toml", f"{key}应为.pio/build/{env[4:]}/firmware.{ext}；文件尚未构建。")
-        except (ValueError, KeyError, TypeError, configparser.Error):
-            issue("INVALID_BUILD_CONFIG", "platformio.ini/wokwi.toml", "构建配置无法解析或超出支持范围。")
-    return {"version": state["version"], "validator_version": 1, "verdict": "fail" if issues else "pass", "issues": issues,
-            "scope": "basic_files_only", "warnings": ["不是C++编译器，不证明源码语义、GPIO实际用途、采样时序、电气或行为正确。", "第三方模型的额外芯片资源和运行时支持仍须编译/仿真验证。"],
-            "build": "not_run", "simulation": "not_run", "behavior": "not_run"}
+        for code, message in dependency_problems(state):
+            issue(code, "design", message)
+        selections = design.get("implementations", {})
+        if set(selections) - set(hardware):
+            issue("INVALID_IMPLEMENTATION", "design", "实现方案引用未知元件实例。")
+        for instance, info in hardware.items():
+            selected = choice(design, instance)
+            if selected["mode"] == "framework":
+                evidence = state.get("implementation_evidence", {}).get(instance, [])
+                if not selected["api_refs"] or {item["ref"] for item in evidence} != set(selected["api_refs"]):
+                    issue("IMPLEMENTATION_EVIDENCE_REQUIRED", "design", "framework实现缺少保存设计时核验的API依据。")
+                issue("FRAMEWORK_IMPLEMENTATION_UNVERIFIED", "design", f"{instance}声明使用框架API；资料引用不证明协议、时序或功能正确。", severity="unverified")
+            elif selected["mode"] != "catalog":
+                issue("INVALID_IMPLEMENTATION", "design", "未知实现模式。")
+            else:
+                text = "\n".join(strip_comments(body) for name, body in files.items()
+                                 if PurePosixPath(name).suffix in {".c", ".cpp", ".h", ".hpp", ".ino"})
+                for header in info["profile"].get("driver_profile", {}).get("headers", []):
+                    if header == "Arduino.h" and template == "arduino":
+                        continue
+                    if not re.search(r'#\s*include\s*[<"]' + re.escape(header) + r'[>"]', text):
+                        issue("DRIVER_USAGE_UNVERIFIED", "sources", f"未直接找到{header}；可能经间接引用，编译器负责头文件解析。实现变化时须同步设计。", severity="unverified")
+        source_hints(state, issue)
+        if template == "vscode":
+            try:
+                from ..projects.scaffold import baseline
+                diagram = strict_json(files.get("diagram.json", ""))
+                required_serial = {tuple(sorted(e[:2])) for e in baseline()["serial_connections"]}
+                present = {tuple(sorted(e[:2])) for e in diagram.get("connections", [])}
+                if not required_serial <= present:
+                    issue("SERIAL_CONNECTION_REQUIRED", "diagram.json", "当前UART0观测配置缺少serialMonitor交叉连接。")
+                if diagram.get("serialMonitor", {}).get("display") != "always":
+                    issue("SERIAL_DISPLAY_HINT", "diagram.json", "串口面板未设为始终显示；可按需在仿真界面打开。", severity="warning")
+            except (ValueError, KeyError, TypeError, AttributeError):
+                pass  # Structural diagram diagnostics already reported above.
+    validate_config(state, issue)
+    return make_report(state, findings)

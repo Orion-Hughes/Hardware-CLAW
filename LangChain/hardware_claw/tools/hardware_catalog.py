@@ -7,6 +7,7 @@ from langchain.tools import tool
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..catalog import CatalogError, KnowledgeCatalog
+from ..catalog.views import compact_hardware
 
 
 class SearchHardwareInput(BaseModel):
@@ -25,7 +26,8 @@ class HardwareInfoInput(BaseModel):
     hardware_id: str = Field(min_length=1, max_length=134, pattern=r"^(wokwi:)?[a-z0-9][a-z0-9_-]{0,127}$", description="搜索返回的稳定ID，不接收文件路径。")
     include_shared: bool = Field(default=False, description="需要公共S3构建/GPIO规则时设true；通常查询板卡时读取一次。")
     include_examples: bool = Field(default=False, description="按需读取已登记原始例程；最多2份，各8000字符，截断会明确标记。")
-    sections: list[str] | None = Field(default=None, max_length=32, description="profile顶层字段名列表；null返回全部，[]仅概要和约束。始终保留状态、notes、来源。available_sections给出可选字段。")
+    sections: list[str] | None = Field(default=None, max_length=32, description="首次读取省略；后续仅用available_sections返回的profile字段名，不猜字段。null返回全部，[]仅概要和约束；保留状态、notes、来源。")
+    detail: Literal['compact', 'full'] = Field(default='compact', description='默认精简驱动索引、去除重复原文路径；full保留原始资料字段。')
 
 
 def _invalid_input(_error) -> str:
@@ -63,7 +65,7 @@ def search_hardware(query: str = "", kind: str = "", scope: str = "local",
 
 @tool(args_schema=HardwareInfoInput)
 def get_hardware_info(hardware_id: str, include_shared: bool = False, include_examples: bool = False,
-                      sections: list[str] | None = None) -> dict:
+                      sections: list[str] | None = None, detail: str = 'compact') -> dict:
     """Read a hardware profile, original pin/attribute metadata and optional shared rules/examples.
 
     Preserve generation status, unknown values, source scope and test status.
@@ -73,10 +75,12 @@ def get_hardware_info(hardware_id: str, include_shared: bool = False, include_ex
     """
     def read(catalog):
         data = catalog.get(hardware_id, include_shared, include_examples)
+        if detail == 'compact':
+            data = compact_hardware(data)
         profile = data.get("profile")
         available = sorted(profile) if isinstance(profile, dict) else []
         if sections is not None and set(sections) - set(available):
-            raise CatalogError("INVALID_ARGUMENT", "未知profile分组；先使用sections=[]查看available_sections。")
+            raise CatalogError("INVALID_ARGUMENT", "未知profile分组；首次读取可省略sections。可用字段：" + ", ".join(available))
         if sections is not None and isinstance(profile, dict):
             mandatory = {"schema_version", "id", "name", "kind", "inventory", "record_role",
                          "generation_profile", "notes", "source_refs"}

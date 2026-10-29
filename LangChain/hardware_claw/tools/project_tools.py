@@ -57,6 +57,9 @@ def make_project_tools(project):
 
         Read hardware details first. Board instance is mcu. Reject unsupported profiles,
         duplicate IDs, unknown pins and stale versions. Changes invalidate prior file checks.
+        implementations maps instance IDs to catalog (default) or framework. Framework
+        requires registered framework_api_refs from get_driver_api; references prove
+        provenance only. Update dependencies and source consistently with the choice.
         """
         if hasattr(design, "model_dump"):
             design = design.model_dump()
@@ -103,16 +106,19 @@ def make_project_tools(project):
         """Check current artifacts deterministically: required files, diagram endpoints,
         design consistency, basic source declarations and supported build configuration.
 
-        data.verdict=pass means ONLY basic files passed. It never compiles or simulates.
+        Inspect data.stage_verdicts for build/simulation/delivery; each issue has severity
+        (error/warning/unverified) and blocks. Only error blocks its named stages.
+        Overall fail may still allow build. Pass never means functional acceptance.
         Modifying design/files invalidates this version-bound report.
         """
         return result(project.check_files)
 
     @tool(args_schema=VersionInput)
     def scaffold_project(expected_version: int) -> dict:
-        """For vscode projects, instantiate fixed platformio.ini/wokwi.toml/diagram.json
+        """For vscode projects, instantiate platformio.ini/wokwi.toml/diagram.json defaults
         from the saved design and read-only templates. Preserves business source/README.
-        Call after update_project_design, then write src/main.cpp and README.md.
+        Call after update_project_design, then write src source files and documentation.
+        Configuration is checked by parsed meaning, not literal template equality.
         """
         return result(lambda: mutation_receipt(project.scaffold(expected_version)))
 
@@ -121,7 +127,10 @@ def make_project_tools(project):
         """Actually compile a checked vscode revision using controlled PlatformIO.
         Returns verdict pass/fail/timeout and bounded diagnostics; never simulates.
         Fresh temporary build, shared deadline, kills children on cancellation.
-        Fix errors then recheck before retrying; do not retry unchanged failed source.
+        Requires the current check's build stage, not global verdict. Unchanged compile
+        errors stop across revisions. Infrastructure failures allow two attempts in a
+        300-second window per build-input/toolchain identity. Returns failure_kind.
+        get_project may show a matched previous build; cached=true means no new run.
         """
         from ..adapters.compiler import compile_project as compile_bound
         start = time.monotonic()
@@ -210,9 +219,9 @@ def make_project_tools(project):
 
     @tool(args_schema=VersionInput)
     def export_project(expected_version: int) -> dict:
-        """Export a revision-bound ZIP and manifest after the current basic file check passes.
+        """Export a revision-bound ZIP and manifest when the current delivery check passes.
 
-        vscode requires compile_project pass and exports a ready-to-open simulation
+        vscode requires a matching verified build and exports a ready-to-open simulation
         folder with actual firmware. Legacy modes export source only. Never simulates.
         Export only project artifacts, never keys,
         Python environments or chat logs. Returns archive path and SHA256.

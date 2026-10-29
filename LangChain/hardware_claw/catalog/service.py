@@ -9,7 +9,7 @@ import stat
 import unicodedata
 
 
-DEFAULT_KNOWLEDGE_ROOT = Path(__file__).absolute().parents[2] / "knowledge"
+DEFAULT_KNOWLEDGE_ROOT = Path(__file__).absolute().parents[2] / "hardware_library"
 MAX_FILE_BYTES = 512 * 1024
 MAX_EXAMPLE_CHARS = 8000
 MAX_EXAMPLES = 2
@@ -52,6 +52,24 @@ class KnowledgeCatalog:
 
     def __init__(self, root: Path = DEFAULT_KNOWLEDGE_ROOT):
         self.root = Path(root).absolute()
+        self._source_entries = None
+        self.verify_sources = self.root == DEFAULT_KNOWLEDGE_ROOT or (self.root / "library.json").is_file()
+
+    def source_metadata(self, ref):
+        """Pinned upstream identity; never resolve a path in the archived knowledge root."""
+        if self._source_entries is None:
+            lock, _ = self._json("sources.lock.json", prefixes=("sources.lock.json",))
+            _require(isinstance(lock.get("files"), list))
+            entries = {}
+            for item in lock["files"]:
+                _require(isinstance(item, dict) and isinstance(item.get("local_path"), str))
+                _require(item["local_path"] not in entries, "来源清单路径重复。")
+                _require(isinstance(item.get("sha256"), str) and bool(re.fullmatch(r"[0-9a-f]{64}", item["sha256"])))
+                entries[item["local_path"]] = item
+            self._source_entries = entries
+        if ref not in self._source_entries:
+            raise CatalogError("MISSING_SOURCE", "原文未登记在来源清单中；请离线维护，不回退旧库。")
+        return self._source_entries[ref]
 
     def _path(self, ref: str, *, prefixes: tuple[str, ...]) -> Path:
         if not isinstance(ref, str) or not ref or "\\" in ref or ":" in ref:
@@ -88,6 +106,10 @@ class KnowledgeCatalog:
             raise CatalogError("READ_ERROR", "无法读取知识库文件。") from None
         if len(content) > MAX_FILE_BYTES:
             raise CatalogError("SOURCE_TOO_LARGE", "知识文件超过读取上限，请拆分或维护资料。")
+        if ref.startswith(("upstream/", "supplements/sources/")) and self.verify_sources:
+            metadata = self.source_metadata(ref)
+            if hashlib.sha256(content).hexdigest() != metadata["sha256"]:
+                raise CatalogError("SOURCE_CHANGED", "上游原文与固定来源哈希不符；不能继续使用。")
         return content
 
     def _json(self, ref: str, *, prefixes: tuple[str, ...]) -> tuple[dict, dict]:
@@ -103,8 +125,10 @@ class KnowledgeCatalog:
 
     def _index(self) -> tuple[dict, dict]:
         data, provenance = self._json("catalog.json", prefixes=("catalog.json",))
-        if data.get("schema_version") not in (1, 2):
+        if data.get("schema_version") not in (1, 2, 3):
             raise CatalogError("UNSUPPORTED_SCHEMA", "不支持该知识库索引版本。")
+        if data.get("schema_version") == 3:
+            self.verify_sources = True
         records, upstream = data.get("records"), data.get("upstream_parts")
         _require(isinstance(records, list) and isinstance(upstream, dict))
         ids = set()
@@ -120,7 +144,10 @@ class KnowledgeCatalog:
         return data, provenance
 
     def _record(self, entry: dict) -> tuple[dict, dict]:
-        record, provenance = self._json(entry["path"], prefixes=("owned/", "reference/"))
+        record, provenance = self._json(entry["path"], prefixes=("owned/", "reference/", "associations/"))
+        if record.get("schema_version") == 3:
+            from .associations import resolve
+            record = resolve(self, record)
         if record.get("schema_version") not in (1, 2):
             raise CatalogError("UNSUPPORTED_SCHEMA", "不支持该硬件记录版本。")
         _require(record.get("id") == entry["id"], "硬件记录与索引ID不一致。")

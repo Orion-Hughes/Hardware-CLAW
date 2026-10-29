@@ -1,0 +1,52 @@
+{
+  "schema_version": 3,
+  "id": "speaker_8ohm_1w",
+  "name": "2030椭圆扬声器8Ω/1W（1.25mm插头）",
+  "kind": "audio_output",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": null,
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [],
+  "required_headers": [],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/guides/esp32.md",
+    "supplements/sources/speaker-amplifier-reference.html"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "blocked",
+  "blockers": [
+    "未找到匹配的扬声器及功放仿真模型。",
+    "当前官方表中ESP32-S3的I2S未实现，不能据其他ESP32音频例程承诺S3可仿真。"
+  ],
+  "controls": [],
+  "simulation_supply_v": null,
+  "unknowns": [
+    "实际功放或音频板的型号、供电与接线",
+    "扬声器接头定义和功率限制方案",
+    "适用的模拟模型及音频验证路径"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

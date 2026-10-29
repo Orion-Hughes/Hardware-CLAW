@@ -1,0 +1,8 @@
+{
+  "files.exclude": {
+    "LangChain/knowledge": true
+  },
+  "search.exclude": {
+    "LangChain/knowledge": true
+  }
+}

@@ -170,9 +170,10 @@ class ProjectService:
             return self._summary(state)
 
     def _summary(self, state):
+        from ..validation.report import VERSION
         report_path = self.meta / "check.json"
         report = json.loads(report_path.read_text(encoding="utf-8")) if report_path.exists() else None
-        current_check = report if report and report["version"] == state["version"] else None
+        current_check = report if report and report["version"] == state["version"] and report.get("validator_version") == VERSION else None
         export_path = self.meta / "export.json"
         exported = json.loads(export_path.read_text(encoding="utf-8")) if export_path.exists() else None
         if exported and exported["version"] != state["version"]:
@@ -215,6 +216,11 @@ class ProjectService:
                 hardware[name] = info
         except CatalogError as exc:
             fail(exc.code, str(exc))
+        from .implementations import pin_choices
+        try:
+            implementation_evidence = pin_choices(value, hardware, KnowledgeCatalog())
+        except CatalogError as exc:
+            fail(exc.code, str(exc))
         endpoints = {f"{name}:{pin}" for name, info in hardware.items() for pin in info["upstream_definition"]["pins"]}
         endpoints |= {"$serialMonitor:TX", "$serialMonitor:RX"}
         pairs = set()
@@ -235,6 +241,7 @@ class ProjectService:
             self._check_live_files(state)
             state["design"] = value
             state["hardware"] = hardware
+            state["implementation_evidence"] = implementation_evidence
             state["design_version"] += 1
             return self._commit(state)
 
@@ -307,11 +314,23 @@ class ProjectService:
             return report
 
     def build_status(self, state):
+        from ..adapters.compiler import PIO
+        from ..adapters.build_state import FINGERPRINT_VERSION, environment_fingerprint, matching_history
         path = self.meta / "build.json"
         if path.exists():
             report = json.loads(path.read_text(encoding="utf-8"))
-            if report.get("version") == state["version"]:
+            if report.get("fingerprint_version") != FINGERPRINT_VERSION and report.get("version") == state["version"]:
+                return report | {"identity_supported": False}
+        matches = matching_history(self, state, environment_fingerprint(ROOT, PIO))
+        # An attempt observed as stale is historical evidence, never current authority.
+        matches = [report for report in matches if not report.get("stale")]
+        if matches:
+            report = matches[-1]
+            if report["version"] == state["version"]:
                 return report
+            return report | {"version": state["version"], "built_version": report["version"],
+                             "reused_from_version": report["version"], "cached": True,
+                             "note": "匹配此前编译输入及工具链；未再次运行编译。电路、仿真及交付仍需当前版本检查。"}
         return "not_run"
 
     def validation_status(self, state):
@@ -347,6 +366,7 @@ class ProjectService:
 
     def export(self, expected_version):
         from ..validation.files import check
+        from ..validation.report import allows
         if self.get()["template"] == "vscode":
             from .vscode_delivery import export
             return export(self, expected_version)
@@ -356,10 +376,10 @@ class ProjectService:
             self._check_live_files(state)
             check_path = self.meta / "check.json"
             report = json.loads(check_path.read_text(encoding="utf-8")) if check_path.exists() else None
-            if not report or report["version"] != expected_version or report["verdict"] != "pass":
-                fail("CHECK_REQUIRED", "必须先对当前版本运行check_project_files并通过基础检查。")
+            if not report or report["version"] != expected_version or not allows(report, "delivery"):
+                fail("CHECK_REQUIRED", "先对当前版本运行check_project_files；delivery阶段不能有阻断项。")
             report = check(state)
-            if report["verdict"] != "pass":
+            if not allows(report, "delivery"):
                 fail("CHECK_FAILED", "当前文件基础检查失败，不能导出。")
             if "_hwclaw_manifest.json" in state["files"]:
                 fail("RESERVED_FILE", "_hwclaw_manifest.json保留给导出服务。")
@@ -398,6 +418,8 @@ class ProjectService:
 
     def delivery(self):
         """Host verdict: verify current artifacts, report, and the actual ZIP hash."""
+        from ..validation.files import check
+        from ..validation.report import allows
         if self.get()["template"] == "vscode":
             from .vscode_delivery import delivery
             return delivery(self)
@@ -406,7 +428,7 @@ class ProjectService:
             self._check_live_files(state)
             info = self._summary(state)
             exported = info["export"]
-            valid = bool(exported and info["file_check"] and info["file_check"]["verdict"] == "pass")
+            valid = bool(exported and allows(info["file_check"], "delivery") and allows(check(state), "delivery"))
             if valid:
                 archive = self.root / "exports" / f"v{state['version']:06d}" / "project.zip"
                 valid = archive.is_file() and hashlib.sha256(archive.read_bytes()).hexdigest() == exported["sha256"]

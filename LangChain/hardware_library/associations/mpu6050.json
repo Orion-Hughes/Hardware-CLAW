@@ -1,0 +1,94 @@
+{
+  "schema_version": 3,
+  "id": "mpu6050",
+  "name": "MPU6050 六轴加速度/陀螺仪及温度传感器",
+  "kind": "sensor",
+  "inventory": {
+    "owned": false,
+    "scope": "simulation_reference_not_purchased"
+  },
+  "record_role": "reference",
+  "simulation": {
+    "part_type": "wokwi-mpu6050",
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "I2C_SDA": "SDA",
+      "I2C_SCL": "SCL",
+      "ADDRESS_SELECT": "AD0"
+    },
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only"
+  },
+  "driver_ids": [
+    "mpu6050",
+    "busio",
+    "unified_sensor",
+    "gfx",
+    "ssd1306"
+  ],
+  "required_headers": [
+    "Adafruit_MPU6050.h",
+    "Adafruit_Sensor.h",
+    "Wire.h"
+  ],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "documented_not_tested",
+  "blockers": [],
+  "controls": [
+    {
+      "name": "accelX",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "accelY",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "accelZ",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "rotationX",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "rotationY",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "rotationZ",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "temperature",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    }
+  ],
+  "simulation_supply_v": 3.3,
+  "unknowns": [
+    "采购模块电气/接头未验证；此条目仅覆盖Wokwi模型。"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}

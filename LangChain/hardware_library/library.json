@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "require_source_hashes": true,
+  "origin": "upstream_sources_with_local_associations",
+  "legacy_fallback": false
+}

@@ -1,0 +1,228 @@
+---
+title: ESP32 Simulation
+sidebar_label: ESP32 Simulator
+description: Simulate espressif ESP32 boards in Wokwi
+keywords: [ESP32, ESP32 Simulation, ESP32, ESP32-C3, ESP32-S2, ESP32-S3, ESP32-C5, ESP32-C6, ESP32-C61, ESP32-H2, ESP32-S31, MicroPython, Arduino, Rust, IoT, VSCode, ESP-IDF]
+---
+
+The ESP32 is a popular WiFi and Bluetooth-enabled microcontroller, widely used for IoT Projects. Wokwi simulates the ESP32, ESP32-C3, ESP32-S2, ESP32-S3, ESP32-C5 (beta), ESP32-C6, ESP32-C61, ESP32-H2, ESP32-S31 (beta), and ESP32-P4 (beta).
+
+<wokwi-esp32-devkit-v1></wokwi-esp32-devkit-v1>
+
+## ESP32 boards
+
+| Name                                                           | Chip     | Description                                                                          |
+|----------------------------------------------------------------|----------|--------------------------------------------------------------------------------------|
+| ESP32-DevKitC V4                                               | ESP32    | Entry-level ESP32 development board                                                  |
+| ESP32 DevKit v1                                                | ESP32    | Popular ESP32 development board                                                      |
+| ESP32-S2-DevKitM-1                                             | ESP32-S2 | Entry-level ESP32-S2 development board                                               |
+| [Franzininho WiFi](../parts/board-franzininho-wifi)            | ESP32-S2 | Board by the Franzininho Community                                                   |
+| [Wemos S2 mini](https://wokwi.com/projects/355047217294313473) | ESP32-S2 | Small ESP32-S2 board by Wemos                                                        |
+| ESP32-S3-DevKitC-1                                             | ESP32-S3 | Entry-level ESP32-S3 development board                                               |
+| ESP32-C3-DevKitM-1                                             | ESP32-C3 | Entry-level ESP32-C3 development board                                               |
+| Rust Board ESP32-C3                                            | ESP32-C3 | ESP32-C3 board designed for [Rust trainings](https://github.com/esp-rs/std-training) |
+| ESP32-C5-DevKitC-1                                             | ESP32-C5 | Entry-level ESP32-C5 development board                                               |
+| ESP32-C6-DevKitC-1                                             | ESP32-C6 | Entry-level ESP32-C6 development board                                               |
+| ESP32-C61-DevKitC-1                                            | ESP32-C61 | Entry-level ESP32-C61 development board                                             |
+| ESP32-H2-DevKitM-1                                             | ESP32-H2 | Entry-level ESP32-H2 development board                                               |
+| ESP32-P4-Preview-DevKitC-1                                     | ESP32-P4 | ESP32-P4 pre-release virtual evaluation board (beta)                                 |
+| ESP32-S31-Function-CoreBoard-1                                 | ESP32-S31 | ESP32-S31 development board                                                         |
+| [ESP-Mosaico](../parts/board-esp-mosaico)                      | ESP32-S31 | ESP32-S31 kit with a 480x480 touch display                                          |
+| XIAO ESP32-C3                                                  | ESP32-C3 | ESP32-C3 board by Seeed Studio                                                       |
+| XIAO ESP32-C6                                                  | ESP32-C6 | ESP32-C6 board by Seeed Studio                                                       |
+| XIAO ESP32-S3                                                  | ESP32-S3 | ESP32-S3 board by Seeed Studio                                                       |
+
+You can contribute additional boards by sending a pull request to [wokwi-boards](https://github.com/wokwi/wokwi-boards).
+
+## Getting Started
+
+You can use the ESP32 simulator to run different kinds of applications:
+
+1. ESP32 Arduino Core projects (including ESP-IDF projects)
+2. MicroPython and CircuitPython projects (examples at https://wokwi.com/micropython)
+3. Rust projects (see https://wokwi.com/rust)
+4. Custom application firmware files (e.g. applications built using the ESP-IDF)
+
+### Arduino Core
+
+Start from the [Arduino-ESP32 Project Template](https://wokwi.com/projects/new/esp32), or from the
+[ESP32 Blink Example](https://wokwi.com/projects/305452382231200320).
+
+If you want to use third-party Arduino libraries, add a [libraries.txt file](./libraries) with the list of libraries that you use.
+
+### MicroPython
+
+Start from the [MicroPython ESP32 Project Template](https://wokwi.com/projects/new/micropython-esp32), or from the
+[MicroPython ESP32 Blink Example](https://wokwi.com/projects/305452627045384768).
+
+Note: While the simulation is running, press Ctrl+C inside the Serial Terminal to get into the _MicroPython REPL_. Alternatively, you can edit the Blink Example code and remove the while loop. For more information, check out the [MicroPython Guide](./micropython).
+
+### Custom Application Firmware
+
+Open the [ESP32 custom application project template](https://wokwi.com/projects/305457271083631168), and press "F1" in the code editor. Then choose "Upload Firmware and Start Simulation…". Choose any .bin, .elf or .uf2 file from your computer and the simulation will start.
+
+:::info
+When uploading a custom firmware, it's recommended to create a single .bin file that contains the bootloader, partition table, and
+application. You can use the [esptool merge_bin command](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/basic-commands.html#merge-binaries-for-flashing-merge-bin) to create such file.
+
+For ESP-IDF projects, you can also build a single UF2 file using the command: `idf.py uf2`. The file will be located in `build/uf2.bin`, and can be uploaded to the simulator.
+:::
+
+Using [Wokwi for VS Code](../vscode/getting-started) or the [Wokwi CLI](../wokwi-ci/getting-started)? Point `wokwi.toml` at your build output instead: see [PlatformIO projects](../vscode/platformio) and [ESP-IDF projects](../vscode/esp-idf).
+
+## Simulator Examples
+
+### Arduino Examples
+
+- [Blink](https://wokwi.com/projects/305566932847821378)
+- [Seven segment counter](https://wokwi.com/projects/305567166302782017)
+- [FastLED NeoPixel Blink](https://wokwi.com/projects/312460386125218368)
+- [WiFi Scanning](https://wokwi.com/projects/305569599398609473)
+
+### MicroPython Examples
+
+- [SSD1306 Example](https://wokwi.com/projects/305568836183130690)
+- [NeoPixels](https://wokwi.com/projects/305569065545499202)
+- [AES256 Encryption](https://wokwi.com/projects/321484545174012499)
+- [WiFi Scanning](https://wokwi.com/projects/305570169692881473)
+
+### ESP-IDF Examples
+
+The following examples use the ESP-IDF functions. They are compiled using Arduino ESP32 Core:
+
+- [Blink using FreeRTOS API](https://wokwi.com/projects/411723444725332993)
+- [Binary LED counter using FreeRTOS tasks](https://wokwi.com/projects/322609470223942226)
+- [GPIO button input + interrupts](https://wokwi.com/projects/342634722692694610)
+- [WiFi Example](https://wokwi.com/projects/411725624945943553)
+
+### Sming Framework
+
+Follow [this guide](https://sming.readthedocs.io/en/latest/experimental/wokwi.html) to simulate Sming Framework projects.
+
+## Simulation Features
+
+The table below covers the most popular ESP32 chips. For the current state of the other chips Wokwi supports (e.g. ESP32-C61, ESP32-H2, ESP32-S2, ESP32-S31), see the [esp32-test-binaries test results](https://github.com/wokwi/esp32-test-binaries/actions/workflows/test.yml).
+
+| Peripheral         | ESP32 | S3 | C3 | C5 | C6 | P4 | Notes                                                              |
+|--------------------|-------|----|----|----|----|----|--------------------------------------------------------------------|
+| Processor core(s)  | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| GPIO               | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | Interrupts supported                                               |
+| IOMUX              | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| PSRAM              | ✔️    | ✔️ | —  | ✔️ | —  | ✔️ | External SRAM \*                                                   |
+| UART               | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| USB                | —     | ✔️ | —  | —  | —  | ✔️ | Support for UART over USB (CDC)                                    |
+| USB Serial + JTAG  | —     | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | Serial supported, JTAG not.                                        |
+| I2C                | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | Master only. 10-bit addressing not supported.                      |
+| I2S                | 🟡    | ❌  | ❌  | ❌  | ❌  | ❌  | [Implementation in progress](https://github.com/wokwi/wokwi-features/issues/213) |
+| SPI                | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| TWAI               | 🟡    | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 |                                                                    |
+| RMT                | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                           |
+| LEDC PWM           | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | Used by analogWrite(), Servo, Buzzer, etc.                         |
+| MCPWM              | ❌     | ❌  | —  | ❌  | ❌  | ❌  |                                                                    |
+| PCNT               | ✔️    | ✔️ | —  | ✔️ | ✔️ | ✔️ |                                                                    |
+| DMA                | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| WiFi               | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | See the [ESP32 WiFi Guide](./esp32-wifi). ESP32-P4 uses ESP-Hosted. |
+| Bluetooth          | ❌     | ❌  | ❌  | ❌  | ❌  | —  |                                                                    |
+| Timers             | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| Watchdog           | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| Stack Guard        | —     | —  | ✔️ | ✔️ | ✔️ | ✔️ | Traps stack overflow via Debug Assist. RISC-V chips only.           |
+| RTC                | 🟡    | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | Only RTC Pull-up / Pull-down resistors                             |
+| ADC                | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| RNG                | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | Random Number Generator                                            |
+| AES Accelerator    | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| SHA Accelerator    | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| RSA Accelerator    | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |                                                                    |
+| ECC Accelerator    | —     | —  | —  | ✔️ | ✔️ | ✔️ |                                                                    |
+| Hall Effect Sensor | ❌     | —  | —  | —  | —  | —  |                                                                    |
+| ULP Processor      | ❌     | ❌  | —  | —  | ✔️ | ❌  |                                                                    |
+| GDB Debugging      | ✔️    | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | Works with [Wokwi for VS Code](../vscode/debugging)                |
+
+Legend:  
+✔️ - Simulated  
+🟡 - Partial implementation/work in progress  
+❌ - Not implemented (but if you need it, please [open a feature request](https://github.com/wokwi/wokwi-features/issues/new?labels=enhancement&template=feature_request.md))  
+— - Not available on this chip
+
+\* The amount of SRAM can be customized using the ["psramSize" attribute](#flash-and-memory-size).
+
+## WiFi Simulation
+
+See the [ESP32 WiFi Guide](./esp32-wifi).
+
+## Advanced Usage
+
+### Flash and memory size
+
+You can customize the size of flash and PSRAM by adding the following attributes to the chip:
+
+| Attribute | Description                                                | Default |
+|-----------|------------------------------------------------------------|---------|
+| flashSize | Flash size in MB. Valid values: "2", "4", "8", "16", "32". | "4"     |
+| psramSize | PSRAM size in MB. Valid values: "2", "4", "8".             | "4"     |
+| psramType | PSRAM type. Valid values: "quad", "octal".                 | "quad"  |
+
+- [ESP32 Custom flash size example](https://wokwi.com/projects/349656534768157267)
+
+In Wokwi for VS Code and the Wokwi CLI, add these attributes to the board part in your `diagram.json` file (see [PlatformIO projects](../vscode/platformio#flash-size-and-psram) for an example). The flash size must be large enough for the partition table your firmware was built with, otherwise filesystems such as LittleFS/SPIFFS will fail to mount.
+
+### USB CDC (Serial over USB) support
+
+Some chips have a built-in USB CDC (Serial over USB) + JTAG peripheral. These chips include the ESP32-S3, ESP32-C3/C5/C6/C61, and ESP32-H2. You can configure USB CDC support in Wokwi by adding the following attribute to the chip:
+
+```json
+{ 
+  "serialInterface": "USB_SERIAL_JTAG" 
+}
+```
+
+Note that you also need to remove any connections to the `$serialMonitor` pins from the `connections` section in your diagram.json file.
+
+### Custom Partition Table
+
+You can specifiy a custom partititon table by adding a "partitions.csv" file to your project. Check out the [ESP32 Partition Table Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/partition-tables.html) for the exact format of this file.
+
+- [ESP32 Custom partition table code example](https://wokwi.com/projects/337425600260080210)
+
+The `partitions.csv` file is only used by the simulator on Wokwi.com. In Wokwi for VS Code and the Wokwi CLI, the partition table comes from the firmware itself: load a full image that includes the partition table (see [PlatformIO projects](../vscode/platformio) / [ESP-IDF projects](../vscode/esp-idf)). An application-only image runs with Wokwi's default partition table.
+
+### Custom firmware offset
+
+When loading a custom firmware, you can specify the offset of the firmware in the flash memory. By default, Wokwi will look at the firmware binary and try to figure out the offset automatically, based on the presence of the bootloader and the type of the chip. If Wokwi can't figure out the offset, it will assume that your firmware is an application firmware and load it at offset 0x10000.
+
+You can specify the offset manually by adding the following attribute to the chip:
+
+| Attribute      | Description                                           | Default |
+|----------------|-------------------------------------------------------|---------|
+| firmwareOffset | Offset of the firmware in the flash memory, in bytes. | ""      |
+
+### Changing the MAC address
+
+You can change the MAC address of the WiFi interface by adding the following attribute to the chip:
+
+| Attribute  | Description                                                 | Default             |
+|------------|-------------------------------------------------------------|---------------------|
+| macAddress | MAC address of the WiFi interface, e.g. "24:0a:c4:12:45:56" | "24:0a:c4:00:01:10" |
+
+### Choosing a different chip revision
+
+For the ESP32-P4, you can choose between different [chip revisions](https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/system/chip_revision.html) by adding the following attribute to the chip:
+
+| Attribute     | Description                                  | Default |
+|---------------|----------------------------------------------|---------|
+| chipRevision  | Chip revision. Valid values: "1.0" or "3.1"  | "3.1"   |
+
+Note that code built for a specific chip revision may not work on other revisions.
+
+### CPU frequency limit
+
+In order to achieve a higher simulation speed, Wokwi automatically limits the maximum simulated CPU frequency. In most cases, this doesn't affect the behavior of the simulated program and allows you to run the simulation considerably faster. The CPU frequency limit does not affect the timing of the peripherals, only the speed instructions are executed.
+
+To override the maximum CPU frequency, you can set the "cpuFrequency" attribute to a specific frequency (e.g. "16" for 16 MHz) or "max" to run the CPU at the maximum frequency (not recommended - it will make the simulation much slower). The default value is "auto", which means that Wokwi will automatically cap the CPU frequency to about 8 MHz.
+
+| Attribute    | Description                                         | Default |
+|--------------|-----------------------------------------------------|---------|
+| cpuFrequency | Maximum simulated CPU frequency, e.g. "16" or "max" | "auto"  |
+
+### Heap monitoring in CI
+
+For ESP-IDF firmware, the [Wokwi CLI](../wokwi-ci/cli-usage) can follow the free heap during a simulation and fail the run when it drops below a limit, which catches memory leaks without any logging code in your firmware. See [Heap Monitoring](../wokwi-ci/heap-monitoring).

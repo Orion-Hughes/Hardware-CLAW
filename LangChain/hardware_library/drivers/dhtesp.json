@@ -1,0 +1,15 @@
+{
+  "id": "dhtesp",
+  "properties_ref": "supplements/sources/code/DHTesp/library.properties",
+  "api_refs": [
+    "supplements/sources/code/DHTesp/DHTesp.cpp",
+    "supplements/sources/code/DHTesp/DHTesp.h",
+    "supplements/sources/code/DHTesp/library.properties",
+    "supplements/sources/code/DHTesp/README.md"
+  ],
+  "example_refs": [
+    "supplements/sources/code/DHTesp/examples/DHT_ESP32/DHT_ESP32.ino",
+    "supplements/sources/code/DHTesp/examples/DHT_ESP8266/DHT_ESP8266.ino",
+    "supplements/sources/code/DHTesp/examples/DHT_Multi_ESP32/DHT_Multi_ESP32.ino"
+  ]
+}

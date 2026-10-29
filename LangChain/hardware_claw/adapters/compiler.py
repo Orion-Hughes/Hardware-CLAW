@@ -1,7 +1,6 @@
 """Bounded asynchronous PlatformIO adapter. Builds snapshots outside live files/."""
 import asyncio
 import hashlib
-import json
 import os
 import re
 import shutil
@@ -11,17 +10,16 @@ import time
 import uuid
 from pathlib import Path
 
-from ..projects.service import ROOT, atomic_json, digest, fail
+from ..projects.service import ROOT, ProjectError, atomic_json, fail
 from ..validation.files import check
+from ..validation.report import allows
 from .. import limits
+from .build_state import (FINGERPRINT_VERSION, build_inputs, environment_fingerprint,
+                          failure_kind, fingerprint, retry_problem)
 
 PIO = ROOT / "tools/platformio-venv/Scripts/pio.exe"
 BUILD_TIMEOUT = limits.BUILD_TIMEOUT_SECONDS
 MAX_LOG = 8 * 1024 * 1024
-
-
-def fingerprint(state):
-    return digest(json.dumps(state["files"], sort_keys=True, ensure_ascii=False))
 
 
 async def kill_tree(process):
@@ -86,6 +84,7 @@ def compiler_env(work):
 
 async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
     started = time.monotonic()
+    started_at = time.time()
     with project.locked():
         state = project._load()
         project._check_version(state, expected_version)
@@ -93,12 +92,13 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
         if state["template"] != "vscode":
             fail("UNSUPPORTED_TEMPLATE", "编译工具当前仅支持vscode受控模板。")
         report = project._summary(state)["file_check"]
-        if not report or report["verdict"] != "pass" or check(state)["verdict"] != "pass":
-            fail("CHECK_REQUIRED", "先对当前版本运行check_project_files并通过。")
+        if not allows(report, "build") or not allows(check(state), "build"):
+            fail("CHECK_REQUIRED", "先对当前版本运行check_project_files；build阶段不能有阻断项。")
         source_hash = fingerprint(state)
-        previous = project.build_status(state)
-        if isinstance(previous, dict) and previous.get("source_sha256") == source_hash and previous["verdict"] == "fail":
-            fail("NO_PROGRESS", "相同源码已编译失败，先根据日志修改，不能原样重复编译。")
+        environment = environment_fingerprint(ROOT, PIO)
+        problem = retry_problem(project, state, environment)
+        if problem:
+            fail("NO_PROGRESS", problem)
     if not PIO.is_file():
         fail("COMPILER_UNAVAILABLE", "受控PlatformIO编译器未安装。")
     # This is an application-level gate, NOT an OS sandbox. Do not accept host include paths.
@@ -115,14 +115,22 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8", newline="")
     log = work / "build.log"
+    cancelled = False
     try:
         verdict, code = await run_process([str(PIO), "run", "--project-dir", str(work), "--environment", "esp32s3"],
                                           work, compiler_env(work), log, timeout)
     except OSError:
-        fail("COMPILER_START_FAILED", "编译器无法启动。")
+        verdict, code = "tool_error", None
+        log.write_text("Compiler could not start; inspect the controlled installation.", encoding="utf-8")
+    except asyncio.CancelledError:
+        verdict, code, cancelled = "cancelled", None, True
     text = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
-    diagnostics = [line for line in text.splitlines() if re.search(r"error:|fatal|FAILED|Error", line, re.I)]
+    diagnostics = [line for line in text.splitlines() if re.search(
+        r"error:|fatal|FAILED|Error|could not|unable to|not found|undefined reference|multiple definition", line, re.I)]
     data = {"version": expected_version, "source_sha256": source_hash, "attempt": attempt,
+            "fingerprint_version": FINGERPRINT_VERSION, "build_input_paths": sorted(build_inputs(state)),
+            "environment_before_sha256": environment, "environment_sha256": environment_fingerprint(ROOT, PIO),
+            "started_at": started_at, "finished_at": time.time(),
             "verdict": verdict, "exit_code": code, "elapsed_seconds": round(time.monotonic() - started, 2),
             "log": str(log), "diagnostics": diagnostics[-20:], "log_tail": text[-2500:],
             "artifacts": {}, "simulation": "not_run", "behavior": "not_run"}
@@ -130,17 +138,27 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
     if verdict == "pass" and not all(path.is_file() and path.stat().st_size > 0 for path in outputs.values()):
         data["verdict"] = "tool_error"
         data["diagnostics"] = ["Compiler exited zero but firmware artifacts are missing."]
+    data["failure_kind"] = failure_kind(data["verdict"], text)
+    atomic_json(work / "result.json", data)
     with project.locked():
-        current = project._load()
-        project._check_version(current, expected_version)
-        project._check_live_files(current)
-        if fingerprint(current) != source_hash:
-            fail("VERSION_CONFLICT", "编译期间源码发生变化，不能交付旧固件。")
+        target = project.meta / "builds" / attempt
+        target.mkdir(parents=True)
         if data["verdict"] == "pass":
-            target = project.meta / "builds" / attempt
-            target.mkdir(parents=True)
             for name, source in outputs.items():
                 shutil.copyfile(source, target / name)
                 data["artifacts"][name] = {"path": str(target / name), "sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "bytes": source.stat().st_size}
+        try:
+            current = project._load()
+            project._check_version(current, expected_version)
+            project._check_live_files(current)
+            if fingerprint(current) != source_hash:
+                fail("VERSION_CONFLICT", "编译期间源码发生变化，不能交付旧固件。")
+        except ProjectError:
+            data["stale"] = True
+            atomic_json(target / "result.json", data)
+            raise
+        atomic_json(target / "result.json", data)
         atomic_json(project.meta / "build.json", data)
+    if cancelled:
+        raise asyncio.CancelledError
     return data

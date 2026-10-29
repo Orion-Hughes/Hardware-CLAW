@@ -1,0 +1,21 @@
+{
+  "id": "ssd1306",
+  "properties_ref": "upstream/libraries/Adafruit_SSD1306/library.properties",
+  "api_refs": [
+    "upstream/libraries/Adafruit_SSD1306/.github/ISSUE_TEMPLATE.md",
+    "upstream/libraries/Adafruit_SSD1306/.github/PULL_REQUEST_TEMPLATE.md",
+    "upstream/libraries/Adafruit_SSD1306/Adafruit_SSD1306.cpp",
+    "upstream/libraries/Adafruit_SSD1306/Adafruit_SSD1306.h",
+    "upstream/libraries/Adafruit_SSD1306/library.properties",
+    "upstream/libraries/Adafruit_SSD1306/README.md",
+    "upstream/libraries/Adafruit_SSD1306/splash.h"
+  ],
+  "example_refs": [
+    "upstream/libraries/Adafruit_SSD1306/examples/OLED_featherwing/OLED_featherwing.ino",
+    "upstream/libraries/Adafruit_SSD1306/examples/ssd1306_128x32_i2c/ssd1306_128x32_i2c.ino",
+    "upstream/libraries/Adafruit_SSD1306/examples/ssd1306_128x32_spi/ssd1306_128x32_spi.ino",
+    "upstream/libraries/Adafruit_SSD1306/examples/ssd1306_128x64_i2c/ssd1306_128x64_i2c.ino",
+    "upstream/libraries/Adafruit_SSD1306/examples/ssd1306_128x64_spi/ssd1306_128x64_spi.ino",
+    "upstream/libraries/Adafruit_SSD1306/examples/ssd1306_64x32_i2c/ssd1306_64x32_i2c.ino"
+  ]
+}

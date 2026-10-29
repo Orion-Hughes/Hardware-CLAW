@@ -1,0 +1,74 @@
+{
+  "schema_version": 3,
+  "id": "st7789_2in_240x320",
+  "name": "ST7789 2英寸240×320 SPI蓝板（8针）",
+  "kind": "display",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "块",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": null,
+    "candidate_part_type": "board-st7789",
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "SPI_CLOCK": "SCL",
+      "SPI_MOSI": "SDA",
+      "RESET": "RST",
+      "DATA_COMMAND": "DC",
+      "CHIP_SELECT": "CS",
+      "BACKLIGHT": "BL"
+    },
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [
+    "st7789",
+    "gfx",
+    "busio"
+  ],
+  "required_headers": [
+    "SPI.h",
+    "Adafruit_GFX.h",
+    "Adafruit_ST7789.h"
+  ],
+  "document_refs": [
+    "supplements/sources/waveshare-st7789-reference.html"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "blocked",
+  "blockers": [
+    "原采购240×320条目不自动替换为240×240；本阶段请显式选用st7789_240x240_simulation。"
+  ],
+  "controls": [],
+  "simulation_supply_v": null,
+  "unknowns": [
+    "采购模块接头、供电与背光电路",
+    "采购模块初始化方向/反色参数",
+    "240×320对应仿真模型"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification",
+  "physical_display": {
+    "controller": "ST7789",
+    "width_px": 240,
+    "height_px": 320,
+    "evidence_ref": "../../references/HARDWARE_INVENTORY.md",
+    "verification_status": "purchase_record_not_physical_verification"
+  }
+}

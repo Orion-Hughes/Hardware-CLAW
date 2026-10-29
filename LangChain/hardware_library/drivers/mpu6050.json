@@ -1,0 +1,21 @@
+{
+  "id": "mpu6050",
+  "properties_ref": "upstream/libraries/Adafruit_MPU6050/library.properties",
+  "api_refs": [
+    "upstream/libraries/Adafruit_MPU6050/.github/ISSUE_TEMPLATE.md",
+    "upstream/libraries/Adafruit_MPU6050/.github/PULL_REQUEST_TEMPLATE.md",
+    "upstream/libraries/Adafruit_MPU6050/Adafruit_MPU6050.cpp",
+    "upstream/libraries/Adafruit_MPU6050/Adafruit_MPU6050.h",
+    "upstream/libraries/Adafruit_MPU6050/code-of-conduct.md",
+    "upstream/libraries/Adafruit_MPU6050/library.properties",
+    "upstream/libraries/Adafruit_MPU6050/README.md"
+  ],
+  "example_refs": [
+    "upstream/libraries/Adafruit_MPU6050/examples/basic_readings/basic_readings.ino",
+    "upstream/libraries/Adafruit_MPU6050/examples/motion_detection/motion_detection.ino",
+    "upstream/libraries/Adafruit_MPU6050/examples/MPU6050_oled/MPU6050_oled.ino",
+    "upstream/libraries/Adafruit_MPU6050/examples/mpu6050_unifiedsensors/mpu6050_unifiedsensors.ino",
+    "upstream/libraries/Adafruit_MPU6050/examples/plotter/plotter.ino",
+    "upstream/libraries/Adafruit_MPU6050/examples/sleep_demo/sleep_demo.ino"
+  ]
+}

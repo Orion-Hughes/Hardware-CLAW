@@ -1,0 +1,52 @@
+{
+  "schema_version": 3,
+  "id": "esp32_s3_devkitc1_n32r16v",
+  "name": "ESP32-S3-DevKitC-1 N32R16V（采购记录32MB Flash/16MB PSRAM）",
+  "kind": "board",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "块",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "record_role": "owned_hardware",
+  "simulation": {
+    "part_type": "board-esp32-s3-devkitc-1",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {}
+  },
+  "compatibility": {
+    "framework": "arduino-esp32 2.0.17",
+    "platform_ref": "supplements/esp32_s3_simulation.json",
+    "scope": "simulation_only_not_physical_board_qualification"
+  },
+  "driver_ids": [],
+  "required_headers": [
+    "Arduino.h"
+  ],
+  "document_refs": [
+    "upstream/wokwi-docs/docs/guides/esp32.md",
+    "supplements/sources/espressif-devkitc.html",
+    "supplements/sources/espressif-gpio.html"
+  ],
+  "platform_api_refs": [
+    "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+    "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+    "upstream/platform/arduino-esp32-2.0.17/Wire.cpp"
+  ],
+  "generation_status": "documented_not_tested",
+  "blockers": [],
+  "controls": [],
+  "simulation_supply_v": null,
+  "unknowns": [
+    "真实板卡版本及与官方原理图的一致性",
+    "N32R16V实际Octal Flash/PSRAM、分区和烧录配置",
+    "所选仿真构建配置的实际编译/运行结果"
+  ],
+  "association_scope": "local_binding_to_upstream_sources_not_official_hardware_certification"
+}
