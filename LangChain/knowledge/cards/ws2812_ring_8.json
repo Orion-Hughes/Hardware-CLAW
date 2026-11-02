@@ -1,0 +1,168 @@
+{
+  "schema_version": 3,
+  "id": "ws2812_ring_8",
+  "name": "WS2812 5V 8灯灯环（3P）",
+  "kind": "led",
+  "aliases": [
+    "WS2812",
+    "NeoPixel",
+    "灯环",
+    "RGB"
+  ],
+  "record_role": "owned_hardware",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "selection": {
+    "description": "8 颗可独立寻址 RGB LED 的 WS2812 灯环。",
+    "inputs": [
+      "像素数据"
+    ],
+    "outputs": [
+      "8 颗 LED 颜色",
+      "级联数据"
+    ],
+    "interfaces": [
+      "WS2812 串行数据"
+    ],
+    "constraints": [
+      "pixels=8 来自采购记录，不取模型默认灯数。",
+      "实物供电电流和输入逻辑阈值需按具体器件核对。"
+    ],
+    "pin_requirements": [
+      {
+        "signal": "DATA_INPUT",
+        "resource": "digital_output",
+        "notes": "发送WS2812数据，不能连接到DOUT"
+      }
+    ],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/parts/wokwi-led-ring.md",
+      "upstream/drivers/Adafruit_NeoPixel/Adafruit_NeoPixel.h",
+      "upstream/drivers/Adafruit_NeoPixel/library.properties",
+      "upstream/drivers/Adafruit_NeoPixel/README.md",
+      "upstream/drivers/Adafruit_NeoPixel/examples/simple/simple.ino",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/vendor/neopixel-best-practices.html",
+      "upstream/vendor/neopixel-power.html"
+    ]
+  },
+  "simulation": {
+    "part_type": "wokwi-led-ring",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "DATA_IN": "DIN"
+    },
+    "proposed_attrs": {
+      "pixels": "8"
+    },
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/wokwi-led-ring.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "match_status": "family_model_with_inventory_configuration"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "Adafruit_NeoPixel.h"
+    ],
+    "dependency_properties": [
+      "upstream/drivers/Adafruit_NeoPixel/library.properties"
+    ],
+    "simulation_supply_v": 5
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/parts/wokwi-led-ring.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "essential"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/drivers/Adafruit_NeoPixel/Adafruit_NeoPixel.h",
+        "purpose": "正式 API：参数、类型与方法声明。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_NeoPixel/library.properties",
+        "purpose": "库名称、固定版本、声明架构和依赖。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_NeoPixel/README.md",
+        "purpose": "驱动维护者的使用说明与限制。",
+        "read_when": "implementation",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_NeoPixel/examples/simple/simple.ino",
+        "purpose": "上游驱动示例；引脚、平台与业务行为不能直接套用。",
+        "read_when": "example_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/neopixel-best-practices.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/neopixel-power.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "采购芯片版本、真实颜色顺序和电流预算",
+      "真实电平转换/供电措施",
+      "固定库版本实际编译和仿真结果"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": "references/HARDWARE_INVENTORY.md"
+  }
+}

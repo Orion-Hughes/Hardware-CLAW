@@ -7,7 +7,7 @@ vscode固定配置由scaffold生成，导出包含真实固件的simulation文�
 
 这是开发方法，具体参数必须来自硬件查询工具。本阶段只生成仿真工程，不直接烧录实物。
 
-1. 用 search_hardware 选型，get_hardware_info 读取所选器件；板卡读取 include_shared。blocked/unreviewed/metadata_only不可充当已支持配置。没有查过不能宣称库里不存在。
+1. 用search_hardware的选型摘要确定器件，read_hardware一次传入所选板卡与外设，自动读取基础资料和公共平台配置。按需用references补读扩展原文，不逐个查询、不反复读取未变资料。blocked/unreviewed/metadata_only不可充当已支持配置。没有查过不能宣称库里不存在。
 2. get_project 查看绑定的工程和当前 version。无工程时说明应先在界面使用 `/new 工程需求`，或CLI的 `--new-project 名称 --question 需求`。
 3. update_project_design 保存目标、board_id、components（instance_id/hardware_id）、connections（完整Wokwi端点对）、dependencies（库名和版本）、assumptions。board固定实例名 mcu；所有端点使用资料原名。整个设计用 simulation_only=true 明确仿真范围。
 4. 生成两类布局之一：arduino包含 sketch.ino、diagram.json、libraries.txt、README.md，便于复制到Wokwi网页；platformio包含 src/main.cpp、diagram.json、platformio.ini、wokwi.toml、README.md，便于本地编译和CLI。模板类型由入口绑定；不要擅自变更。

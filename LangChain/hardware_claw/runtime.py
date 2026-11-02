@@ -11,6 +11,9 @@ from . import limits
 
 
 def error_message(exc):
+    from .coordinator.store import WorkflowError
+    if isinstance(exc, WorkflowError):
+        return f"{exc.code}：{exc}"
     name = type(exc).__name__
     if "Limit" in name or "Recursion" in name:
         return f"达到本轮调用预算，已停止（{name}）。请缩小问题范围后重试。"
@@ -30,7 +33,7 @@ def final_delivery(project, require_delivery):
     return delivery, packaged
 
 
-async def execute_turn(model, question, history, emit, timeout=None, project=None, require_delivery=False):
+async def execute_turn(model, question, history, emit, timeout=None, project=None, require_delivery=False, coordinator=None):
     """Keep only completed user/answer pairs; never retain partial tool chains."""
     started = time.monotonic()
     if timeout is None:
@@ -45,16 +48,28 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
     invalid_calls = False
     run_id = uuid.uuid4().hex
     events = []
+    child_summaries = []
     sink = emit
     async def emit(kind, data):
         events.append({"kind": kind, "data": data})
+        if kind == 'stage_summary':
+            child_summaries.append(data)
         await sink(kind, data)
     delivery = None
     initial_version = project.get()["version"] if project else None
     try:
+        if coordinator is not None:
+            from .coordinator.agent import build_coordinator
+            if coordinator.builtin_stages:
+                from .stages.selection import attach_selection
+                attach_selection(coordinator, model, emit)
+            coordinator.begin_turn(question)
+            graph = build_coordinator(model, coordinator)
+        else:
+            graph = build_agent(model, project=project) if project else build_agent(model)
         # A fresh graph invocation resets per-run middleware counters.
         async with asyncio.timeout(timeout):
-            async for update in (build_agent(model, project=project) if project else build_agent(model)).astream(
+            async for update in graph.astream(
                 {"messages": [*history[-2*limits.HISTORY_TURNS:], HumanMessage(content=question)]},
                 config={"recursion_limit": limits.PROJECT_GRAPH_STEPS if project else limits.QUERY_GRAPH_STEPS}, stream_mode="updates",
             ):
@@ -75,6 +90,8 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
                             })
                             if msg.usage_metadata:
                                 usage.append(dict(msg.usage_metadata))
+                            if coordinator is not None:
+                                coordinator.record_usage(dict(msg.usage_metadata) if msg.usage_metadata else None)
                             if msg.invalid_tool_calls:
                                 invalid_calls = True
                                 await emit("invalid_tool_call", {"calls": msg.invalid_tool_calls})
@@ -97,7 +114,11 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
                                 tool_payloads[name]["result_characters"] += len(content)
                             await emit("tool_result", {"id": msg.tool_call_id, "content": msg.content})
         status = "completed" if answer and requested <= returned and not invalid_calls else "incomplete"
-        if project:
+        if coordinator is not None and status == 'completed':
+            outcome = coordinator.store.load(coordinator.task_id)['latest_outcome']
+            if outcome in {'blocked', 'needs_input', 'failed', 'cancelled'}:
+                status = outcome
+        if project and coordinator is None:
             require_delivery = require_delivery or project.get()["version"] != initial_version
             delivery, packaged = final_delivery(project, require_delivery)
             if packaged:
@@ -114,7 +135,8 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
                     status = "validation_failed"
                 elif verdict in {"tool_error", "unsupported"}:
                     status = "validation_unavailable"
-        if status in {"completed", "validation_failed", "validation_unavailable"}:
+        if status in {"completed", "validation_failed", "validation_unavailable"} or (
+                coordinator is not None and answer and status in {'blocked', 'needs_input', 'failed'}):
             history[:] = [*history[-2*(limits.HISTORY_TURNS-1):], HumanMessage(content=question), AIMessage(content=answer)]
         return status
     except asyncio.CancelledError:
@@ -124,20 +146,39 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
         await emit("error", {"text": error_message(exc)})
         return status
     finally:
+        main_model_calls = model_calls
+        main_usage = list(usage)
+        for child in child_summaries:
+            model_calls += child['model_responses']
+            usage.extend(u for u in child['usage'] if u is not None)
         summary = {
             "run_id": run_id, "project": delivery,
             "status": status, "elapsed_seconds": round(time.monotonic() - started, 2),
             "tool_requests": len(requested), "tool_results": len(returned),
             "model_responses": model_calls, "usage": usage,
+            "main_model_responses": main_model_calls, "main_usage": main_usage,
+            "child_runs": child_summaries,
             "budget_profile": limits.snapshot(), "effective_timeout_seconds": timeout,
             "response_metrics": response_metrics,
             "tool_payload_characters": tool_payloads,
             "input_tokens_reported": sum(u.get("input_tokens", 0) for u in usage) if usage else None,
             "output_tokens_reported": sum(u.get("output_tokens", 0) for u in usage) if usage else None,
             "tokens_reported": sum(u.get("total_tokens", 0) for u in usage) if usage else None,
-            "usage_complete": bool(model_calls) and len(usage) == model_calls and status in {"completed", "validation_failed", "validation_unavailable"},
+            "usage_complete": bool(model_calls) and len(usage) == model_calls
+                and all(c['usage_complete'] for c in child_summaries)
+                and status in {"completed", "validation_failed", "validation_unavailable", "blocked", "needs_input", "failed"},
         }
-        if project:
+        if coordinator is not None:
+            try:
+                summary['coordinator'] = coordinator.state()
+                if project:
+                    summary['project'] = project.delivery()
+                with coordinator.store.connect() as con:
+                    coordinator.store.save_record(con, coordinator.task_id,
+                        {'run_id': run_id, 'kind': 'main_turn', 'question': question, 'summary': summary, 'events': events})
+            except Exception:
+                summary['log_status'] = 'write_failed'
+        if project and coordinator is None:
             try:
                 require_delivery = require_delivery or project.get()["version"] != initial_version
                 if summary["project"] is None:

@@ -23,11 +23,11 @@ class RealCatalogTests(unittest.TestCase):
         self.catalog = KnowledgeCatalog()
 
     def test_search_all_local_and_inventory_filters(self):
-        self.assertEqual(self.catalog.search(limit=30)["total"], 11)
+        self.assertEqual(self.catalog.search(limit=30)["total"], 15)
         self.assertEqual(self.catalog.search(owned=True)["total"], 9)
-        self.assertEqual(self.catalog.search(owned=False)["total"], 2)
+        self.assertEqual(self.catalog.search(owned=False)["total"], 6)
         ready = self.catalog.search(generation_status="documented_not_tested")
-        self.assertEqual(ready["total"], 6)
+        self.assertEqual(ready["total"], 10)
 
     def test_display_default_is_virtual_without_relabeling_real_hardware(self):
         displays = self.catalog.search(kind="display")["items"]
@@ -82,7 +82,7 @@ class RealCatalogTests(unittest.TestCase):
 
     def test_legacy_reference_is_not_silently_ready(self):
         result = self.catalog.get("ssd1306_reference")
-        self.assertEqual(result["profile"]["schema_version"], 1)
+        self.assertEqual(result["profile"]["card_schema_version"], 3)
         self.assertEqual(result["summary"]["generation_status"], "unreviewed")
 
     def test_all_upstream_metadata_is_searchable_but_not_ready(self):
@@ -139,6 +139,14 @@ class DamagedCatalogTests(unittest.TestCase):
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(DEFAULT_KNOWLEDGE_ROOT / ref, dest)
         self.record_path = self.root / entry["path"]
+        # Keep these legacy-parser security fixtures independent of card storage.
+        # Real card validation and reference integrity are covered separately.
+        profile = KnowledgeCatalog().get("dht22_red_module")["profile"]
+        entry["path"] = "owned/dht22_red_module.json"
+        self.index["records"] = [entry]
+        self.record_path = self.root / entry["path"]
+        self.record_path.parent.mkdir(parents=True, exist_ok=True)
+        self.record_path.write_text(json.dumps(profile), encoding="utf-8")
         self.write_index()
         self.catalog = KnowledgeCatalog(self.root)
 
@@ -237,11 +245,12 @@ class QueryModel(BaseChatModel):
         elif self._step == 2:
             feedback = json.loads(next(m.content for m in reversed(messages) if isinstance(m, ToolMessage)))
             hardware_id = feedback["data"]["items"][0]["id"]
-            message = AIMessage(content="", tool_calls=[{"name": "get_hardware_info", "args": {"hardware_id": hardware_id}, "id": "detail-1", "type": "tool_call"}])
+            message = AIMessage(content="", tool_calls=[{"name": "read_hardware", "args": {"hardware_ids": [hardware_id]}, "id": "detail-1", "type": "tool_call"}])
         else:
             feedback = json.loads(next(m.content for m in reversed(messages) if isinstance(m, ToolMessage)))
-            assert feedback["data"]["profile"]["driver_profile"]["dependencies"][0]["version"] == "1.19"
-            assert feedback["data"]["summary"]["simulation_test"] == "not_run"
+            assert feedback["data"]["hardware"][0]["programming"]["dependencies"][0]["version"] == "1.19"
+            assert feedback["data"]["hardware"][0]["summary"]["simulation_test"] == "not_run"
+            assert feedback["data"]["complete"]
             message = AIMessage(content="DHT22资料已读，仿真尚未运行。")
         return ChatResult(generations=[ChatGeneration(message=message)])
 

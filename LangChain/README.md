@@ -1,12 +1,14 @@
 # Hardware-CLAW：硬件工程生成Agent
 
+2026-11-02新增可选主协调模式：网页输入 `/coordinator`，CLI使用 `--coordinator`；主Agent有状态、阶段委派、交付3个工具。选型子Agent已接入，可查询并交接；生成、验证子Agent仍未实现。独立测试选型：`python -m hardware_claw.stages --question "只做选型……"`（使用项目.venv）。原生成入口保留，详见[主Agent说明](../docs/COORDINATOR_IMPLEMENTATION.md)和[选型子Agent](../docs/SELECTION_AGENT.md)。
+
 当前功能：通过API运行LangChain Agent，查询硬件、读取通用技能/配置模板、生成文件、检查、编译、Wokwi CLI限时观察，并交付VS Code仿真文件夹。工程专用验收规则已移除，通用功能验收尚未实现。见[仿真工具说明](../docs/AGENT_SIMULATION.md)和[工具状态](../docs/TOOLS_IMPLEMENTATION_STATUS.md)。
 
 网页支持同一工程持续修改与原生历史侧栏；聊天和工程绑定保存在本地SQLite，详见[会话管理](../docs/CHAT_HISTORY.md)。
 
 正式第一版建设方向为完整的需求到工程生成程序，见[程序架构与数据流](../docs/GENERATOR_ARCHITECTURE.md)。工程操作、修订、检查、编译、仿真日志采集与交付已实现；需求驱动的通用验收待实现，禁止用单工程特例替代。
 
-2026-10-27更新：主Agent已注册`search_hardware` / `get_hardware_info`，使用现有API配置进行真实模型调用。原`get_board_info`教学工具不再注册。只测试工具而不调用LLM的方式仍保留，见 [硬件查询工具说明](hardware_claw/catalog/README.md)。
+2026-11-02硬件接口改为两个：`search_hardware`提供选型信息，`read_hardware`批量读取板卡与外设的基础使用资料，共用文档去重，扩展原文按需补读。旧查询包装不再向Agent注册。现有工程工具通过内存适配读取新卡，不保留重复的手写profile。见 [知识库结构](knowledge/README.md)、[硬件查询工具说明](hardware_claw/catalog/README.md) 和 [双工具测试记录](../docs/HARDWARE_QUERY_TESTS_20261102.md)。
 
 官方MCP交互观测已接入：inspect_simulation与read_simulation_evidence支持交互批次及完整证据分页读取；已确认的截图、电压等限制见[接入与实测](../docs/WOKWI_MCP_INTEGRATION.md)。
 

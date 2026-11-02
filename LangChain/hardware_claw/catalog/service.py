@@ -52,6 +52,7 @@ class KnowledgeCatalog:
 
     def __init__(self, root: Path = DEFAULT_KNOWLEDGE_ROOT):
         self.root = Path(root).absolute()
+        self._source_index = None
 
     def _path(self, ref: str, *, prefixes: tuple[str, ...]) -> Path:
         if not isinstance(ref, str) or not ref or "\\" in ref or ":" in ref:
@@ -88,6 +89,15 @@ class KnowledgeCatalog:
             raise CatalogError("READ_ERROR", "无法读取知识库文件。") from None
         if len(content) > MAX_FILE_BYTES:
             raise CatalogError("SOURCE_TOO_LARGE", "知识文件超过读取上限，请拆分或维护资料。")
+        if ref.startswith('upstream/') and (self.root / 'library.json').is_file():
+            if self._source_index is None:
+                lock, _ = self._json('sources.lock.json', prefixes=('sources.lock.json',))
+                entries = lock.get('files', [])
+                _require(isinstance(entries, list))
+                self._source_index = {item['local_path']: item['sha256'] for item in entries}
+                _require(len(self._source_index) == len(entries), '上游来源记录存在重复路径。')
+            if self._source_index.get(ref) != hashlib.sha256(content).hexdigest():
+                raise CatalogError('SOURCE_CHANGED', '上游资料缺少来源记录或内容哈希不匹配。')
         return content
 
     def _json(self, ref: str, *, prefixes: tuple[str, ...]) -> tuple[dict, dict]:
@@ -103,7 +113,7 @@ class KnowledgeCatalog:
 
     def _index(self) -> tuple[dict, dict]:
         data, provenance = self._json("catalog.json", prefixes=("catalog.json",))
-        if data.get("schema_version") not in (1, 2):
+        if data.get("schema_version") not in (1, 2, 3):
             raise CatalogError("UNSUPPORTED_SCHEMA", "不支持该知识库索引版本。")
         records, upstream = data.get("records"), data.get("upstream_parts")
         _require(isinstance(records, list) and isinstance(upstream, dict))
@@ -120,7 +130,10 @@ class KnowledgeCatalog:
         return data, provenance
 
     def _record(self, entry: dict) -> tuple[dict, dict]:
-        record, provenance = self._json(entry["path"], prefixes=("owned/", "reference/"))
+        record, provenance = self._json(entry["path"], prefixes=("cards/", "owned/", "reference/"))
+        if record.get('schema_version') == 3:
+            from .cards import to_profile
+            record = to_profile(self, record)
         if record.get("schema_version") not in (1, 2):
             raise CatalogError("UNSUPPORTED_SCHEMA", "不支持该硬件记录版本。")
         _require(record.get("id") == entry["id"], "硬件记录与索引ID不一致。")
@@ -136,7 +149,7 @@ class KnowledgeCatalog:
         if generation is not None:
             _require(isinstance(generation, dict))
             _require(isinstance(generation.get("status"), str))
-            _require(generation.get("status") in {"documented_not_tested", "blocked"})
+            _require(generation.get("status") in GENERATION_STATUSES)
             _require(isinstance(generation.get("blockers"), list))
             _require(all(isinstance(x, str) for x in generation["blockers"]))
             _require(bool(generation["blockers"]) == (generation["status"] == "blocked"))
@@ -159,6 +172,9 @@ class KnowledgeCatalog:
             "part_type": sim.get("part_type"), "candidate_part_type": sim.get("candidate_part_type"),
             "simulation_test": sim.get("simulation_test", "not_run"),
             "default_for": sorted(k for k, value in defaults.items() if value == record["id"]),
+            "selection": {k: v for k, v in record.get("selection", {}).items()
+                          if k in {"description", "inputs", "outputs", "interfaces", "constraints", "pin_requirements", "display"}},
+            "missing_information": record.get("missing_information", []),
         }
 
     def _definition(self, part_type: str, index: dict) -> tuple[dict, dict]:
@@ -259,7 +275,7 @@ class KnowledgeCatalog:
         shared_ref = (record.get("generation_profile") or {}).get("build_profile_ref")
         if include_shared and shared_ref:
             _require(isinstance(shared_ref, str))
-            shared, provenance["shared_configuration"] = self._json(shared_ref, prefixes=("supplements/",))
+            shared, provenance["shared_configuration"] = self._json(shared_ref, prefixes=("platforms/", "supplements/"))
             if shared.get("schema_version") != 1:
                 raise CatalogError("UNSUPPORTED_SCHEMA", "不支持该公共配置版本。")
         example_refs = (record.get("driver_profile") or {}).get("example_refs", [])

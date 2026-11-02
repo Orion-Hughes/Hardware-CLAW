@@ -1,0 +1,183 @@
+{
+  "schema_version": 3,
+  "id": "ps2_joystick",
+  "name": "PS2双轴按键摇杆模块",
+  "kind": "input",
+  "aliases": [
+    "PS2",
+    "joystick",
+    "摇杆"
+  ],
+  "record_role": "owned_hardware",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "selection": {
+    "description": "双轴模拟摇杆，含按压开关。",
+    "inputs": [
+      "水平/垂直操纵",
+      "按压"
+    ],
+    "outputs": [
+      "两路模拟量",
+      "一路按键电平"
+    ],
+    "interfaces": [
+      "ADC",
+      "GPIO input"
+    ],
+    "constraints": [
+      "需要两个 ADC 输入和一个按键输入；供电需匹配 MCU ADC 范围。"
+    ],
+    "pin_requirements": [
+      {
+        "signal": "VERTICAL",
+        "resource": "adc1_input",
+        "notes": "优先使用公共ADC1引脚集"
+      },
+      {
+        "signal": "HORIZONTAL",
+        "resource": "adc1_input",
+        "notes": "与VERTICAL使用不同ADC引脚"
+      },
+      {
+        "signal": "BUTTON",
+        "resource": "digital_input_pullup",
+        "notes": "低有效，软件消抖"
+      }
+    ],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+      "upstream/vendor/arduino-adc.html",
+      "upstream/vendor/arduino-2.0.17-adc.h"
+    ]
+  },
+  "simulation": {
+    "part_type": "wokwi-analog-joystick",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "VERTICAL": "VERT",
+      "HORIZONTAL": "HORZ",
+      "BUTTON": "SEL"
+    },
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/wokwi-analog-joystick.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "match_status": "generic_module_orientation_unverified"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "Arduino.h"
+    ],
+    "dependency_properties": [],
+    "simulation_supply_v": 3.3
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "essential"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/vendor/arduino-adc.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/arduino-2.0.17-adc.h",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "实物VRx/VRy方向和针序",
+      "实物模块供电兼容性及ADC标定",
+      "当前仿真平台的中心值和范围验证"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [
+    {
+      "name": "x",
+      "type": "float",
+      "range": [
+        -1,
+        1
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md"
+    },
+    {
+      "name": "y",
+      "type": "float",
+      "range": [
+        -1,
+        1
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md"
+    },
+    {
+      "name": "pressed",
+      "type": "int",
+      "range": [
+        0,
+        1
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-analog-joystick.md"
+    }
+  ],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": "references/HARDWARE_INVENTORY.md"
+  }
+}

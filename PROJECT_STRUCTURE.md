@@ -1,6 +1,8 @@
 # Hardware-CLAW 项目目录
 
-更新日期：2026-10-27。已实现Chainlit前端、共用runtime、10个工具、工程服务、小型契约与基础检查。最新实际目录及状态见 [TOOLS_IMPLEMENTATION_STATUS.md](docs/TOOLS_IMPLEMENTATION_STATUS.md)；以下原目录准备记录仍保留作历史。导航入口为 [README.md](README.md)，程序数据流与契约见 [GENERATOR_ARCHITECTURE.md](docs/GENERATOR_ARCHITECTURE.md)。
+主协调层位于 `LangChain/hardware_claw/coordinator/`，主提示词为 `LangChain/prompts/coordinator.md`，任务存储为 `workspace/.tasks/coordinator.sqlite3`（Git忽略）。选型子Agent在 `LangChain/hardware_claw/stages/selection.py`，系统Prompt在 `LangChain/prompts/selection.md`，阶段Skill在 `LangChain/skills/stages/selection.md`。生成、验证执行器尚未接入；原生成入口保留。见[主Agent说明](docs/COORDINATOR_IMPLEMENTATION.md)与[选型子Agent说明](docs/SELECTION_AGENT.md)。
+
+硬件资料结构更新：2026-11-02。当前知识库改为上游原文、15张硬件索引卡和有来源的补充说明；旧资料移至本地 `backups/hardware-cards-20261102/knowledge`，不参与运行时查询，也不提交Git。详见 [知识库入口](LangChain/knowledge/README.md)。当前工具及状态见 [TOOLS_IMPLEMENTATION_STATUS.md](docs/TOOLS_IMPLEMENTATION_STATUS.md)。下文非知识库部分仍包含2026-10-27的历史目录准备记录，不能据其“待实现”判断当前功能。导航入口为 [README.md](README.md)。
 
 ```text
 Hardware_CLAW/
@@ -31,9 +33,11 @@ Hardware_CLAW/
 │  │  ├─ catalog.json           全量上游类型及本地库存索引
 │  │  ├─ sources.lock.json      固定提交、来源、哈希与许可
 │  │  ├─ upstream/              146条Wokwi注册定义及相关官方资料
-│  │  ├─ owned/                 9类已购硬件 + 1个临时240×240仿真屏幕
-│  │  ├─ reference/             SSD1306等非采购仿真参考
-│  │  └─ supplements/           公共配置、补充来源与锁文件
+│  │  ├─ cards/                 15张连接层索引卡；采购状态由inventory明确记录
+│  │  ├─ guidance/              有来源的器件说明及统一阅读规则
+│  │  ├─ platforms/             明确适用范围的平台配置
+│  │  ├─ schemas/               索引卡JSON Schema
+│  │  └─ library.json           库版本及上游哈希校验开关
 │  ├─ prompts/                   正式Agent提示词位置，当前仅README
 │  ├─ templates/                 工程文件骨架位置，当前仅README
 │  ├─ skills/
@@ -99,17 +103,17 @@ LangChain、Wokwi、pio、tools保持原位。Wokwi runner以脚本层级定位�
 | 建议位置 | 内容 | 访问与状态 |
 |---|---|---|
 | `LangChain/knowledge/upstream/` | 固定版本Wokwi注册表、相关说明、board定义与许可 | 原样保存；版本和逐文件哈希见sources.lock.json，历史研究摘选仍留references |
-| `LangChain/knowledge/owned/`、`knowledge/reference/` | 纳入知识库的硬件及仿真参考 | 9类库存、1个临时240×240屏幕、1个SSD1306参考；owned中的inventory.owned才决定是否已购 |
-| `LangChain/knowledge/supplements/` | 公共S3配置、补充来源原文和锁文件 | owned条目统一补充电气/驱动/生成字段；来源已核对，编译仿真未运行 |
+| `LangChain/knowledge/cards/` | 选型连接层、信号映射、三组资料入口 | 15张卡：9类已购、1个仿真变体、5个参考；不保存另一份手写全量profile |
+| `LangChain/knowledge/guidance/`、`knowledge/platforms/` | 来源支持的注意事项和限定平台配置 | 不包含单工程补丁；器件使用验证本轮不执行 |
 | `LangChain/knowledge/catalog.json` | 146条上游类型与本地条目索引 | 已生成；运行controls尚未统一结构化，索引不代表运行验证通过 |
-| `LangChain/hardware_claw/catalog/` | 知识读取、检索和来源组合 | service.py及离线CLI已实现；两个tool已接入主Agent并完成真实API调用测试 |
+| `LangChain/hardware_claw/catalog/` | 知识读取、检索和来源组合 | cards.py适配现有工程接口，bundles.py组织批量使用资料；双工具离线与真实API测试见docs/HARDWARE_QUERY_TESTS_20261102.md |
 | `LangChain/hardware_claw/projects/` | 工程、设计状态、文件修订和导出 | 已建README；待实现 |
 | `LangChain/hardware_claw/contracts/` | 运行上下文、工程清单、工具结果等小型契约 | 已建README；具体类型/schema待实现 |
 | `LangChain/prompts/`、`LangChain/templates/` | 提示词版本与框架文件骨架 | 已建README；当前运行Prompt仍在agent.py |
 | `LangChain/hardware_claw/adapters/` | 编译/Wokwi CLI进程调用、日志及工件采集 | 现有预留；不包含模型裁决或任意shell执行 |
 | `LangChain/hardware_claw/validation/` | 文件完整性检查、后续场景模板、解析与判定 | 已建README；检查代码待实现 |
 | `LangChain/hardware_claw/harness/` | 路径/权限、预算、超时、取消与进程树回收 | 现有预留；分别限制模拟时间和墙钟时间 |
-| `LangChain/hardware_claw/tools/` | 硬件查询与上述适配器的Agent接口 | 主Agent使用hardware_catalog.py两个正式只读接口，教学hardware_info.py不再注册 |
+| `LangChain/hardware_claw/tools/` | 硬件查询与上述适配器的Agent接口 | hardware_catalog.py向Agent注册search_hardware/read_hardware；旧包装仅内部兼容；其余工具见当前工具清单 |
 | `LangChain/tests/` | 软件单元测试、模板参数检查、报告解析和退出机制测试 | 已有原型测试；不同于目标固件验收 |
 | `evaluations/cases/<case_id>/` | 需求、明确预期、冻结的测试集和基准图、错误注入定义 | cases目录已建；案例待建立，生成Agent只读 |
 | `evaluations/results/<run_id>/` | 正式评估报告、版本、证据和成本 | results目录已建；结果由执行器写入，生成Agent不可改判 |

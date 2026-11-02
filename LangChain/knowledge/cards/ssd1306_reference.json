@@ -1,0 +1,124 @@
+{
+  "schema_version": 3,
+  "id": "ssd1306_reference",
+  "name": "SSD1306 OLED（已有仿真参考，非已购）",
+  "kind": "display",
+  "aliases": [
+    "SSD1306",
+    "OLED",
+    "显示屏"
+  ],
+  "record_role": "reference",
+  "inventory": {
+    "owned": false,
+    "quantity": null,
+    "unit": null,
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "existing_simulation_example_not_purchased"
+  },
+  "selection": {
+    "description": "128×64 单色 OLED 仿真参考，未采购。",
+    "inputs": [
+      "I2C 命令与图像"
+    ],
+    "outputs": [
+      "单色图像"
+    ],
+    "interfaces": [
+      "I2C"
+    ],
+    "constraints": [
+      "board-ssd1306 与其他 SPI/裸控制器变体区分。"
+    ],
+    "pin_requirements": [],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/parts/board-ssd1306.md",
+      "upstream/wokwi-boards/boards/ssd1306/board.json",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/platform/arduino-esp32-2.0.17/Wire.h"
+    ]
+  },
+  "simulation": {
+    "part_type": "board-ssd1306",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "I2C_CLOCK": "SCL",
+      "I2C_DATA": "SDA"
+    },
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/board-ssd1306.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "match_status": "reference_only_not_owned"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [],
+    "dependency_properties": [],
+    "simulation_supply_v": null
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/parts/board-ssd1306.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/wokwi-boards/boards/ssd1306/board.json",
+        "purpose": "板定义：端点映射、内部模型与显示尺寸。",
+        "read_when": "wiring",
+        "load": "essential"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "unreviewed",
+    "blockers": [],
+    "missing_information": [
+      "将当前示例的尺寸、地址、驱动版本整理成可复用配置"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": null
+  }
+}

@@ -20,6 +20,7 @@ from hardware_claw.runtime import error_message, execute_turn
 from hardware_claw.projects.service import ProjectService, ProjectError
 from hardware_claw.chat_store import LocalChatStore, configure_local_auth
 from hardware_claw import limits
+from hardware_claw.coordinator import Coordinator, TaskStore
 
 configure_local_auth()
 _store = None
@@ -68,6 +69,7 @@ async def save_chat():
     chat_store().put("state", thread_id(), {
         "project_id": project.id if project else None,
         "mode": cl.user_session.get("mode") or "generate",
+        "coordinator_task_id": cl.user_session.get('coordinator_task_id'),
         "history": [{"role": "user" if isinstance(m, HumanMessage) else "assistant", "content": m.content} for m in history[-2*limits.HISTORY_TURNS:]],
     })
 
@@ -77,6 +79,7 @@ async def resume(thread):
     state = chat_store().get("state", thread["id"]) or {}
     cl.user_session.set("mode", state.get("mode", "generate"))
     cl.user_session.set("project", None)
+    cl.user_session.set('coordinator_task_id', state.get('coordinator_task_id'))
     cl.user_session.set("history", [HumanMessage(content=m["content"]) if m["role"] == "user" else AIMessage(content=m["content"]) for m in state.get("history", [])[-2*limits.HISTORY_TURNS:]])
     if state.get("project_id"):
         try:
@@ -105,8 +108,9 @@ async def start():
     cl.user_session.set("history", [])
     cl.user_session.set("project", None)
     cl.user_session.set("mode", "generate")
+    cl.user_session.set('coordinator_task_id', None)
     await save_chat()
-    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。仿真统一采集原始日志，自动功能验收尚未实现，不标记功能通过。每轮显示工具、耗时、Token及真实验证状态。").send()
+    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。`/coordinator` 切换新主协调模式（选型子Agent已接入，生成/验证阶段待实现）。仿真统一采集原始日志，自动功能验收尚未实现，不标记功能通过。每轮显示工具、耗时、Token及真实验证状态。").send()
 
 
 @cl.on_message
@@ -118,16 +122,30 @@ async def respond(message: cl.Message):
     if not question:
         return
     require_delivery = False
+    if question == '/coordinator' or question.startswith('/coordinator '):
+        project = cl.user_session.get('project')
+        task_id = cl.user_session.get('coordinator_task_id')
+        if not task_id:
+            task_id = TaskStore().create(project.id if project else None)
+        cl.user_session.set('coordinator_task_id', task_id)
+        cl.user_session.set('mode', 'coordinator')
+        cl.user_session.set('history', [])
+        await save_chat()
+        await cl.Message(content=f"已切换主协调模式，任务 `{task_id}`。现有工程绑定保留；选型子Agent已接入；生成和验证阶段尚未实现。输入 `/query` 或 `/new 需求` 可使用原流程。").send()
+        question = question.partition(' ')[2].strip()
+        if not question:
+            return
     if question == "/query":
         cl.user_session.set("project", None)
         cl.user_session.set("mode", "query")
         cl.user_session.set("history", [])
+        cl.user_session.set('coordinator_task_id', None)
         await save_chat()
         await cl.Message(content="已切换只读查询模式。已有工程保留在workspace；输入 `/new 需求` 恢复生成模式。").send()
         return
     try:
         # Default generation is an explicit UI mode, not keyword intent guessing.
-        if not question.startswith("/") and cl.user_session.get("project") is None and cl.user_session.get("mode") != "query":
+        if not question.startswith("/") and cl.user_session.get("project") is None and cl.user_session.get("mode") not in {"query", "coordinator"}:
             question = "/new " + question
         if question.startswith(("/new ", "/new-pio ", "/new-arduino ")):
             template = "platformio" if question.startswith("/new-pio ") else "arduino" if question.startswith("/new-arduino ") else "vscode"
@@ -135,6 +153,7 @@ async def respond(message: cl.Message):
             project = ProjectService.create("web-project", requirement, template)
             cl.user_session.set("project", project)
             cl.user_session.set("mode", "generate")
+            cl.user_session.set('coordinator_task_id', None)
             cl.user_session.set("history", [])
             await save_chat()
             question = requirement + "\n请实际完成绑定工程的文件生成、基础检查和导出。"
@@ -144,12 +163,13 @@ async def respond(message: cl.Message):
             project = ProjectService.open(question.split(" ", 1)[1].strip())
             cl.user_session.set("project", project)
             cl.user_session.set("mode", "generate")
+            cl.user_session.set('coordinator_task_id', None)
             cl.user_session.set("history", [])
             await save_chat()
             await cl.Message(content=f"已绑定工程 `{project.id}`，版本 {project.get()['version']}。可直接提出后续修改或导出要求。").send()
             return
         elif question.startswith("/"):
-            await cl.Message(content="命令不完整或未知。使用 `/new 需求`、`/project 工程ID` 或 `/query`；默认模式下也可直接输入工程需求。").send()
+            await cl.Message(content="命令不完整或未知。使用 `/new 需求`、`/project 工程ID`、`/query` 或 `/coordinator [需求]`。").send()
             return
     except ProjectError as exc:
         await cl.Message(content=f"{exc.code}：{exc}").send()
@@ -187,6 +207,13 @@ async def respond(message: cl.Message):
                         await cl.Message(content="截图预览未能通过证据校验，请查看工具记录；未使用未校验路径。").send()
         elif kind in ("model", "error", "host_export"):
             await cl.Message(content=data["text"]).send()
+        elif kind == 'stage_start':
+            await cl.Message(content=f"正在执行 `{data['stage']}` 子Agent；详细查询保存在阶段记录中。").send()
+        elif kind == 'stage_summary':
+            await cl.Message(content=(f"选型子Agent：{data['status']} · {data['model_responses']} 次模型响应 · "
+                f"{data['elapsed_seconds']} 秒 · Token {data['tokens_reported']}"
+                + ('' if data['usage_complete'] else '（提供方用量不完整）')),
+                elements=[cl.Text(name='选型阶段用量', content=json.dumps(data, ensure_ascii=False, indent=2), display='side')]).send()
         elif kind == "summary":
             tokens = data["tokens_reported"]
             label = str(tokens) if tokens is not None else "未返回"
@@ -194,7 +221,8 @@ async def respond(message: cl.Message):
                 label += "（仅已返回部分）"
             await cl.Message(content=(
                 f"本轮：{data['status']} · {data['elapsed_seconds']} 秒 · "
-                f"工具结果 {data['tool_results']}/{data['tool_requests']} · Token {label}\n\n"
+                f"主流程工具结果 {data['tool_results']}/{data['tool_requests']} · "
+                f"LLM响应 {data['model_responses']} 次 · Token {label}（含本轮子Agent）\n\n"
                 "查询完成不代表硬件验证通过。"
             ), elements=[cl.Text(name="本轮用量明细", content=json.dumps(data, ensure_ascii=False, indent=2), display="side")]).send()
             delivery = data.get("project")
@@ -210,12 +238,14 @@ async def respond(message: cl.Message):
         cl.user_session.set("history", history)
     try:
         project = cl.user_session.get("project")
-        model = create_model(max_tokens=limits.PROJECT_OUTPUT_TOKENS if project else limits.QUERY_OUTPUT_TOKENS)
+        is_coordinator = cl.user_session.get('mode') == 'coordinator'
+        coordinator = Coordinator(cl.user_session.get('coordinator_task_id'), store=TaskStore(), project=project, builtin_stages=True) if is_coordinator else None
+        model = create_model(max_tokens=limits.PROJECT_OUTPUT_TOKENS if project and not is_coordinator else limits.QUERY_OUTPUT_TOKENS)
     except Exception as exc:
         await cl.Message(content=error_message(exc)).send()
         return
     try:
-        await execute_turn(model, question, history, emit, project=project, require_delivery=require_delivery)
+        await execute_turn(model, question, history, emit, project=project, require_delivery=require_delivery, coordinator=coordinator)
     finally:
         await save_chat()
 

@@ -1,0 +1,117 @@
+{
+  "schema_version": 3,
+  "id": "speaker_8ohm_1w",
+  "name": "2030椭圆扬声器8Ω/1W（1.25mm插头）",
+  "kind": "audio_output",
+  "aliases": [
+    "扬声器",
+    "喇叭",
+    "speaker"
+  ],
+  "record_role": "owned_hardware",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "selection": {
+    "description": "采购记录为 8Ω/1W 扬声器，带连接头。",
+    "inputs": [
+      "音频功率信号"
+    ],
+    "outputs": [
+      "声音"
+    ],
+    "interfaces": [
+      "analog audio"
+    ],
+    "constraints": [
+      "需要合适的功放；不能视为蜂鸣器或直接 GPIO 负载。"
+    ],
+    "pin_requirements": [],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/guides/esp32.md",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/vendor/speaker-amplifier-reference.html"
+    ]
+  },
+  "simulation": {
+    "part_type": null,
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": null,
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "match_status": "no_matching_model_in_snapshot"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [],
+    "dependency_properties": [],
+    "simulation_supply_v": null
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/guides/esp32.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "reference"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/vendor/speaker-amplifier-reference.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "blocked",
+    "blockers": [
+      "未找到匹配的扬声器及功放仿真模型。",
+      "当前官方表中ESP32-S3的I2S未实现，不能据其他ESP32音频例程承诺S3可仿真。"
+    ],
+    "missing_information": [
+      "实际功放或音频板的型号、供电与接线",
+      "扬声器接头定义和功率限制方案",
+      "适用的模拟模型及音频验证路径"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": "references/HARDWARE_INVENTORY.md"
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "schema_version": 3,
+  "id": "dht22_red_module",
+  "name": "DHT22/AM2302 温湿度传感器（红板采购记录）",
+  "kind": "sensor",
+  "aliases": [
+    "DHT22",
+    "AM2302",
+    "温湿度"
+  ],
+  "record_role": "owned_hardware",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "selection": {
+    "description": "测量环境温度和相对湿度。",
+    "inputs": [
+      "供电",
+      "MCU 发起读取"
+    ],
+    "outputs": [
+      "温度 °C",
+      "相对湿度 %RH"
+    ],
+    "interfaces": [
+      "DHT 单数据线（非 I2C）"
+    ],
+    "constraints": [
+      "一个双向 GPIO；DHTesp 的 DHT22 最小采样周期为 2000ms。",
+      "采购红板针序和内置上拉未确认。"
+    ],
+    "pin_requirements": [
+      {
+        "signal": "DATA",
+        "resource": "digital_bidirectional",
+        "notes": "DHT协议需要GPIO输出低脉冲后转输入"
+      }
+    ],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/parts/wokwi-dht22.md",
+      "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md",
+      "upstream/drivers/DHTesp/DHTesp.h",
+      "upstream/drivers/DHTesp/library.properties",
+      "upstream/drivers/DHTesp/README.md",
+      "upstream/drivers/DHTesp/examples/DHT_ESP32/DHT_ESP32.ino",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/vendor/waveshare-dht-reference.html"
+    ]
+  },
+  "simulation": {
+    "part_type": "wokwi-dht22",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "DATA": "SDA",
+      "GROUND": "GND"
+    },
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/wokwi-dht22.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "match_status": "sensor_family_module_variant_unverified"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "DHTesp.h"
+    ],
+    "dependency_properties": [
+      "upstream/drivers/DHTesp/library.properties"
+    ],
+    "simulation_supply_v": 3.3
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/parts/wokwi-dht22.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md",
+        "purpose": "自动化仿真场景、控制输入及测试语法。",
+        "read_when": "simulation_testing",
+        "load": "reference"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/drivers/DHTesp/DHTesp.h",
+        "purpose": "正式 API：参数、类型与方法声明。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/drivers/DHTesp/library.properties",
+        "purpose": "库名称、固定版本、声明架构和依赖。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/DHTesp/README.md",
+        "purpose": "驱动维护者的使用说明与限制。",
+        "read_when": "implementation",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/DHTesp/examples/DHT_ESP32/DHT_ESP32.ino",
+        "purpose": "上游驱动示例；引脚、平台与业务行为不能直接套用。",
+        "read_when": "example_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/waveshare-dht-reference.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "guidance/dht22.md",
+        "purpose": "DHT 信号、显式型号、GPIO 参数与采样/错误 API 的来源说明。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "真实红板供电/接头与板载上拉",
+      "固定DHTesp版本在所选S3仿真构建基线的运行验证"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [
+    {
+      "name": "temperature",
+      "type": "number",
+      "unit": "celsius",
+      "source_ref": "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md"
+    },
+    {
+      "name": "humidity",
+      "type": "number",
+      "unit": "percent_rh",
+      "source_ref": "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md"
+    }
+  ],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": "references/HARDWARE_INVENTORY.md"
+  }
+}

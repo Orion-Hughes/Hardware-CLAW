@@ -1,13 +1,15 @@
 # Hardware-CLAW 工具清单与实现状态
 
-更新：2026-10-27。默认vscode模式已接入真实编译、统一Wokwi CLI限时观察及含固件文件夹交付。单工程专用验收与业务模板已删除，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
+2026-11-02新增可选主协调模式，只注册 `get_task_state`、`run_stage`、`deliver_project`。selection子Agent已接入，只开放search_hardware/read_hardware与结构化SelectionReport提交；其read_hardware默认选型视图，usage仅允许定向references。下表17个工具仍属于原生成流程，未全部开放给主Agent；generation、verification子Agent尚未实现。见[主协调层](COORDINATOR_IMPLEMENTATION.md)、[选型职责](SELECTION_AGENT.md)与[9轮API测试](SELECTION_AGENT_TESTS_20261102.md)。
+
+硬件接口更新：2026-11-02，硬件查询合并为search_hardware/read_hardware，现注册17个工具。新接口离线及真实API查询结果见[测试记录](HARDWARE_QUERY_TESTS_20261102.md)；下表其余编译/仿真结果是此前记录，不能外推为新库端到端验证。默认vscode模式保留编译与仿真接口，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
 
 ## 1. 已实现并接入Agent的17个工具
 
 | 工具 | 作用 | 实现位置 | 当前验证范围 |
 |---|---|---|---|
-| search_hardware | 从本地库存/上游索引发现元件 | tools/hardware_catalog.py → catalog/service.py | 原有离线测试、真实API；本轮与技能及设计流程联合使用 |
-| get_hardware_info | 参数、驱动、引脚、模拟模型、来源 | 同上 | 已查询DHT、板卡、屏幕与blocked/未知条目；不是实物验证 |
+| search_hardware | 发现元件并返回功能、I/O、接口、资源约束和缺口 | tools/hardware_catalog.py → catalog/service.py | 离线检索与真实Agent选型查询；不返回原文 |
+| read_hardware | 自动批量读取已选硬件基础资料，同一接口补读扩展原文 | tools/hardware_catalog.py → catalog/bundles.py | 全卡读取、批量去重、补读与预算/路径/哈希检查；真实API结果见测试记录 |
 | load_skill | 列出/读取维护好的开发流程 | tools/skills.py → skills/wokwi_generation.md | 真实Agent联合搜索/详情查询通过；不可安装或修改技能 |
 | load_template | 列出/读取只读平台配置 | tools/templates.py → templates/ | 白名单ID与SHA256；不提供专用业务示例 |
 | scaffold_project | 从设计生成固定配置与电路图 | projects/scaffold.py | 自动串口连接；固定构建配置；真实Agent综合生成 |
@@ -24,7 +26,7 @@
 | check_project_files | Python基础文件与部分一致性检查 | tools/project_tools.py → validation/files.py | 缺文件→Agent补齐→pass；错误GPIO定义、端点/连线不符、电源短接、依赖、配置检查 |
 | export_project | 当前修订ZIP与哈希清单 | tools/project_tools.py → projects/service.py | 真实检查→导出；离线验证旧检查不能导出、包不含密钥/环境/日志 |
 
-查询模式注册search_hardware/get_hardware_info/load_skill/load_template；绑定工程后注册全部17个。execution_status表示工具是否正常执行；行为读取evaluate_tests的verdict。默认底层服务、CLI及网页/new均使用vscode。导出可含失败工程供调试，ready_for_vscode不是行为通过。
+查询模式注册search_hardware/read_hardware/load_skill/load_template；绑定工程后注册全部17个。旧get_hardware_info/read_hardware_documents仅保留内部兼容，不向Agent注册。execution_status表示工具是否正常执行；行为读取evaluate_tests的verdict。默认底层服务、CLI及网页/new均使用vscode。导出可含失败工程供调试，ready_for_vscode不是行为通过。
 
 ## 2. 后续要实现的工具
 

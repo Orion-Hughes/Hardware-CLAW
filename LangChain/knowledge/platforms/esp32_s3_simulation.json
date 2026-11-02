@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "esp32_s3_arduino_simulation",
+  "scope": "simulation_only_not_n32r16v_flash_configuration",
+  "build": {
+    "platformio_platform": "espressif32@6.12.0",
+    "board": "esp32-s3-devkitc-1",
+    "framework": "arduino",
+    "arduino_core_version": "2.0.17",
+    "serial_baud": 115200,
+    "psram_required": false,
+    "notes": [
+      "本次选择的可复现仿真基线，不改已有工程或安装环境。",
+      "PlatformIO该板型原文为N8/8MB/无PSRAM，不能据此烧录N32R16V。",
+      "platform.json的框架依赖为~3.20017.0；完整工具链包锁定仍应在实际构建时记录。",
+      "Wokwi网页端的核心版本由平台提供，不能声称与此本地构建基线完全一致。"
+    ],
+    "source_refs": [
+      "upstream/platform/platform-espressif32/platform.json",
+      "upstream/platform/platform-espressif32/boards/esp32-s3-devkitc-1.json"
+    ]
+  },
+  "diagram_endpoints": {
+    "power_3v3": "3V3.1",
+    "power_5v": "5V",
+    "ground": "GND.1",
+    "uart0_tx": "TX",
+    "uart0_rx": "RX",
+    "source_ref": "upstream/wokwi-diagram-lint/parts/board-esp32-s3-devkitc-1.json"
+  },
+  "dependency_policy": {
+    "scope": "selected_direct_versions_not_complete_build_lock",
+    "rules": [
+      "依赖项的name取官方library.properties；PlatformIO包名需经包管理器解析，不猜测owner。",
+      "官方依赖清单是递归依赖依据；列出的版本不等于已经下载或编译。",
+      "生成工程时保留所选版本并记录实际解析结果，运行中不搜索硬件规格。"
+    ]
+  },
+  "gpio_policy": {
+    "preferred_digital_gpio": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      21
+    ],
+    "preferred_adc1_gpio": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "avoid_strapping_gpio": [
+      0,
+      3,
+      45,
+      46
+    ],
+    "reserve_native_usb_gpio": [
+      19,
+      20
+    ],
+    "reserve_uart0_gpio": [
+      43,
+      44
+    ],
+    "reserve_onboard_led_variant_gpio": [
+      38,
+      48
+    ],
+    "unavailable_on_wroom2_gpio": [
+      35,
+      36,
+      37
+    ],
+    "notes": [
+      "这是保守分配策略，不是芯片完整引脚表。引脚列表应与上游板卡端点取交集。",
+      "GPIO19/20用于原生USB；GPIO43/44用于UART0。",
+      "GPIO3也是ADC1引脚，但默认避开启动绑带脚。",
+      "SPI时钟/数据可共享总线；CS/DC/RST等独占信号不得与其他外设冲突。",
+      "按具体模块资料更新资源限制，不把Wokwi能连线当成实物可用。"
+    ],
+    "source_refs": [
+      "upstream/vendor/espressif-devkitc.html",
+      "upstream/vendor/espressif-gpio.html"
+    ]
+  },
+  "observation": {
+    "serial": "115200波特率；日志是程序输出，不独立证明执行器或屏幕状态。",
+    "runtime_tests": "not_run",
+    "source_refs": [
+      "upstream/wokwi-docs/docs/wokwi-ci/automation-scenarios.md"
+    ]
+  },
+  "policy": [
+    "缺少必要资料时返回blocked，禁止任务运行中临时联网补规格。",
+    "采用资料级配置不代表编译或仿真通过；每个工程仍需Python基础检查和后续人工/仿真检查。"
+  ]
+}

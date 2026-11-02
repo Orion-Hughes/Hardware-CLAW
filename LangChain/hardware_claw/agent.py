@@ -6,6 +6,8 @@ import os
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelCallLimitMiddleware, ToolCallLimitMiddleware
 from .api_config import ApiConfigError, create_model
+from .coordinator.store import WorkflowError
+from .projects.service import ProjectError
 from . import limits
 
 from .tools.hardware_catalog import HARDWARE_TOOLS
@@ -15,12 +17,14 @@ from .tools.templates import load_template
 PROMPT = """你是Hardware-CLAW硬件资料Agent，目前只提供本地资料查询，不生成或修改工程。
 禁止为单个工程添加专用优化文件、业务模板、硬编码验收预期、专用日志解析或临时驱动补丁。使用通用工具与有来源的器件资料；无法泛化或验证时如实报告问题，不得用特例掩盖失败。当前仿真只采集日志，尚无自动功能验收。
 回答具体硬件问题必须先使用工具读取本地资料，不依赖记忆猜测规格。
-没有明确ID时先用search_hardware发现条目，再用get_hardware_info读取所选条目的详情。
+没有明确ID时先用search_hardware选型，返回selection已包含功能、输入输出、接口、引脚需求和约束。确定所需硬件后，用read_hardware一次传入板卡和多个外设的hardware_ids；不逐个查询。
+read_hardware默认自动提供基础Wokwi/API/补充原文、模型端点、驱动依赖和限定平台配置，共用文档只返回一次。不要仅凭搜索摘要猜驱动API。检查availability、errors和documents的status；complete只指本次请求的资料返回完整，不是硬件支持或验证通过。
+documents中reference是可选扩展资料，omitted是预算未装入。只有当前问题确实需要时，使用同一个read_hardware的references补读已登记引用，不重复基础包；不猜路径、不反复请求相同的超预算文件。单份资料无法装入最大预算时如实报告资料读取缺口。
 若用户已给出明确ID，直接查询；未知ID如实报告NOT_FOUND，不自动替换为别的硬件。
 默认查local；query是关键词AND匹配，不是自然语言语义搜索，必要时缩短关键词或用kind筛选。
+同一选型目标首次只使用一个关键词查询，不在同一批次并行搜索同义词、缩写或子串；结果不足时再调整。不同器件类别可以并行搜索。
 local已有足够匹配时不要重复搜索all/upstream；只有明确需要原始库或本地无结果时再扩大范围。
-需要GPIO或构建规则时include_shared=true；只有需要原文示例时才include_examples=true。
-同一轮已有且未变化的资料不要重复读取。首次选型读取完整资料，后续只补充所需profile分组可用sections；只补读例程或共享配置时可用sections=[]，省略的字段不是不存在。源码局部修改可用read_project_file的start_line/end_line，注意partial和完整文件hash；不能用局部内容覆盖整份文件。写操作返回版本和状态，不重复整份设计，需要时get_project重读。
+平台与GPIO配置由read_hardware自动提供；不需要额外的共享配置查询。已有且未变化的资料不要重复读取，补读只选当前需要的文件。源码局部修改可用read_project_file的start_line/end_line，注意partial和完整文件hash；不能用局部内容覆盖整份文件。写操作返回版本和状态，不重复整份设计，需要时get_project重读。
 区分inventory.owned、record_role及真实屏幕/仿真配置，不因条目位于owned目录就称它已购。
 工具execution_status=ok只表示查询执行成功。generation_status=blocked表示当前不能用于对应仿真生成；
 documented_not_tested表示资料配置尚未运行验证；metadata_only/unreviewed也不是已支持的完整生成方案。
@@ -53,7 +57,7 @@ def build_agent(model, project=None):
     )
 
 
-async def run(model, question, project=None, require_delivery=False):
+async def run(model, question, project=None, require_delivery=False, coordinator=None):
     from .runtime import execute_turn
 
     async def emit(kind, data):
@@ -63,14 +67,19 @@ async def run(model, question, project=None, require_delivery=False):
             print(f"[tool result] id={data['id']} {data['content']}")
         elif kind in ("model", "error", "host_export"):
             print(f"[{kind}] {data['text']}")
+        elif kind in ('stage_start', 'stage_summary'):
+            print(f"[{kind}] {data}")
         elif kind == "summary":
             print(f"[result] {data['status']}; not a hardware validation result")
             print(f"[elapsed] {data['elapsed_seconds']}s")
             print(f"[usage reported by provider] {data['usage'] or 'unavailable'}")
+            print(f"[model responses] {data['model_responses']}; main={data['main_model_responses']}")
             if data.get("project"):
                 print(f"[project] {data['project']}")
+            if data.get('coordinator'):
+                print(f"[task] {data['coordinator']['task_id']}")
 
-    status = await execute_turn(model, question, [], emit, project=project, require_delivery=require_delivery)
+    status = await execute_turn(model, question, [], emit, project=project, require_delivery=require_delivery, coordinator=coordinator)
     return 0 if status == "completed" else 2
 
 
@@ -83,6 +92,8 @@ def main():
     group.add_argument("--project", metavar="ID", help="Resume an existing workspace project")
     parser.add_argument("--template", choices=["arduino", "platformio", "vscode"], default="vscode")
     parser.add_argument("--require-delivery", action="store_true", help="Fail completion if current artifacts are not checked and exported")
+    parser.add_argument('--coordinator', action='store_true', help='Run the fixed-stage coordinator with selection child (generation/verification pending)')
+    parser.add_argument('--task', help='Resume a coordinator task ID; implies --coordinator')
     args = parser.parse_args()
     # No hosted tracing configured by this experiment.
     os.environ["LANGSMITH_TRACING"] = "false"
@@ -94,15 +105,30 @@ def main():
             project = ProjectService.create(args.new_project, args.question, args.template)
         elif args.project:
             project = ProjectService.open(args.project)
+        coordinator = None
+        if args.coordinator or args.task:
+            from .coordinator import Coordinator, TaskStore
+            store = TaskStore()
+            if args.task:
+                state = store.load(args.task)
+                if project is None and state['project_id']:
+                    project = ProjectService.open(state['project_id'])
+                task_id = args.task
+            else:
+                task_id = store.create(project.id if project else None)
+            coordinator = Coordinator(task_id, store=store, project=project, builtin_stages=True)
         if project:
             print(f"[project bound] {project.id}")
         model = create_model(ask_key=args.ask_key, max_tokens=limits.PROJECT_OUTPUT_TOKENS if project else limits.QUERY_OUTPUT_TOKENS)
         question = args.question
-        if args.new_project or args.require_delivery:
+        if (args.new_project or args.require_delivery) and coordinator is None:
             question += "\n请实际生成/完善绑定工程，运行基础文件检查并导出；只用已注册工具，未完成则如实说明。"
-        return asyncio.run(run(model, question, project, bool(args.new_project or args.require_delivery)))
+        return asyncio.run(run(model, question, project, bool(args.new_project or args.require_delivery), coordinator))
     except ApiConfigError as exc:
         print(f"[configuration] {exc}")
+        return 2
+    except (WorkflowError, ProjectError) as exc:
+        print(f"[stopped] {exc.code}: {exc}")
         return 2
     except Exception as exc:
         # Avoid dumping request headers, credentials or raw SDK error bodies.

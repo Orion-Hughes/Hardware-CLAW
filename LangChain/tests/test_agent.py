@@ -24,7 +24,7 @@ class ScriptedModel(BaseChatModel):
         self._count += 1
         if self._count == 1 or self.loop_forever:
             msg = AIMessage(content="", tool_calls=[{
-                "name": "get_hardware_info", "args": {"hardware_id": "dht22_red_module"},
+                "name": "read_hardware", "args": {"hardware_ids": ["dht22_red_module"]},
                 "id": f"call-{self._count}", "type": "tool_call",
             }])
         else:

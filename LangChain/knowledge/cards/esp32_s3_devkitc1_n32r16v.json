@@ -1,0 +1,160 @@
+{
+  "schema_version": 3,
+  "id": "esp32_s3_devkitc1_n32r16v",
+  "name": "ESP32-S3-DevKitC-1 N32R16V（采购记录32MB Flash/16MB PSRAM）",
+  "kind": "board",
+  "aliases": [
+    "esp32",
+    "esp32 s3",
+    "开发板",
+    "MCU"
+  ],
+  "record_role": "owned_hardware",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "块",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "selection": {
+    "description": "ESP32-S3 主控开发板，执行固件并连接外设。",
+    "inputs": [
+      "GPIO 输入",
+      "ADC 输入",
+      "串行总线数据"
+    ],
+    "outputs": [
+      "GPIO 输出",
+      "PWM",
+      "串行总线数据"
+    ],
+    "interfaces": [
+      "GPIO",
+      "ADC",
+      "I2C",
+      "SPI",
+      "UART"
+    ],
+    "constraints": [
+      "采购 N32R16V 与仿真构建配置分别记录，不能混用烧录参数。"
+    ],
+    "pin_requirements": [],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/guides/esp32.md",
+      "upstream/wokwi-boards/boards/esp32-s3-devkitc-1/board.json",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+      "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+      "upstream/vendor/espressif-devkitc.html",
+      "upstream/vendor/espressif-gpio.html"
+    ]
+  },
+  "simulation": {
+    "part_type": "board-esp32-s3-devkitc-1",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/board-esp32-s3-devkitc-1.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "match_status": "board_family_variant_unverified"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "Arduino.h"
+    ],
+    "dependency_properties": [],
+    "simulation_supply_v": null
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/guides/esp32.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/wokwi-boards/boards/esp32-s3-devkitc-1/board.json",
+        "purpose": "板定义：端点映射、内部模型与显示尺寸。",
+        "read_when": "wiring",
+        "load": "essential"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/espressif-devkitc.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/espressif-gpio.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "真实板卡版本及与官方原理图的一致性",
+      "N32R16V实际Octal Flash/PSRAM、分区和烧录配置",
+      "所选仿真构建配置的实际编译/运行结果"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": "references/HARDWARE_INVENTORY.md"
+  }
+}

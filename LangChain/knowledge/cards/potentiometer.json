@@ -1,0 +1,126 @@
+{
+  "schema_version": 3,
+  "id": "potentiometer",
+  "name": "旋钮电位器 模拟输入 potentiometer",
+  "kind": "input",
+  "aliases": [
+    "potentiometer",
+    "电位器",
+    "模拟输入"
+  ],
+  "record_role": "reference",
+  "inventory": {
+    "owned": false,
+    "scope": "simulation_reference_not_purchased"
+  },
+  "selection": {
+    "description": "可调模拟电位器。",
+    "inputs": [
+      "旋钮位置",
+      "供电"
+    ],
+    "outputs": [
+      "模拟电压"
+    ],
+    "interfaces": [
+      "ADC"
+    ],
+    "constraints": [
+      "供电与 ADC 允许输入范围需一致。"
+    ],
+    "pin_requirements": [],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/parts/wokwi-potentiometer.md",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h"
+    ]
+  },
+  "simulation": {
+    "part_type": "wokwi-potentiometer",
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "ANALOG_OUTPUT": "SIG"
+    },
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/wokwi-potentiometer.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "candidate_part_type": null,
+    "match_status": "reference_model_not_physical_module"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "Arduino.h"
+    ],
+    "dependency_properties": [],
+    "simulation_supply_v": 3.3
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/parts/wokwi-potentiometer.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "essential"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "采购模块电气/接头未验证；此条目仅覆盖Wokwi模型。"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [
+    {
+      "name": "position",
+      "type": "float",
+      "range": [
+        0.0,
+        1.0
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-potentiometer.md"
+    }
+  ],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": null
+  }
+}

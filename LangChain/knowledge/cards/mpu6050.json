@@ -1,0 +1,258 @@
+{
+  "schema_version": 3,
+  "id": "mpu6050",
+  "name": "MPU6050 六轴加速度/陀螺仪及温度传感器",
+  "kind": "sensor",
+  "aliases": [
+    "MPU6050",
+    "IMU",
+    "加速度",
+    "陀螺仪"
+  ],
+  "record_role": "reference",
+  "inventory": {
+    "owned": false,
+    "scope": "simulation_reference_not_purchased"
+  },
+  "selection": {
+    "description": "三轴加速度、三轴陀螺仪及芯片温度传感器。",
+    "inputs": [
+      "运动",
+      "总线命令"
+    ],
+    "outputs": [
+      "加速度",
+      "角速度",
+      "芯片温度"
+    ],
+    "interfaces": [
+      "I2C"
+    ],
+    "constraints": [
+      "芯片温度不自动等同环境温度；仿真输入单位与驱动返回单位分别读取原文。"
+    ],
+    "pin_requirements": [
+      {
+        "signal": "I2C_SDA",
+        "resource": "i2c_data"
+      },
+      {
+        "signal": "I2C_SCL",
+        "resource": "i2c_clock"
+      }
+    ],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md",
+      "upstream/drivers/Adafruit_MPU6050/Adafruit_MPU6050.h",
+      "upstream/drivers/Adafruit_MPU6050/library.properties",
+      "upstream/drivers/Adafruit_MPU6050/README.md",
+      "upstream/drivers/Adafruit_MPU6050/examples/basic_readings/basic_readings.ino",
+      "upstream/drivers/Adafruit_BusIO/library.properties",
+      "upstream/drivers/Adafruit_Sensor/library.properties",
+      "upstream/drivers/Adafruit-GFX-Library/library.properties",
+      "upstream/drivers/Adafruit_SSD1306/Adafruit_SSD1306.h",
+      "upstream/drivers/Adafruit_SSD1306/library.properties",
+      "upstream/drivers/Adafruit_SSD1306/README.md",
+      "upstream/drivers/Adafruit_SSD1306/examples/ssd1306_128x64_i2c/ssd1306_128x64_i2c.ino",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+      "upstream/drivers/Adafruit_Sensor/Adafruit_Sensor.h"
+    ]
+  },
+  "simulation": {
+    "part_type": "wokwi-mpu6050",
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "I2C_SDA": "SDA",
+      "I2C_SCL": "SCL",
+      "ADDRESS_SELECT": "AD0"
+    },
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/wokwi-mpu6050.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "candidate_part_type": null,
+    "match_status": "reference_model_not_physical_module"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "Adafruit_MPU6050.h",
+      "Adafruit_Sensor.h",
+      "Wire.h"
+    ],
+    "dependency_properties": [
+      "upstream/drivers/Adafruit_MPU6050/library.properties",
+      "upstream/drivers/Adafruit_BusIO/library.properties",
+      "upstream/drivers/Adafruit_Sensor/library.properties",
+      "upstream/drivers/Adafruit-GFX-Library/library.properties",
+      "upstream/drivers/Adafruit_SSD1306/library.properties"
+    ],
+    "simulation_supply_v": 3.3
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "essential"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/drivers/Adafruit_MPU6050/Adafruit_MPU6050.h",
+        "purpose": "正式 API：参数、类型与方法声明。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_MPU6050/library.properties",
+        "purpose": "库名称、固定版本、声明架构和依赖。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_MPU6050/README.md",
+        "purpose": "驱动维护者的使用说明与限制。",
+        "read_when": "implementation",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_MPU6050/examples/basic_readings/basic_readings.ino",
+        "purpose": "上游驱动示例；引脚、平台与业务行为不能直接套用。",
+        "read_when": "example_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_BusIO/library.properties",
+        "purpose": "传递依赖的版本与声明。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_Sensor/library.properties",
+        "purpose": "传递依赖的版本与声明。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-GFX-Library/library.properties",
+        "purpose": "传递依赖的版本与声明。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_SSD1306/Adafruit_SSD1306.h",
+        "purpose": "正式 API：参数、类型与方法声明。",
+        "read_when": "implementation",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_SSD1306/library.properties",
+        "purpose": "库名称、固定版本、声明架构和依赖。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_SSD1306/README.md",
+        "purpose": "驱动维护者的使用说明与限制。",
+        "read_when": "implementation",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_SSD1306/examples/ssd1306_128x64_i2c/ssd1306_128x64_i2c.ino",
+        "purpose": "上游驱动示例；引脚、平台与业务行为不能直接套用。",
+        "read_when": "example_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_Sensor/Adafruit_Sensor.h",
+        "purpose": "统一传感器事件结构、单位和类型声明。",
+        "read_when": "implementation",
+        "load": "essential"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "采购模块电气/接头未验证；此条目仅覆盖Wokwi模型。"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [
+    {
+      "name": "accelX",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "accelY",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "accelZ",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "rotationX",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "rotationY",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "rotationZ",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    },
+    {
+      "name": "temperature",
+      "type": "float",
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-mpu6050.md"
+    }
+  ],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": null
+  }
+}

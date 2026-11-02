@@ -8,6 +8,8 @@
 
 | 想找什么 | 入口 |
 |---|---|
+| 新主Agent、固定阶段与当前实现边界 | [主协调层说明](docs/COORDINATOR_IMPLEMENTATION.md) |
+| 选型子Agent、阶段工具与真实测试 | [选型子Agent](docs/SELECTION_AGENT.md) · [测试报告](docs/SELECTION_AGENT_TESTS_20261102.md) |
 | 项目目标、进度和下一步 | [项目计划](docs/HARDWARE_CLAW_PROJECT_PLAN.md) |
 | Agent、tools、测试与反馈怎么设计 | [Core与Capabilities](docs/HARDWARE_CLAW_CORE_AND_CAPABILITIES.md) |
 | 哪些工具已实现、接下来实现什么 | [完整工具清单与当前状态](docs/TOOLS_IMPLEMENTATION_STATUS.md) |
@@ -20,7 +22,8 @@
 | 正式生成程序怎么建设 | [模块、数据流、工程布局与工具契约](docs/GENERATOR_ARCHITECTURE.md) |
 | 运行当前LangChain原型 | [开发软件说明](LangChain/README.md) |
 | 现有Wokwi工程与执行脚本 | [仿真目录说明](Wokwi/README.md) |
-| Wokwi元件库、已购硬件映射与缺口 | [器件知识入口](LangChain/knowledge/README.md) |
+| 上游原文、硬件连接层和资料读取 | [器件知识入口](LangChain/knowledge/README.md) |
+| Wokwi兼容库的来源与信息范围 | [硬件资料库调研](docs/WOKWI_LIBRARY_SOURCE_SURVEY.md) |
 | 已购硬件 | [库存记录](references/HARDWARE_INVENTORY.md) |
 | Circuit Lab、circuit-synth、元件库与验证调研 | [本轮研究](references/research-20261026/README.md) |
 | 原始资料与来源 | [资料索引](references/SOURCES.md) |

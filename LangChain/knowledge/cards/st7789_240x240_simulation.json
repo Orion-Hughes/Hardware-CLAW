@@ -1,0 +1,252 @@
+{
+  "schema_version": 3,
+  "id": "st7789_240x240_simulation",
+  "name": "ST7789 240×240（临时仿真配置，非已购实物）",
+  "kind": "display",
+  "aliases": [
+    "ST7789",
+    "TFT",
+    "240x240",
+    "显示屏"
+  ],
+  "record_role": "simulation_variant",
+  "inventory": {
+    "owned": false,
+    "quantity": 0,
+    "unit": "块",
+    "evidence": null,
+    "scope": "user_requested_simulation_variant"
+  },
+  "selection": {
+    "description": "用于 Wokwi 的 240×240 ST7789 仿真变体，未采购。",
+    "inputs": [
+      "SPI 像素和命令",
+      "控制信号"
+    ],
+    "outputs": [
+      "彩色图像"
+    ],
+    "interfaces": [
+      "SPI"
+    ],
+    "constraints": [
+      "模型引用第三方 chip-st7789；不能据此认定采购屏已适配。"
+    ],
+    "pin_requirements": [
+      {
+        "signal": "SPI_CLOCK",
+        "resource": "spi_sck",
+        "notes": "接SCL"
+      },
+      {
+        "signal": "SPI_MOSI",
+        "resource": "spi_mosi",
+        "notes": "接SDA，不需要MISO"
+      },
+      {
+        "signal": "CHIP_SELECT",
+        "resource": "digital_output",
+        "notes": "接CS，低有效；模型依赖CS切换"
+      },
+      {
+        "signal": "DATA_COMMAND",
+        "resource": "digital_output",
+        "notes": "接DC，低为命令，高为数据"
+      },
+      {
+        "signal": "RESET",
+        "resource": "digital_output",
+        "notes": "接RST，低有效"
+      }
+    ],
+    "source_refs": [
+      "upstream/models/chip-st7789/docs/README.md",
+      "upstream/models/chip-st7789/src/main.c",
+      "upstream/wokwi-boards/boards/st7789/board.json",
+      "upstream/drivers/Adafruit-ST7735-Library/Adafruit_ST7789.h",
+      "upstream/drivers/Adafruit-ST7735-Library/library.properties",
+      "upstream/drivers/Adafruit-ST7735-Library/README.txt",
+      "upstream/drivers/Adafruit-ST7735-Library/examples/graphicstest/graphicstest.ino",
+      "upstream/drivers/Adafruit-GFX-Library/library.properties",
+      "upstream/drivers/Adafruit_BusIO/library.properties",
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/drivers/Adafruit-GFX-Library/Adafruit_GFX.h",
+      "upstream/drivers/Adafruit-ST7735-Library/Adafruit_ST77xx.h",
+      "upstream/vendor/waveshare-st7789-reference.html",
+      "upstream/vendor/arduino-2.0.17-spi.h",
+      "upstream/vendor/arduino-2.0.17-spi.cpp"
+    ],
+    "display": {
+      "width_px": 240,
+      "height_px": 240,
+      "scope": "simulation_model"
+    }
+  },
+  "simulation": {
+    "part_type": "board-st7789",
+    "candidate_part_type": null,
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "SPI_CLOCK": "SCL",
+      "SPI_MOSI": "SDA",
+      "RESET": "RST",
+      "DATA_COMMAND": "DC",
+      "CHIP_SELECT": "CS",
+      "BACKLIGHT": "BL"
+    },
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/board-st7789.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "match_status": "explicit_simulation_variant_not_physical_equivalent"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "SPI.h",
+      "Adafruit_GFX.h",
+      "Adafruit_ST7789.h"
+    ],
+    "dependency_properties": [
+      "upstream/drivers/Adafruit-ST7735-Library/library.properties",
+      "upstream/drivers/Adafruit-GFX-Library/library.properties",
+      "upstream/drivers/Adafruit_BusIO/library.properties"
+    ],
+    "simulation_supply_v": 3.3
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/models/chip-st7789/docs/README.md",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/models/chip-st7789/src/main.c",
+        "purpose": "Wokwi 模型端点、属性与仿真行为。",
+        "read_when": "wiring",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/wokwi-boards/boards/st7789/board.json",
+        "purpose": "板定义：端点映射、内部模型与显示尺寸。",
+        "read_when": "wiring",
+        "load": "essential"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/drivers/Adafruit-ST7735-Library/Adafruit_ST7789.h",
+        "purpose": "正式 API：参数、类型与方法声明。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-ST7735-Library/library.properties",
+        "purpose": "库名称、固定版本、声明架构和依赖。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-ST7735-Library/README.txt",
+        "purpose": "驱动维护者的使用说明与限制。",
+        "read_when": "implementation",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-ST7735-Library/examples/graphicstest/graphicstest.ino",
+        "purpose": "上游驱动示例；引脚、平台与业务行为不能直接套用。",
+        "read_when": "example_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-GFX-Library/library.properties",
+        "purpose": "传递依赖的版本与声明。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit_BusIO/library.properties",
+        "purpose": "传递依赖的版本与声明。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-GFX-Library/Adafruit_GFX.h",
+        "purpose": "图形和文本绘制 API。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-ST7735-Library/Adafruit_ST77xx.h",
+        "purpose": "ST77xx 共用绘制、SPI 与控制接口。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/vendor/waveshare-st7789-reference.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/arduino-2.0.17-spi.h",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/arduino-2.0.17-spi.cpp",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "guidance/st7789.md",
+        "purpose": "采购屏与仿真模型的尺寸差异；不提供未验证修复参数。",
+        "read_when": "before_selection",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "实际模型加载、编译、完整绘制与旋转2效果的运行验证"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": null
+  }
+}

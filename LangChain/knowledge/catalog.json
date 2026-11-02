@@ -1,128 +1,80 @@
 {
-  "schema_version": 2,
-  "scope": "owned_inventory_plus_explicit_simulation_reference",
-  "inventory_count": 9,
-  "reference_count": 2,
-  "registry_count": 146,
+  "schema_version": 3,
   "records": [
     {
       "id": "esp32_s3_devkitc1_n32r16v",
-      "name": "ESP32-S3-DevKitC-1 N32R16V（采购记录32MB Flash/16MB PSRAM）",
-      "owned": true,
-      "path": "owned/esp32_s3_devkitc1_n32r16v.json",
-      "match_status": "board_family_variant_unverified",
-      "part_type": "board-esp32-s3-devkitc-1",
-      "candidate_part_type": null,
-      "record_role": "owned_hardware",
-      "generation_status": "documented_not_tested"
-    },
-    {
-      "id": "st7789_2in_240x320",
-      "name": "ST7789 2英寸240×320 SPI蓝板（8针）",
-      "owned": true,
-      "path": "owned/st7789_2in_240x320.json",
-      "match_status": "same_controller_resolution_mismatch",
-      "part_type": null,
-      "candidate_part_type": "board-st7789",
-      "record_role": "owned_hardware",
-      "generation_status": "blocked"
+      "path": "cards/esp32_s3_devkitc1_n32r16v.json",
+      "owned": true
     },
     {
       "id": "dht22_red_module",
-      "name": "DHT22/AM2302红板模块",
-      "owned": true,
-      "path": "owned/dht22_red_module.json",
-      "match_status": "sensor_family_module_variant_unverified",
-      "part_type": "wokwi-dht22",
-      "candidate_part_type": null,
-      "record_role": "owned_hardware",
-      "generation_status": "documented_not_tested"
+      "path": "cards/dht22_red_module.json",
+      "owned": true
     },
     {
-      "id": "usb_camera",
-      "name": "ESP-CLAW USB摄像头（含转接线）",
-      "owned": true,
-      "path": "owned/usb_camera.json",
-      "match_status": "no_matching_model_in_snapshot",
-      "part_type": null,
-      "candidate_part_type": null,
-      "record_role": "owned_hardware",
-      "generation_status": "blocked"
-    },
-    {
-      "id": "ws2812_ring_8",
-      "name": "WS2812 5V 8灯灯环（3P）",
-      "owned": true,
-      "path": "owned/ws2812_ring_8.json",
-      "match_status": "family_model_with_inventory_configuration",
-      "part_type": "wokwi-led-ring",
-      "candidate_part_type": null,
-      "record_role": "owned_hardware",
-      "generation_status": "documented_not_tested"
-    },
-    {
-      "id": "sg90_180",
-      "name": "SG90 9g 180度舵机",
-      "owned": true,
-      "path": "owned/sg90_180.json",
-      "match_status": "generic_model_not_vendor_exact",
-      "part_type": "wokwi-servo",
-      "candidate_part_type": null,
-      "record_role": "owned_hardware",
-      "generation_status": "documented_not_tested"
-    },
-    {
-      "id": "ps2_joystick",
-      "name": "PS2双轴按键摇杆模块",
-      "owned": true,
-      "path": "owned/ps2_joystick.json",
-      "match_status": "generic_module_orientation_unverified",
-      "part_type": "wokwi-analog-joystick",
-      "candidate_part_type": null,
-      "record_role": "owned_hardware",
-      "generation_status": "documented_not_tested"
-    },
-    {
-      "id": "electret_microphone",
-      "name": "4.5×2.2mm驻极体咪头（采购文字灵敏度52dB）",
-      "owned": true,
-      "path": "owned/electret_microphone.json",
-      "match_status": "undocumented_candidate_only",
-      "part_type": null,
-      "candidate_part_type": "wokwi-microphone",
-      "record_role": "owned_hardware",
-      "generation_status": "blocked"
-    },
-    {
-      "id": "speaker_8ohm_1w",
-      "name": "2030椭圆扬声器8Ω/1W（1.25mm插头）",
-      "owned": true,
-      "path": "owned/speaker_8ohm_1w.json",
-      "match_status": "no_matching_model_in_snapshot",
-      "part_type": null,
-      "candidate_part_type": null,
-      "record_role": "owned_hardware",
-      "generation_status": "blocked"
-    },
-    {
-      "id": "ssd1306_reference",
-      "name": "SSD1306 OLED（已有仿真参考，非已购）",
-      "owned": false,
-      "path": "reference/ssd1306_reference.json",
-      "match_status": "reference_only_not_owned",
-      "part_type": "board-ssd1306",
-      "candidate_part_type": null
+      "id": "st7789_2in_240x320",
+      "path": "cards/st7789_2in_240x320.json",
+      "owned": true
     },
     {
       "id": "st7789_240x240_simulation",
-      "name": "ST7789 240×240（临时仿真配置，非已购实物）",
-      "owned": false,
-      "path": "owned/st7789_240x240_simulation.json",
-      "record_role": "simulation_variant",
-      "match_status": "explicit_simulation_variant_not_physical_equivalent",
-      "part_type": "board-st7789",
-      "candidate_part_type": null,
-      "generation_status": "documented_not_tested"
+      "path": "cards/st7789_240x240_simulation.json",
+      "owned": false
+    },
+    {
+      "id": "ws2812_ring_8",
+      "path": "cards/ws2812_ring_8.json",
+      "owned": true
+    },
+    {
+      "id": "sg90_180",
+      "path": "cards/sg90_180.json",
+      "owned": true
+    },
+    {
+      "id": "ps2_joystick",
+      "path": "cards/ps2_joystick.json",
+      "owned": true
+    },
+    {
+      "id": "usb_camera",
+      "path": "cards/usb_camera.json",
+      "owned": true
+    },
+    {
+      "id": "electret_microphone",
+      "path": "cards/electret_microphone.json",
+      "owned": true
+    },
+    {
+      "id": "speaker_8ohm_1w",
+      "path": "cards/speaker_8ohm_1w.json",
+      "owned": true
+    },
+    {
+      "id": "ssd1306_reference",
+      "path": "cards/ssd1306_reference.json",
+      "owned": false
+    },
+    {
+      "id": "mpu6050",
+      "path": "cards/mpu6050.json",
+      "owned": false
+    },
+    {
+      "id": "ds1307",
+      "path": "cards/ds1307.json",
+      "owned": false
+    },
+    {
+      "id": "hc_sr04",
+      "path": "cards/hc_sr04.json",
+      "owned": false
+    },
+    {
+      "id": "potentiometer",
+      "path": "cards/potentiometer.json",
+      "owned": false
     }
   ],
   "upstream_parts": {
@@ -273,10 +225,8 @@
     "wokwi-vcc": "upstream/wokwi-diagram-lint/parts/wokwi-vcc.json",
     "wokwi-wifi-ap": "upstream/wokwi-diagram-lint/parts/wokwi-wifi-ap.json"
   },
-  "automatic_generation_policy": "Registry availability is not end-to-end hardware support. Follow each record match_status and gaps.",
-  "runtime_integration": "not_connected_to_agent",
-  "simulation_variant_count": 1,
   "simulation_defaults": {
     "display": "st7789_240x240_simulation"
-  }
+  },
+  "note": "Local cards link upstream sources. No device validation performed."
 }

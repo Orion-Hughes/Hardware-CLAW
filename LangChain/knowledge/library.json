@@ -1,0 +1,6 @@
+{
+  "schema_version": 3,
+  "require_source_hashes": true,
+  "source_layout": "upstream_only",
+  "runtime_legacy_fallback": false
+}

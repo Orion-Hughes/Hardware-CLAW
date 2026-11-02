@@ -1,0 +1,117 @@
+{
+  "schema_version": 3,
+  "id": "electret_microphone",
+  "name": "4.5×2.2mm驻极体咪头（采购文字灵敏度52dB）",
+  "kind": "audio_input",
+  "aliases": [
+    "咪头",
+    "驻极体",
+    "microphone"
+  ],
+  "record_role": "owned_hardware",
+  "inventory": {
+    "owned": true,
+    "quantity": 1,
+    "unit": "个",
+    "evidence": "../../references/HARDWARE_INVENTORY.md",
+    "scope": "purchase_record_not_physical_verification"
+  },
+  "selection": {
+    "description": "裸驻极体咪头；不含已确认的放大与采样模块。",
+    "inputs": [
+      "声音",
+      "偏置"
+    ],
+    "outputs": [
+      "微弱模拟音频"
+    ],
+    "interfaces": [
+      "analog audio"
+    ],
+    "constraints": [
+      "需要核对偏置、放大及 ADC 链路；不是 I2S 数字麦克风。"
+    ],
+    "pin_requirements": [],
+    "source_refs": [
+      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+      "upstream/vendor/electret-reference.html"
+    ]
+  },
+  "simulation": {
+    "part_type": null,
+    "candidate_part_type": "wokwi-microphone",
+    "logical_signal_to_model_pin": {},
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/wokwi-microphone.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "match_status": "undocumented_candidate_only"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [],
+    "dependency_properties": [],
+    "simulation_supply_v": null
+  },
+  "documents": {
+    "simulation": [],
+    "api": [
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-adc.h",
+        "purpose": "框架 API 声明；按实际使用接口读取。",
+        "read_when": "platform_api_needed",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/vendor/electret-reference.html",
+        "purpose": "厂家/平台参考资料；不得将相似模块参数直接当成采购模块规格。",
+        "read_when": "electrical_or_platform_details",
+        "load": "reference"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "blocked",
+    "blockers": [
+      "wokwi-microphone只有未文档化的1/2端点，输入与模型行为未确认。",
+      "模拟偏置/放大链路、输出范围及采样方式未定义。"
+    ],
+    "missing_information": [
+      "确切胶囊型号、极性、偏置与灵敏度单位",
+      "前置放大/滤波/ADC接口和采样参数",
+      "可操作的仿真声源和模型行为说明"
+    ],
+    "compile_test": "not_run",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": "references/HARDWARE_INVENTORY.md"
+  }
+}

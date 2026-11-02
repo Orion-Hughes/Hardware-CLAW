@@ -1,0 +1,162 @@
+{
+  "$defs": {
+    "DocumentLink": {
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "purpose": {
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "read_when": {
+          "minLength": 1,
+          "title": "Read When",
+          "type": "string"
+        },
+        "load": {
+          "enum": [
+            "essential",
+            "reference"
+          ],
+          "title": "Load",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "purpose",
+        "read_when",
+        "load"
+      ],
+      "title": "DocumentLink",
+      "type": "object"
+    },
+    "Documents": {
+      "additionalProperties": false,
+      "properties": {
+        "simulation": {
+          "items": {
+            "$ref": "#/$defs/DocumentLink"
+          },
+          "title": "Simulation",
+          "type": "array"
+        },
+        "api": {
+          "items": {
+            "$ref": "#/$defs/DocumentLink"
+          },
+          "title": "Api",
+          "type": "array"
+        },
+        "guidance": {
+          "items": {
+            "$ref": "#/$defs/DocumentLink"
+          },
+          "title": "Guidance",
+          "type": "array"
+        }
+      },
+      "required": [
+        "simulation",
+        "api",
+        "guidance"
+      ],
+      "title": "Documents",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "kind": {
+      "title": "Kind",
+      "type": "string"
+    },
+    "aliases": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Aliases",
+      "type": "array"
+    },
+    "record_role": {
+      "title": "Record Role",
+      "type": "string"
+    },
+    "inventory": {
+      "additionalProperties": true,
+      "title": "Inventory",
+      "type": "object"
+    },
+    "selection": {
+      "additionalProperties": true,
+      "title": "Selection",
+      "type": "object"
+    },
+    "simulation": {
+      "additionalProperties": true,
+      "title": "Simulation",
+      "type": "object"
+    },
+    "programming": {
+      "additionalProperties": true,
+      "title": "Programming",
+      "type": "object"
+    },
+    "documents": {
+      "$ref": "#/$defs/Documents"
+    },
+    "availability": {
+      "additionalProperties": true,
+      "title": "Availability",
+      "type": "object"
+    },
+    "observation_controls": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Observation Controls",
+      "type": "array"
+    },
+    "provenance": {
+      "additionalProperties": true,
+      "title": "Provenance",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "kind",
+    "aliases",
+    "record_role",
+    "inventory",
+    "selection",
+    "simulation",
+    "programming",
+    "documents",
+    "availability",
+    "observation_controls",
+    "provenance"
+  ],
+  "title": "HardwareCard",
+  "type": "object"
+}

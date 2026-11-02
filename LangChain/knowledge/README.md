@@ -1,85 +1,60 @@
-# Hardware-CLAW 硬件资料：Wokwi上游库与库存映射
+# Hardware-CLAW 硬件资料入口
 
-重建日期：2026-10-26。按用户要求替换旧knowledge，直接从Wokwi上游重新获取资料。2026-10-27已通过两个查询tools接入真实API Agent；未执行固件编译/仿真/真机测试。
+整理日期：2026-11-02。首批 15 张索引卡（9 类已购、1 个明确仿真变体、5 个非采购参考），146 个原始 Wokwi 元件定义。器件编译、仿真、真机验证均未在本轮执行。
 
-## 先看这三个入口
-
-- [catalog.json](catalog.json)：机器可读总索引，含全部146个上游part type及9类已购硬件、2个非采购条目（临时240×240屏幕及SSD1306参考）。两个连接线及面包板的本地记录已按用户要求移除。
-- [COVERAGE_AND_GAPS.md](COVERAGE_AND_GAPS.md)：每个器件找到什么、差异是什么、还需补什么。
-- [sources.lock.json](sources.lock.json)：来源URL、固定提交、获取时间、逐文件SHA-256、许可情况与查询失败记录。
-- [补充资料与统一格式](supplements/README.md)：本轮联网补充的驱动、接线规则、模型限制，以及补充来源锁定清单。
-
-## 文件结构
+## 目录
 
 ```text
 knowledge/
-  catalog.json
-  sources.lock.json
-  COVERAGE_AND_GAPS.md
-  owned/                        9类已购硬件 + 1个临时240×240仿真屏幕
-  reference/                    SSD1306，仅供已有仿真工程使用
-  supplements/
-    esp32_s3_simulation.json     共用构建、GPIO资源及依赖规则
-    sources.lock.json           本轮补充来源的版本、获取时间和哈希
-    sources/                    厂家网页、固定版本驱动及模型源码摘选
+  cards/                 人工维护的薄连接层：选型信息、信号映射、三个资料入口
+  guidance/              有来源的器件注意事项和统一阅读规则
+  platforms/             当前程序需要的明确平台配置；不是所有 MCU 通用参数
+  schemas/               索引卡机器格式
   upstream/
-    wokwi-diagram-lint/
-      parts/                    固定提交的全部146条原始元件JSON
-      packages/diagram-lint/    README、类型定义及必要规则源码参考
-      LICENSE
-    wokwi-docs/                 相关官方说明Markdown、LICENSE、灯环网页快照
-    wokwi-boards/               S3、ST7789、SSD1306的原始board定义
+    wokwi-diagram-lint/   官方元件端点和属性定义
+    wokwi-docs/           官方文档完整 docs 快照，保留引用的图像
+    wokwi-boards/         所选板卡/显示模块原始定义
+    drivers/             驱动维护者源码、README、例程、库元数据和许可
+    platform/            固定版本 Arduino/PlatformIO 原文
+    models/              第三方仿真芯片原文
+    vendor/              厂家与平台网页原文
+  catalog.json           ID 到索引卡、Wokwi 类型到原始定义的目录
+  sources.lock.json      上游来源、版本、哈希、原获取记录
+  library.json           库格式与来源校验开关
 ```
 
-这里的“全部146条”指本次固定提交中的diagram-lint注册元数据，不是所有真实商品、不含完整Wokwi仿真引擎，也不表示146种器件已经能由我们的Agent可靠设计。
+不再保留旧 owned/reference 手写全量 profiles 或 supplements 混合目录。旧资料整体移到根目录 backups 中，不参与运行时查询。上游原文按原字节保存，哈希可核对；其 JSON/Markdown/HTML 可能包含上游语法、相对链接或已过时说明，不假定每份文件可无损转成严格 JSON。
 
-## 数据怎么用
+## 一张卡提供什么
 
-```text
-输入器件型号/本地ID
-  → catalog.json定位owned或reference条目
-  → 根据upstream_definition_ref读取原始type/pins/attrs
-  → 结合本地逻辑信号映射、采购配置、差异和缺口
-  → 返回给Agent查询工具（尚待实现）
-```
+- `selection`：功能、输入输出、接口、关键约束、引脚资源要求、来源。
+- `inventory` / `record_role`：实物采购、仿真变体或参考，不能按文件夹判断已购。
+- `simulation`：模型类型、逻辑信号到模拟端点、实例属性及差异。
+- `programming`：当前整理的平台范围、库元数据入口、头文件和明确的仿真供电配置。库名/版本从原始 library.properties 读取；不把声明兼容写成验证通过。
+- `documents.simulation` / `api` / `guidance`：每项有 ref、purpose、read_when、load，分别说明文件位置、作用、何时阅读、是否基础必读。load只能为essential或reference，维护时确定，不由模型临时判断。三组均保留；缺少来源可以为空并写缺口，不伪造链接。
+- `availability`：资料级可用状态、缺口和三个独立验证状态。
+- `observation_controls`：已有来源支持的模型观测入口，不由 attrs 自动推断。
 
-也可直接按part type检索全量上游定义；这只回答模拟格式和可用端点，不自动保证对应实物可用。
+卡内 `ref` 统一相对本目录。`provenance.inventory_ref` 相对项目根目录；采购事实不是厂家规格。平台当前仍是 ESP32-S3/Arduino 2.0.17 仿真基线，多板卡扩展尚未完成。
 
-`owned/*.json`的字段：
+## 首批卡
 
-- `inventory`：是否已购、数量、采购资料依据；数量是库存事实，不是上游器件属性。
-- `record_role`：`owned_hardware`或`simulation_variant`。不得按所在文件夹判断已购；临时屏幕虽在owned目录，但owned=false、数量0。
-- `simulation.part_type`：已建立家族/功能对应的模拟候选，仍未实测。
-- `candidate_part_type`：仅发现候选但不足以直接选用，例如ST7789尺寸不符、咪头未文档化。
-- `match_status`：对应程度；没有模型与不需要独立part是两种情况。
-- `logical_signal_to_model_pin`：逻辑信号到模拟端点，不是实物接头顺序。
-- `proposed_attrs`：来自库存的实例配置，如8灯灯环的`pixels: "8"`；原始上游文件不改动。
-- `source_refs`：相对knowledge根目录的原文路径；inventory.evidence指向项目库存清单。
-- `missing_information`、`notes`：待补字段和兼容性限制。
-- `electrical_profile`：有明确scope的供电、逻辑电平和接线规则；仿真配置不等于实物额定规格。
-- `physical_connector_order`：没有对应实物证据时保持null，不从模拟板外观推断。
-- `driver_profile`：库名/版本、头文件、初始化、常用操作、原始示例引用及限制。
-- `generation_profile`：仿真生成状态、公共配置引用、GPIO资源需求、运行controls、人工检查与阻塞原因。
-- `simulation_test`、`hardware_test`：本轮均为not_run，数据完整性检查不等于运行验证。
+已购：ESP32-S3 N32R16V、DHT22 红板、ST7789 240×320、8灯 WS2812 灯环、SG90、PS2 摇杆、USB 摄像头、驻极体咪头、8Ω/1W 扬声器。
 
-型号资料默认通过公开厂家/卖家文档、驱动源码和参考设计补齐；照片只在确需辨别实物变体时作为可选证据，不是收录前提。
+参考：ST7789 240×240 仿真变体、SSD1306、MPU6050、DS1307、HC-SR04、电位器。连接线和面包板按之前决定不纳入索引卡。
 
-资料在维护阶段获取并核对。生成任务只消费已入库资料，不在任务中临时联网补规格。`documented_not_tested`仅表示具备资料级配置，不是通过测试；`blocked`表示当前不具备相应仿真生成条件。查询tool返回这些状态，Agent提示词要求保留；后续生成服务仍需实现强制阻止逻辑。
+摄像头/咪头/扬声器没有完整可靠的对应模型，采购 ST7789 与当前模拟尺寸不符，保留 blocked；不能为了增加“支持数”改用不等价元件。
 
-当前默认仿真屏幕由catalog的`simulation_defaults.display`指向`st7789_240x240_simulation`，实物240×320条目保留。总索引`reference_count=2`统计所有非采购条目，其中`simulation_variant_count=1`是子集；reference文件夹仍只有SSD1306。
+## 读取与旧接口适配
 
-## 必须保留的区别
+Agent仅注册两个硬件工具：`search_hardware`返回可用于选型的功能、输入输出、接口、资源约束和缺口；`read_hardware`一次接收1–8个已选硬件，自动提供基础原文、模型元数据、驱动依赖和平台配置。同一个文档和平台配置在一次结果中只出现一次。
 
-- DHT模拟器的SDA是数据线；ST7789的SCL/SDA是该模块语境中的SPI信号，不能按名字推断协议。
-- 面包板原始`pins: []`不表示没有孔位。上游lint对其使用动态命名规则，相关源码已保留；此规则不证明真实400孔板的孔排几何。
-- 初始attrs与运行时controls不是天然等价；本轮仅为DHT22及摇杆记录有文档依据的controls，不代表全库都支持自动化控制。
-- 板卡GPIO名称、Wokwi内部pin目标与N32R16V的真实GPIO可用性分别核对。
-- 模型缺失只表示本次固定注册表没有找到对应条目，不是对整个Wokwi生态作永久“不支持”的判断。
+`read_hardware`默认读取load=essential的文件，load=reference的文件只列出入口。documents.status区分included/reference/omitted/error；预算不足的文件不截断，标为omitted。补读时传references，只读指定原文，不重复基础包和平台说明。JSON预算默认56000字符，最多60000，包含元数据；单份原文过大仍可能无法装入，不能重复调用冒充已读。complete不表示足以编程或验证通过。
 
-## 来源、更新与许可
+`KnowledgeCatalog`仍为现有工程服务派生兼容profile，不在磁盘维护第二套资料。旧get_hardware_info/read_hardware_documents包装仅留作内部兼容及测试，不再向Agent注册。阶段和子Agent机制尚未实现。
 
-上游文件按原始字节保存，应用层补充写owned/reference，不覆盖上游。再次更新应固定新提交、比较引脚与属性差异、重新检查本地映射。
+完整上游数据保留在本地，不代表全部发送给模型。索引卡负责选型，后续仅按任务需要读取对应入口。更进一步的阶段上下文和子 Agent 系统尚未实现。
 
-CLI注册表和docs仓库的MIT许可随文件保留。boards仓库根未找到许可文件；本地作为研究快照保留，不自动视为可再分发。灯环网页为实时快照，非commit固定文件，单独记录URL/获取时间/哈希，发布前核对其授权。原始board.json可能采用注释/尾逗号等扩展格式；不得修改原文冒充严格JSON，未来解析应明确选用对应解析器。
+来源调研见 [调研报告](../../docs/WOKWI_LIBRARY_SOURCE_SURVEY.md)。旧库备份位于 `backups/hardware-cards-20261102/knowledge`（相对项目根目录），仅保留作回溯，不参与运行。
 
-这是选择性的离线资料包，不是完整离线网站；上游Markdown中的相对链接和图片未全部镜像。不要执行其中的代码或把外部文字当作Agent指令。
+初次建库完成116项离线测试；双工具接口改造后126项离线测试通过，覆盖批量组合、共享去重、补读、路径拒绝、哈希异常和预算遗漏。真实Agent查询结果另见[双工具测试记录](../../docs/HARDWARE_QUERY_TESTS_20261102.md)。未编译目标固件、运行器件仿真或验证实物。SSD1306仍为unreviewed；其余10张资料级配置为documented_not_tested，4张为blocked。
