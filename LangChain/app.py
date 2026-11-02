@@ -110,7 +110,7 @@ async def start():
     cl.user_session.set("mode", "generate")
     cl.user_session.set('coordinator_task_id', None)
     await save_chat()
-    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。`/coordinator` 切换新主协调模式（选型子Agent已接入，生成/验证阶段待实现）。仿真统一采集原始日志，自动功能验收尚未实现，不标记功能通过。每轮显示工具、耗时、Token及真实验证状态。").send()
+    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。`/coordinator` 切换新主协调模式（选型与生成子Agent已接入，验证阶段待实现）。仿真统一采集原始日志，自动功能验收尚未实现，不标记功能通过。每轮显示工具、耗时、Token及真实验证状态。").send()
 
 
 @cl.on_message
@@ -210,10 +210,10 @@ async def respond(message: cl.Message):
         elif kind == 'stage_start':
             await cl.Message(content=f"正在执行 `{data['stage']}` 子Agent；详细查询保存在阶段记录中。").send()
         elif kind == 'stage_summary':
-            await cl.Message(content=(f"选型子Agent：{data['status']} · {data['model_responses']} 次模型响应 · "
+            await cl.Message(content=(f"{data['role']} 子Agent：{data['status']} · {data['model_responses']} 次模型响应 · "
                 f"{data['elapsed_seconds']} 秒 · Token {data['tokens_reported']}"
                 + ('' if data['usage_complete'] else '（提供方用量不完整）')),
-                elements=[cl.Text(name='选型阶段用量', content=json.dumps(data, ensure_ascii=False, indent=2), display='side')]).send()
+                elements=[cl.Text(name=f"{data['role']} 阶段用量", content=json.dumps(data, ensure_ascii=False, indent=2), display='side')]).send()
         elif kind == "summary":
             tokens = data["tokens_reported"]
             label = str(tokens) if tokens is not None else "未返回"
@@ -239,6 +239,11 @@ async def respond(message: cl.Message):
     try:
         project = cl.user_session.get("project")
         is_coordinator = cl.user_session.get('mode') == 'coordinator'
+        if is_coordinator:
+            bound = TaskStore().load(cl.user_session.get('coordinator_task_id'))['project_id']
+            if bound and (project is None or project.id != bound):
+                project = ProjectService.open(bound)
+                cl.user_session.set('project', project)
         coordinator = Coordinator(cl.user_session.get('coordinator_task_id'), store=TaskStore(), project=project, builtin_stages=True) if is_coordinator else None
         model = create_model(max_tokens=limits.PROJECT_OUTPUT_TOKENS if project and not is_coordinator else limits.QUERY_OUTPUT_TOKENS)
     except Exception as exc:
@@ -247,6 +252,8 @@ async def respond(message: cl.Message):
     try:
         await execute_turn(model, question, history, emit, project=project, require_delivery=require_delivery, coordinator=coordinator)
     finally:
+        if coordinator is not None:
+            cl.user_session.set('project', coordinator.project)
         await save_chat()
 
 

@@ -1,6 +1,6 @@
 # Hardware-CLAW 工具清单与实现状态
 
-2026-11-02新增可选主协调模式，只注册 `get_task_state`、`run_stage`、`deliver_project`。selection子Agent已接入，只开放search_hardware/read_hardware与结构化SelectionReport提交；其read_hardware默认选型视图，usage仅允许定向references。下表17个工具仍属于原生成流程，未全部开放给主Agent；generation、verification子Agent尚未实现。见[主协调层](COORDINATOR_IMPLEMENTATION.md)、[选型职责](SELECTION_AGENT.md)与[9轮API测试](SELECTION_AGENT_TESTS_20261102.md)。
+2026-11-02新增可选主协调模式，只注册 `get_task_state`、`run_stage`、`deliver_project`。selection只开放search_hardware/read_hardware与结构化SelectionReport提交；generation已接入read_hardware、load_template和8个工程读写/检查/编译工具，不开放选型搜索、仿真、烧录和导出。verification尚未实现。下表17个工具仍属于原生成流程，未全部开放给主Agent。生成首轮真实测试因token预算停止，未完成编译交付；见[生成职责与测试](GENERATION_AGENT_20261102.md)、[主协调层](COORDINATOR_IMPLEMENTATION.md)与[选型职责](SELECTION_AGENT.md)。
 
 硬件接口更新：2026-11-02，硬件查询合并为search_hardware/read_hardware，现注册17个工具。新接口离线及真实API查询结果见[测试记录](HARDWARE_QUERY_TESTS_20261102.md)；下表其余编译/仿真结果是此前记录，不能外推为新库端到端验证。默认vscode模式保留编译与仿真接口，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
 
@@ -62,6 +62,8 @@
 ## 已注册的5个Skills
 
 均在LangChain/skills/，由load_skill按ID读取。它们是我们程序的领域技能，不是Codex插件技能；技能提供指导，强制约束由工具与宿主实现。
+
+固定阶段另有`skills/stages/selection.md`和`skills/stages/generation.md`，由各子Agent宿主直接加载。generation同时加载通用firmware_and_observation，不加载旧的整套仿真流程。
 
 | Skill ID | 文件 | 作用 |
 |---|---|---|

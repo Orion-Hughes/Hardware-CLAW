@@ -37,7 +37,7 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
     """Keep only completed user/answer pairs; never retain partial tool chains."""
     started = time.monotonic()
     if timeout is None:
-        timeout = limits.PROJECT_TIMEOUT_SECONDS if project else RUN_TIMEOUT_SECONDS
+        timeout = limits.COORDINATOR_STAGE_TIMEOUT_SECONDS if coordinator is not None else (limits.PROJECT_TIMEOUT_SECONDS if project else RUN_TIMEOUT_SECONDS)
     usage, requested, returned = [], set(), set()
     answer = ""
     model_calls = 0
@@ -62,7 +62,9 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
             from .coordinator.agent import build_coordinator
             if coordinator.builtin_stages:
                 from .stages.selection import attach_selection
+                from .stages.generation import attach_generation
                 attach_selection(coordinator, model, emit)
+                attach_generation(coordinator, model, emit)
             coordinator.begin_turn(question)
             graph = build_coordinator(model, coordinator)
         else:
@@ -143,6 +145,8 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
         status = "cancelled"
         raise
     except Exception as exc:
+        if coordinator is not None and coordinator.model_stop_reason is not None:
+            status = 'blocked'
         await emit("error", {"text": error_message(exc)})
         return status
     finally:
@@ -171,8 +175,8 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
         if coordinator is not None:
             try:
                 summary['coordinator'] = coordinator.state()
-                if project:
-                    summary['project'] = project.delivery()
+                if coordinator.project:
+                    summary['project'] = coordinator.project.delivery()
                 with coordinator.store.connect() as con:
                     coordinator.store.save_record(con, coordinator.task_id,
                         {'run_id': run_id, 'kind': 'main_turn', 'question': question, 'summary': summary, 'events': events})

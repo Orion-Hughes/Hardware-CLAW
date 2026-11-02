@@ -18,12 +18,17 @@ STAGES = {
 }
 
 
+def passed(report):
+    return isinstance(report, dict) and report.get('verdict') == 'pass'
+
+
 class Coordinator:
     def __init__(self, task_id, *, store=None, project=None, executors=None, builtin_stages=False):
         self.store = store or TaskStore()
         self.task_id, self.project = task_id, project
         self.executors = dict(executors or {})
         self.builtin_stages = builtin_stages
+        self.model_stop_reason = None
         if set(self.executors) - STAGES.keys():
             raise WorkflowError('INVALID_STAGE', '只能注册固定的三个阶段。')
         state = self.store.load(task_id)
@@ -37,6 +42,7 @@ class Coordinator:
             state['current_request'] = question
             state['turn_count'] += 1
             state['latest_outcome'] = 'idle'
+        self.model_stop_reason = None
 
     @staticmethod
     def _idle(state):
@@ -67,8 +73,25 @@ class Coordinator:
                        'note': '主Agent及已接入子Agent共享任务已报告用量；单次请求仍可能越过阈值。'}}
 
     def check_budget(self):
+        if self.model_stop_reason is not None:
+            raise self.model_stop_reason
         if self.store.load(self.task_id)['usage']['total_tokens'] >= limits.COORDINATOR_TOTAL_TOKENS:
             raise WorkflowError('TOKEN_BUDGET', '任务累计token达到预算，已停止继续调用。')
+
+    def stop_model_calls(self, reason):
+        """A stage cost/runaway stop cannot be bypassed by another delegation this turn."""
+        self.model_stop_reason = reason
+
+    def create_generation_project(self, request, requirement):
+        from ..projects.service import ProjectService
+        with self.store.edit(self.task_id) as (state, _):
+            if state['active_run'] != request['run_id'] or state['project_id'] is not None:
+                raise WorkflowError('PROJECT_BINDING_MISMATCH', '工程绑定状态已变化。')
+            project = ProjectService.create('task-' + self.task_id[:12], requirement, 'vscode')
+            state['project_id'] = project.id
+            self.project = project
+        request['project_id'] = project.id
+        request['expected_project_version'] = project.get()['version']
 
     def record_usage(self, usage, role='main'):
         # Accounting does not change task_version used by tool calls in this response.
@@ -89,7 +112,7 @@ class Coordinator:
 
     def _check_project_version(self, expected):
         if not self.project:
-            raise WorkflowError('NO_PROJECT', '该阶段需要绑定工程；当前主协调层尚未自动创建目标工程。')
+            raise WorkflowError('NO_PROJECT', '该阶段需要绑定工程。')
         p = self.project.get()
         if expected != p['version']:
             raise WorkflowError('PROJECT_VERSION_CONFLICT', '请使用当前工程修订。')
@@ -105,8 +128,7 @@ class Coordinator:
                 KnowledgeCatalog().get(ident)
         else:
             p = self._check_project_version(result.project_version)
-            if stage == 'generation' and ((p.get('file_check') or {}).get('verdict') != 'pass'
-                    or (p.get('build') or {}).get('verdict') != 'pass'):
+            if stage == 'generation' and (not passed(p.get('file_check')) or not passed(p.get('build'))):
                 raise WorkflowError('UNPROVEN_COMPLETION', '生成完成必须有当前检查和编译通过记录。')
             if stage == 'verification' and p.get('behavior') != 'pass':
                 raise WorkflowError('UNPROVEN_COMPLETION', '未有当前修订的功能通过证据；返回blocked或failed并说明缺口。')
@@ -150,10 +172,20 @@ class Coordinator:
                         raise WorkflowError('MISSING_HANDOFF', '最近一次选型尚未完成，不能沿用此前选型继续生成。')
                     if not selected or not selected['result']['hardware_ids'] or not selected['result']['requirements']:
                         raise WorkflowError('MISSING_HANDOFF', '生成需要明确需求和硬件选型交接。')
+                    # Only the installed generation executor opts into first-project creation.
+                    if getattr(self.executors[stage], 'creates_project', False):
+                        from ..stages.selection_state import accepted_baseline
+                        _, baseline = accepted_baseline(self)
+                        if baseline['invalidated']:
+                            raise WorkflowError('STALE_SELECTION', '选型证据已变化或缺失，先重新选型。')
+                        if self.project is None:
+                            if expected_project_version is not None:
+                                raise WorkflowError('PROJECT_VERSION_CONFLICT', '尚无工程时expected_project_version应为null。')
+                            self.create_generation_project(request, '\n'.join(selected['result']['requirements']))
+                            expected_project_version = request['expected_project_version']
                 if stage in ('generation', 'verification'):
                     p = self._check_project_version(expected_project_version)
-                    if stage == 'verification' and ((p.get('file_check') or {}).get('verdict') != 'pass'
-                            or (p.get('build') or {}).get('verdict') != 'pass'):
+                    if stage == 'verification' and (not passed(p.get('file_check')) or not passed(p.get('build'))):
                         raise WorkflowError('BUILD_REQUIRED', '验证需要当前修订检查和编译通过。')
                 async with asyncio.timeout(limits.COORDINATOR_STAGE_TIMEOUT_SECONDS):
                     # Host adapters own child context/tools; no parent transcript is passed.
