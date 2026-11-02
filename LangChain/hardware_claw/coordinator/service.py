@@ -129,6 +129,7 @@ class Coordinator:
             current_selection_ref = state['latest'].get('selection')
             selection_attempt_ref = state.get('latest_attempts', {}).get('selection', current_selection_ref)
             request = {'run_id': run_id, 'stage': stage, 'objective': objective,
+                       'original_request': state['original_request'],
                        'user_request': state['current_request'], 'handoffs': handoffs,
                        'current_handoffs': dict(state['latest']),
                        'project_id': state['project_id'], 'expected_project_version': expected_project_version}

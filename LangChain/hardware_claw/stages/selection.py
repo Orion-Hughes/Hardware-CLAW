@@ -17,6 +17,7 @@ from .. import limits
 from ..coordinator.contracts import StageResult
 from ..coordinator.store import WorkflowError
 from ..tools.hardware_catalog import HARDWARE_TOOLS, ReadHardwareInput, _invalid_input
+from .selection_state import SelectionEvidence, accepted_baseline
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -26,6 +27,7 @@ class SelectionReport(StageResult):
     next_stage: Literal['generation'] | None = None
     detail_ref: None = None  # Assigned by the host, never invented by the model.
     project_version: None = None
+    selection_update: None = None  # Host computes changes, not a model claim.
 
 
 class SelectionReadInput(ReadHardwareInput):
@@ -34,10 +36,14 @@ class SelectionReadInput(ReadHardwareInput):
 
 
 class SelectionTrace(AgentMiddleware):
-    def __init__(self, coordinator):
+    def __init__(self, coordinator, evidence=None, baseline=None):
         self.coordinator = coordinator
         self.started = time.monotonic()
-        self.usage, self.events, self.observed, self.sources = [], [], {}, set()
+        self.evidence = evidence or SelectionEvidence()
+        self.baseline = baseline or {'reusable_ids': [], 'previous': {}, 'invalidated': []}
+        self.usage, self.events = [], []
+        self.observed, self.sources = self.evidence.items, set(self.evidence.hashes)
+        self.read_ids, self.failed_ids = set(), set()
         self.attempts = 0
         self.recorded_messages = set()
 
@@ -69,22 +75,33 @@ class SelectionTrace(AgentMiddleware):
     def make_tools(self):
         def wrap(source):
             async def invoke(**kwargs):
+                reused = []
+                actual = dict(kwargs)
+                if source.name == 'read_hardware' and kwargs.get('view', 'selection') == 'selection':
+                    reused = [i for i in kwargs['hardware_ids'] if i in self.baseline['reusable_ids']]
+                    actual['hardware_ids'] = [i for i in kwargs['hardware_ids'] if i not in reused]
                 if source.name == 'read_hardware' and kwargs.get('view') == 'usage' and not kwargs.get('references'):
                     result = {'execution_status': 'error', 'error_code': 'STAGE_SCOPE',
                         'summary': '选型只能使用selection视图；核对具体参数时用usage并指定已登记references，不能整包加载编程资料。',
                         'data': None}
+                elif reused and not actual['hardware_ids'] and not kwargs.get('references'):
+                    result = {'execution_status': 'ok', 'error_code': None, 'data': {
+                        'mode': 'selection_reuse', 'hardware': [], 'reused_hardware_ids': reused,
+                        'note': '宿主已提供这些器件的有效选型资料，请使用accepted_selection，不再重复读取。'}}
                 else:
-                    result = await source.ainvoke(kwargs)
+                    result = await source.ainvoke(actual)
+                    if reused and isinstance(result, dict) and result.get('data'):
+                        result['data']['reused_hardware_ids'] = reused
                 self.events.append({'kind': 'tool', 'name': source.name, 'args': kwargs, 'result': result})
                 if source.name == 'read_hardware' and isinstance(result, dict) and result.get('execution_status') == 'ok':
                     data = result['data']
+                    self.evidence.observe(data)
+                    self.sources.update(self.evidence.hashes)
+                    self.failed_ids.update(e['hardware_id'] for e in data.get('errors', []) if e.get('hardware_id'))
                     for item in data.get('hardware', []):
                         if 'simulation' in item:
-                            self.observed[item['id']] = item
-                        self.sources.update(p['ref'] for p in item.get('provenance', {}).values()
-                                            if isinstance(p, dict) and p.get('ref'))
-                    self.sources.update(d['ref'] for d in data.get('documents', []) if d.get('status') == 'included')
-                    self.sources.update(p['ref'] for p in data.get('platforms', []) if 'content' in p)
+                            self.read_ids.add(item['id'])
+                            self.failed_ids.discard(item['id'])
                 return result
             wrapped = StructuredTool.from_function(coroutine=invoke, name=source.name,
                 description=(source.description + '\nSelection stage: default view=selection. usage requires targeted references; no whole programming packet.')
@@ -104,10 +121,21 @@ class SelectionTrace(AgentMiddleware):
             return
         if report.blockers or not report.requirements or not report.hardware_ids:
             raise WorkflowError('INCOMPLETE_SELECTION', '完成选型必须包含需求和硬件，且无未解决阻碍。')
+        previous_ids = set(self.baseline.get('previous', {}).get('hardware_ids', []))
+        final_ids = set(report.hardware_ids)
+        removed = previous_ids - final_ids
+        if set(report.removed_hardware_ids) != removed or (removed and not report.change_reason):
+            raise WorkflowError('UNEXPLAINED_SELECTION_CHANGE', '删除/替换旧器件必须在removed_hardware_ids列出全部移除ID，并用change_reason解释原因。')
+        if previous_ids:
+            review = report.compatibility
+            if review is None or set(review.hardware_ids) != final_ids:
+                raise WorkflowError('COMPATIBILITY_REQUIRED', '请对最终全部器件填写compatibility：需求、接口、资源、供电适用范围和平台。旧器件不必重新读取。')
+            if review.verdict != 'compatible':
+                raise WorkflowError('COMPATIBILITY_UNRESOLVED', '兼容性仍有冲突或未知时不能completed；先局部调整，无法解决则blocked/needs_input。')
         for ident in report.hardware_ids:
             item = self.observed.get(ident)
-            if item is None:
-                raise WorkflowError('UNREAD_HARDWARE', '所选硬件必须在本轮通过read_hardware读取，不只搜索或沿用旧摘要。')
+            if item is None or ident in self.failed_ids:
+                raise WorkflowError('UNREAD_HARDWARE', f'{ident}既不在宿主有效选型中，也未在本轮成功读取。仅新增或资料变化的器件需要读取。')
             availability = item['availability']
             if availability['generation_status'] != 'documented_not_tested' or availability['blockers']:
                 raise WorkflowError('UNSUPPORTED_SELECTION', f"{ident}的资料状态为{availability['generation_status']}，"
@@ -123,18 +151,31 @@ class SelectionTrace(AgentMiddleware):
             'usage_complete': self.attempts == len(self.usage) and all(u is not None for u in self.usage),
             'tool_calls': sum(e['kind'] == 'tool' for e in self.events)}
 
+    def changes(self, report):
+        final = set(report.hardware_ids)
+        return {'baseline_handoff_ref': self.baseline.get('handoff_ref'),
+            'applied': report.status == 'completed',
+            'reused_hardware_ids': sorted(final & set(self.baseline['reusable_ids'])),
+            'read_hardware_ids': sorted(self.read_ids),
+            'removed_hardware_ids': sorted(set(self.baseline.get('previous', {}).get('hardware_ids', [])) - final)
+                if report.status == 'completed' else [],
+            'invalidated_hardware': self.baseline['invalidated']}
+
 
 class SelectionExecutor:
     def __init__(self, model, coordinator, emit=None):
         self.model, self.coordinator, self.emit = model, coordinator, emit
 
     async def __call__(self, request):
-        trace = SelectionTrace(self.coordinator)
+        evidence, baseline = accepted_baseline(self.coordinator)
+        trace = SelectionTrace(self.coordinator, evidence, baseline)
         detail_id = uuid.uuid4().hex
         # Fixed fields only: no parent transcript, arbitrary prompts or filesystem paths.
-        context = {k: request.get(k) for k in ('objective', 'user_request', 'project_id', 'current_handoffs')}
-        context['handoffs'] = [{'run_id': h['run_id'], 'stage': h['stage'], 'status': h['status'],
-                                'result': h.get('result')} for h in request.get('handoffs', [])]
+        context = {k: request.get(k) for k in ('objective', 'original_request', 'user_request', 'project_id')}
+        context['accepted_selection'] = baseline
+        context['feedback'] = [{'stage': h['stage'], 'status': h['status'],
+                               'summary': h.get('result', {}).get('summary')}
+                              for h in request.get('handoffs', []) if h.get('status') != 'completed']
         prompt = (ROOT / 'prompts/selection.md').read_text(encoding='utf8')
         prompt += '\n\n' + (ROOT / 'skills/stages/selection.md').read_text(encoding='utf8')
         last_validation_error = None
@@ -191,11 +232,13 @@ class SelectionExecutor:
             metrics = trace.metrics()
             report = report or StageResult(status='failed', summary='选型未返回结果。')
             report.detail_ref = detail_id
+            report.selection_update = trace.changes(report)
             with self.coordinator.store.connect() as con:
                 self.coordinator.store.save_record(con, self.coordinator.task_id, {
                     'run_id': detail_id, 'kind': 'selection_detail', 'stage_run_id': request['run_id'],
                     'context': context, 'metrics': metrics, 'events': trace.events, 'error_code': error,
                     'observed_hardware': trace.observed,
+                    'selection_snapshot': trace.evidence.dump(report.hardware_ids),
                     'proposed_result': proposed.model_dump() if proposed is not None else None,
                     'result': report.model_dump()})
             if self.emit:

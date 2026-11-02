@@ -33,6 +33,10 @@ class FixtureModel(BaseChatModel):
                 name, args = 'SelectionReport', {'status': 'completed', 'summary': 'fixture selection',
                     'requirements': ['measure temperature'], 'hardware_ids': ['dht22_red_module'],
                     'source_refs': ['cards/dht22_red_module.json'] if self.mode != 'skip_read' else []}
+                context = json.loads(next(m.content for m in messages if m.type == 'human'))
+                if context.get('accepted_selection', {}).get('previous', {}).get('hardware_ids'):
+                    args['compatibility'] = {'verdict': 'compatible', 'hardware_ids': args['hardware_ids'],
+                        **{k: 'fixture review' for k in ('requirements','interfaces','resources','electrical','platform')}}
                 if self.mode == 'invent_source': args['source_refs'] = ['upstream/invented.md']
                 if self.mode == 'repair' and not (isinstance(last, ToolMessage) and last.name == 'SelectionReport'):
                     args['source_refs'] = ['upstream/invented.md']

@@ -29,12 +29,13 @@ LangChain/hardware_claw/coordinator/
   service.py     调度、前置条件、版本与完成证据检查
   store.py       SQLite任务状态、阶段记录、主Agent运行记录
 LangChain/hardware_claw/stages/selection.py   选型子Agent与阶段范围/交接校验
+LangChain/hardware_claw/stages/selection_state.py   已接受选型的证据快照与增量复用
 LangChain/prompts/selection.md               子Agent系统提示词
 LangChain/skills/stages/selection.md         宿主自动加载的选型流程
 workspace/.tasks/coordinator.sqlite3   本地任务记录，不提交Git
 ```
 
-交接只记录需求、硬件ID、决策、摘要、阻碍和工程版本。历史阶段通过ID引用，不递归复制。子执行器收到本次目标、用户请求、交接记录、current_handoffs及工程绑定，不接收主对话的完整历史。具体器件资料与源码由未来执行器按自己的工具范围读取。
+交接记录需求、硬件ID、决策、摘要、阻碍、工程版本及简短兼容性分析。历史阶段通过ID引用，不递归复制。通用执行器接口收到本次目标、初始/当前用户请求、交接记录、current_handoffs及工程绑定，不接收主对话的完整历史。选型执行器进一步整理为accepted_selection（来源仍有效的旧选型资料）和简短失败反馈，只要求查询新增或资料变化的器件，再检查整体兼容性。完整证据快照存于详细记录，不回传主Agent。具体机制及限制见[选型说明](SELECTION_AGENT.md)。
 
 同一任务保留工程绑定。只有讨论/选型时不自动建工程。首次生成前的工程创建和绑定将随生成执行器接入；目前可以显式绑定已有工程。主Agent工具不能编辑任意文件或改写角色Prompt。
 

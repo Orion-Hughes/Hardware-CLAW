@@ -10,6 +10,7 @@
 |---|---|
 | 新主Agent、固定阶段与当前实现边界 | [主协调层说明](docs/COORDINATOR_IMPLEMENTATION.md) |
 | 选型子Agent、阶段工具与真实测试 | [选型子Agent](docs/SELECTION_AGENT.md) · [测试报告](docs/SELECTION_AGENT_TESTS_20261102.md) |
+| 已确认选型复用、兼容性检查与本次用量 | [增量选型测试与限制](docs/SELECTION_REUSE_TESTS_20261102.md) |
 | 项目目标、进度和下一步 | [项目计划](docs/HARDWARE_CLAW_PROJECT_PLAN.md) |
 | Agent、tools、测试与反馈怎么设计 | [Core与Capabilities](docs/HARDWARE_CLAW_CORE_AND_CAPABILITIES.md) |
 | 哪些工具已实现、接下来实现什么 | [完整工具清单与当前状态](docs/TOOLS_IMPLEMENTATION_STATUS.md) |

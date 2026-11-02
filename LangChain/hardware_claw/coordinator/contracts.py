@@ -23,6 +23,16 @@ class DeliverInput(StrictModel):
     scope: Literal['checked_artifacts', 'verified'] = 'checked_artifacts'
 
 
+class CompatibilityReview(StrictModel):
+    verdict: Literal['compatible', 'conflict', 'unknown']
+    hardware_ids: list[str] = Field(min_length=1, max_length=32)
+    requirements: str = Field(min_length=1, max_length=600)
+    interfaces: str = Field(min_length=1, max_length=600)
+    resources: str = Field(min_length=1, max_length=600)
+    electrical: str = Field(min_length=1, max_length=600)
+    platform: str = Field(min_length=1, max_length=600)
+
+
 class StageResult(StrictModel):
     """Small handoff, not a container for raw tool transcripts or source code."""
     status: Literal['completed', 'needs_input', 'blocked', 'failed', 'cancelled']
@@ -36,3 +46,7 @@ class StageResult(StrictModel):
     assumptions: list[str] = Field(default_factory=list, max_length=12)
     source_refs: list[str] = Field(default_factory=list, max_length=32)
     detail_ref: str | None = None
+    compatibility: CompatibilityReview | None = None
+    removed_hardware_ids: list[str] = Field(default_factory=list, max_length=32)
+    change_reason: str | None = Field(default=None, max_length=1200)
+    selection_update: dict | None = None
