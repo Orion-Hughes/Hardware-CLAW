@@ -7,9 +7,80 @@ from hardware_claw.catalog import KnowledgeCatalog, CatalogError
 from hardware_claw.catalog.bundles import read_hardware_bundle
 from hardware_claw.catalog.service import DEFAULT_KNOWLEDGE_ROOT as ROOT
 from hardware_claw.tools.hardware_catalog import HARDWARE_TOOLS, read_hardware, search_hardware
+from hardware_claw import limits
 
 
 class HardwareBundleTests(unittest.TestCase):
+    def test_large_document_continuation_crosses_old_wrapper_limit(self):
+        ref = 'upstream/large-api.h'
+        sources = {ref: b'x' * 70000}
+        catalog = self.source_fixture(sources)
+        with patch('hardware_claw.tools.hardware_catalog.KnowledgeCatalog', return_value=catalog):
+            first = read_hardware.invoke({'hardware_ids': ['fixture']})['data']
+            self.assertEqual(first['missing_required_refs'], [ref])
+            self.assertEqual(len(first['next_reads']), 1)
+            call = first['next_reads'][0]
+            self.assertGreater(call['args']['max_characters'], 64000)
+            second = read_hardware.invoke(call['args'])
+        self.assertEqual(second['execution_status'], 'ok')
+        self.assertTrue(second['data']['complete'])
+        self.assertEqual(second['data']['documents'][0]['content'], 'x' * 70000)
+        self.assertLessEqual(len(json.dumps(second['data'], ensure_ascii=False)), call['args']['max_characters'])
+        self.assertEqual(second['data']['next_reads'], [])
+
+    def test_continuations_split_by_size_and_reference_count(self):
+        for sources in ({f'upstream/api{i}.h': b'x' * 50000 for i in range(4)},
+                        {f'upstream/api{i}.h': b'x' * 2000 for i in range(28)}):
+            with self.subTest(count=len(sources)):
+                catalog = self.source_fixture(sources)
+                first = read_hardware_bundle(catalog, ['fixture'], max_characters=18000)
+                self.assertGreater(len(first['next_reads']), 1)
+                seen = {d['ref'] for d in first['documents'] if d['status'] == 'included'}
+                for call in first['next_reads']:
+                    args = call['args'].copy(); args.pop('view')
+                    self.assertLessEqual(len(args['references']), 24)
+                    self.assertFalse(seen.intersection(args['references']))
+                    supplement = read_hardware_bundle(catalog, **args)
+                    self.assertTrue(supplement['complete'])
+                    self.assertLessEqual(len(json.dumps(supplement, ensure_ascii=False)), args['max_characters'])
+                    seen.update(args['references'])
+                self.assertEqual(seen, set(sources))
+
+    def test_unreadable_and_oversized_sources_have_no_futile_retry(self):
+        sources = {'upstream/large.h': b'x' * limits.HARDWARE_READ_MAX_CHARACTERS,
+                   'upstream/bad.h': b'\xff'}
+        data = read_hardware_bundle(self.source_fixture(sources), ['fixture'])
+        self.assertEqual(set(data['missing_required_refs']), set(sources))
+        self.assertEqual(data['next_reads'], [])
+        self.assertEqual({b['error_code'] for b in data['blockers']},
+                         {'SOURCE_EXCEEDS_SINGLE_READ', 'INVALID_TEXT'})
+        self.assertFalse(data['complete'])
+
+    def test_real_combinations_follow_returned_calls_without_losing_sources(self):
+        combinations = [
+            ['esp32_s3_devkitc1_n32r16v', 'ps2_joystick', 'st7789_240x240_simulation'],
+            ['esp32_s3_devkitc1_n32r16v', 'mpu6050', 'ds1307', 'sg90_180'],
+        ]
+        for ids in combinations:
+            with self.subTest(ids=ids):
+                first = read_hardware.invoke({'hardware_ids': ids, 'max_characters': 32000})['data']
+                self.assertIsNotNone(first)
+                self.assertTrue(first['missing_required_refs'])
+                self.assertEqual(first['blockers'], [])
+                required = {d['ref'] for d in first['documents'] if d['essential_for']}
+                seen = {d['ref'] for d in first['documents'] if d['status'] == 'included'}
+                for call in first['next_reads']:
+                    result = read_hardware.invoke(call['args'])
+                    self.assertEqual(result['execution_status'], 'ok')
+                    data = result['data']
+                    self.assertTrue(data['complete'])
+                    self.assertLessEqual(len(json.dumps(data, ensure_ascii=False)), call['args']['max_characters'])
+                    for doc in data['documents']:
+                        self.assertNotIn(doc['ref'], seen)
+                        self.assertEqual(doc['content'], (ROOT/doc['ref']).read_bytes().decode('utf-8-sig'))
+                        seen.add(doc['ref'])
+                self.assertLessEqual(required, seen)
+
     @staticmethod
     def source_fixture(sources):
         """In-memory source fixture, independent of real devices and project outputs."""

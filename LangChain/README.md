@@ -1,6 +1,8 @@
 # Hardware-CLAW：硬件工程生成Agent
 
-2026-11-02新增可选主协调模式：网页输入 `/coordinator`，CLI使用 `--coordinator`；主Agent有状态、阶段委派、交付3个工具。选型子Agent已接入，可查询并交接；生成、验证子Agent仍未实现。独立测试选型：`python -m hardware_claw.stages --question "只做选型……"`（使用项目.venv）。原生成入口保留，详见[主Agent说明](../docs/COORDINATOR_IMPLEMENTATION.md)和[选型子Agent](../docs/SELECTION_AGENT.md)。
+截至2026-11-05，可选主协调模式已接入选型和生成子Agent：网页输入 `/coordinator`，CLI使用 `--coordinator`；主Agent有状态、阶段委派、交付3个工具。生成阶段可完成接线、固件、检查、真实编译，并由主Agent导出；第三个verification子Agent尚未实现，是下一步重点。原生成入口保留，详见[当前进度与测试](../docs/PROGRESS_20261105.md)、[主Agent说明](../docs/COORDINATOR_IMPLEMENTATION.md)和[选型子Agent](../docs/SELECTION_AGENT.md)。
+
+本轮明确了工具字段、mcu保留ID和修正反馈；`read_hardware`默认56,000、最高120,000字符，返回必要缺项和可直接执行的续读参数。两次真实生成均编译导出成功，但使用的是临时100万token测试上限，生成阶段各约30万；默认生成预算仍为8万。未进行这两次工程的仿真验收，不能把测试成功外推为默认预算可完成或功能正确。详情见[读取服务](hardware_claw/catalog/README.md)。
 
 当前功能：通过API运行LangChain Agent，查询硬件、读取通用技能/配置模板、生成文件、检查、编译、Wokwi CLI限时观察，并交付VS Code仿真文件夹。工程专用验收规则已移除，通用功能验收尚未实现。见[仿真工具说明](../docs/AGENT_SIMULATION.md)和[工具状态](../docs/TOOLS_IMPLEMENTATION_STATUS.md)。
 

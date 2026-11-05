@@ -74,6 +74,34 @@ class GenerationModel(BaseChatModel):
 
 
 class GenerationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_required_progress_and_rejection_supply_executable_next_reads(self):
+        await self.child()
+        ids = [BOARD, 'ps2_joystick', 'st7789_240x240_simulation']
+        trace = GenerationTrace(self.c, ids)
+        tools = {t.name: t for t in trace.make_tools()}
+        version = self.c.project.get()['version']
+        first = await tools['read_hardware'].ainvoke({'hardware_ids': ids, 'max_characters': 32000})
+        missing = set(first['stage_usage']['missing_required_refs'])
+        self.assertTrue(missing)
+        self.assertFalse(first['stage_usage']['ready'])
+        bad = await tools['update_project_design'].ainvoke({'expected_version': version, 'design': DESIGN})
+        self.assertEqual(bad['error_code'], 'MISSING_USAGE_SOURCE')
+        self.assertEqual(set(bad['data']['missing_required_refs']), missing)
+        self.assertTrue(bad['data']['next_reads'])
+        # A single requested source can be complete without completing stage-wide usage.
+        call = bad['data']['next_reads'][0]
+        partial_args = call['args'] | {'references': call['args']['references'][:1]}
+        partial = await tools['read_hardware'].ainvoke(partial_args)
+        self.assertTrue(partial['data']['complete'])
+        self.assertFalse(partial['stage_usage']['ready'])
+        self.assertEqual(set(partial['stage_usage']['missing_required_refs']), missing - set(partial_args['references']))
+        for call in partial['stage_usage']['next_reads']:
+            reply = await tools[call['tool']].ainvoke(call['args'])
+            self.assertTrue(reply['data']['complete'])
+        self.assertTrue(trace.usage_status()['ready'])
+        self.assertEqual(trace.usage_status()['next_reads'], [])
+        self.assertEqual(self.c.project.get()['version'], version)
+
     async def asyncSetUp(self):
         base=ROOT/'temp/generation-tests';base.mkdir(parents=True,exist_ok=True)
         self.tmp=tempfile.TemporaryDirectory(dir=base); self.root=Path(self.tmp.name)

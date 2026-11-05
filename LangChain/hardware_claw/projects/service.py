@@ -200,9 +200,13 @@ class ProjectService:
         if any(len(a) > 2000 for a in value["assumptions"]):
             fail("INVALID_ARGUMENT", "假设说明过长。")
         identities = {"mcu": value["board_id"]}
-        for component in value["components"]:
+        for index, component in enumerate(value["components"]):
             if component["instance_id"] in identities:
-                fail("DUPLICATE_INSTANCE", "元件实例ID重复；mcu保留给板卡。")
+                if component["instance_id"] == "mcu":
+                    fail("DUPLICATE_INSTANCE", f"components[{index}].instance_id=mcu 为保留ID。board_id已经自动创建主板；"
+                         "删除components中重复的主板条目，保留board_id及connections中的mcu:*端点，重新提交完整design。此次未保存。")
+                fail("DUPLICATE_INSTANCE", f"components[{index}].instance_id={component['instance_id']}重复。"
+                     "为不同外设分配唯一instance_id，并同步调整指向该实例的connections；重新提交完整design。此次未保存。")
             identities[component["instance_id"]] = component["hardware_id"]
         hardware = {}
         try:
@@ -211,7 +215,8 @@ class ProjectService:
                 if info["summary"]["generation_status"] != "documented_not_tested":
                     fail("UNSUPPORTED_HARDWARE", f"{ident}没有可用的资料级生成配置。")
                 if (name == "mcu") != (info["summary"]["kind"] == "board"):
-                    fail("INVALID_BOARD", "板卡必须作为mcu，外设不能是板卡。")
+                    fail("INVALID_BOARD", f"实例{name}使用的{ident}类型为{info['summary']['kind']}。"
+                         "board_id必须指向板卡，components只含外设；不要把板卡改名后放入components。此次未保存。")
                 hardware[name] = info
         except CatalogError as exc:
             fail(exc.code, str(exc))
@@ -221,10 +226,12 @@ class ProjectService:
         for connection in value["connections"]:
             a, b = connection["a"], connection["b"]
             if a not in endpoints or b not in endpoints or a == b:
-                fail("INVALID_ENDPOINT", f"连接端点不合法：{a} -> {b}")
+                fail("INVALID_ENDPOINT", f"连接端点不合法：{a} -> {b}。"
+                     "使用mcu或components.instance_id作为前缀、所选模型的精确引脚名作为后缀；禁止自连。"
+                     "根据已读模型端点修正connections后重提完整design；此次未保存。")
             pair = tuple(sorted((a, b)))
             if pair in pairs:
-                fail("DUPLICATE_CONNECTION", "存在重复连接。")
+                fail("DUPLICATE_CONNECTION", f"重复连线：{a} -> {b}；反向也算同一连接。保留一条后重提完整design；此次未保存。")
             pairs.add(pair)
         for name, pin in value["pin_defines"].items():
             if not re.fullmatch(r"[A-Z][A-Z0-9_]{0,63}", name) or f"mcu:{pin}" not in endpoints:

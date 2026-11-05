@@ -30,6 +30,28 @@ def artifacts():
 
 
 class ProjectTests(unittest.TestCase):
+    def test_design_schema_explains_board_and_instance_identifiers(self):
+        from hardware_claw.contracts.project import UpdateDesignInput
+        schema = UpdateDesignInput.model_json_schema()
+        self.assertIn('自动创建', schema['$defs']['Design']['properties']['board_id']['description'])
+        self.assertIn('外设', schema['$defs']['Design']['properties']['components']['description'])
+        self.assertIn('mcu', schema['$defs']['Component']['properties']['instance_id']['description'])
+
+    def test_reserved_and_duplicate_instance_feedback_preserves_design(self):
+        from hardware_claw.tools.project_tools import make_project_tools
+        tool = next(t for t in make_project_tools(self.p) if t.name == 'update_project_design')
+        for instance in ('mcu', 'dht'):
+            with self.subTest(instance=instance):
+                bad = copy.deepcopy(DESIGN)
+                bad['components'].append({'instance_id': instance, 'hardware_id': DESIGN['board_id'] if instance == 'mcu' else 'dht22_red_module'})
+                result = tool.invoke({'expected_version': 0, 'design': bad})
+                self.assertEqual(result['error_code'], 'DUPLICATE_INSTANCE')
+                self.assertIn('components[1]', result['summary'])
+                self.assertIn('此次未保存', result['summary'])
+                self.assertIn('board_id' if instance == 'mcu' else 'connections', result['summary'])
+                self.assertEqual(self.p.get()['version'], 0)
+                self.assertIsNone(self.p.get()['design'])
+
     def setUp(self):
         self.workspace = ROOT / "temp" / "project-tests" / uuid.uuid4().hex
         self.p = ProjectService.create("test", "DHT22监控", "arduino", workspace=self.workspace)

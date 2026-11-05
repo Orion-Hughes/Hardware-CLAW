@@ -43,8 +43,6 @@ class GenerationReport(StrictModel):
 
 class GenerationReadInput(ReadHardwareInput):
     view: Literal['usage'] = 'usage'
-    max_characters: int = Field(default=32000, ge=4000, le=60000,
-        description='默认32000字符，遗漏的必要资料用references补读；不要重复整包读取。')
 
 
 class GenerationTrace(StageTrace):
@@ -54,13 +52,33 @@ class GenerationTrace(StageTrace):
         self.evidence = SelectionEvidence()
         self.loaded, self.required_docs, self.included_docs = set(), set(), set()
         self.repetitions = {}
+        self.read_plans, self.read_blockers = [], {}
+
+    def usage_status(self):
+        """Stage-wide progress; a successful supplement is not the entire stage."""
+        unread = sorted(self.selected - self.loaded)
+        missing = self.required_docs - self.included_docs
+        calls = [{'tool': 'read_hardware', 'args': {
+            'hardware_ids': unread[i:i+8], 'view': 'usage',
+            'max_characters': limits.HARDWARE_READ_CHARACTERS}} for i in range(0, len(unread), 8)]
+        planned = set()
+        for call in reversed(self.read_plans):
+            refs = [r for r in call['args']['references'] if r in missing and r not in planned and r not in self.read_blockers]
+            if refs:
+                calls.append({'tool': call['tool'], 'args': call['args'] | {'references': refs}})
+                planned.update(refs)
+        return {'ready': not unread and not missing, 'unread_hardware_ids': unread,
+                'missing_required_refs': sorted(missing), 'next_reads': calls,
+                'blockers': [b for r, b in self.read_blockers.items() if r in missing],
+                'scope': 'generation_required_sources_not_functional_validation'}
 
     def require_usage(self):
         if self.selected - self.loaded:
-            raise WorkflowError('UNREAD_HARDWARE', '生成前需批量读取所选器件的usage资料。')
+            raise WorkflowError('UNREAD_HARDWARE', '生成前需读取所选器件usage资料；执行data.next_reads后再提交。此次未写入工程。')
         missing = sorted(self.required_docs - self.included_docs)
         if missing:
-            raise WorkflowError('MISSING_USAGE_SOURCE', f'必要原文尚未返回，请定向补读：{missing}')
+            raise WorkflowError('MISSING_USAGE_SOURCE', f'必要原文尚未返回：{missing}。执行data.next_reads；有blockers则报告缺口。'
+                                '无需重新查询候选或重读整包，此次未写入工程。')
 
     def validate_design(self, design):
         value = design.model_dump() if hasattr(design, 'model_dump') else design
@@ -95,17 +113,23 @@ class GenerationTrace(StageTrace):
                 except WorkflowError as exc:
                     if self.coordinator.model_stop_reason is not None:
                         raise
-                    result = {'execution_status':'error','error_code':exc.code,'summary':str(exc),'data':None}
+                    result = {'execution_status':'error','error_code':exc.code,'summary':str(exc),
+                              'data': self.usage_status() if exc.code in {'UNREAD_HARDWARE', 'MISSING_USAGE_SOURCE'} else None}
                 self.events.append({'kind':'tool','name':source.name,'args':kwargs,'result':result})
                 if source.name == 'read_hardware' and isinstance(result, dict) and result.get('execution_status') == 'ok':
                     data = result['data']
                     self.evidence.observe(data)
                     self.loaded.update(h['id'] for h in data.get('hardware', []) if 'simulation' in h)
+                    self.read_plans.extend(data.get('next_reads', []))
                     for d in data.get('documents', []):
+                        self.read_blockers.pop(d['ref'], None)
                         if d.get('essential_for'):
                             self.required_docs.add(d['ref'])
                         if d['status'] == 'included':
                             self.included_docs.add(d['ref'])
+                    self.read_blockers.update({b['ref']: b for b in data.get('blockers', [])})
+                    # Keep the host-stage envelope outside the tool's data JSON budget.
+                    result['stage_usage'] = self.usage_status()
                 return result
             wrapped = StructuredTool.from_function(coroutine=invoke, name=source.name, description=source.description,
                 args_schema=GenerationReadInput if source.name == 'read_hardware' else source.args_schema)

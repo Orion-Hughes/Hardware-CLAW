@@ -8,7 +8,7 @@
 - search_hardware返回选型需要的功能、输入输出、接口、引脚资源、约束和缺口。
 - read_hardware一次传入1–8个硬件ID，自动读取卡中load=essential的基础资料，并带模型定义、驱动元数据、限定平台配置。共享原文和平台配置按ref去重。
 - load=reference的扩展资料只列入口；用同一工具的references补读，不重复基础原文和平台配置。
-- 整个JSON数据预算默认56000、最大60000字符。文件不截断，超预算为omitted；损坏原文为error；可选未读文件为reference。complete只表示本次选定资料完整返回。
+- 当时整个JSON数据预算默认56000、最大60000字符。文件不截断，超预算为omitted；损坏原文为error；可选未读文件为reference。complete只表示本次选定资料完整返回。2026-11-05最大值已改为120000，并加入缺项/续读指引；当前接口见[读取服务说明](../LangChain/hardware_claw/catalog/README.md)，下方历史测试数据保持原样。
 - 旧get_hardware_info/read_hardware_documents包装保留内部兼容与旧测试，未注册给Agent。工程服务继续使用兼容profile，无第二套磁盘资料。
 - 同步更新System Prompt和hardware_selection/wokwi_generation技能。未加入阶段调度、子Agent或单工程特例。
 

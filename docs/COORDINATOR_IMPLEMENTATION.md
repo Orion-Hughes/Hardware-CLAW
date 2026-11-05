@@ -1,6 +1,6 @@
 # 主Agent协调层（2026-11-02）
 
-已实现主Agent、selection选型子Agent和generation生成子Agent；verification尚未接入。原生成流程仍可用；新协调模式需要显式进入。选型职责见[选型说明](SELECTION_AGENT.md)；生成职责与本轮预算停止结果见[生成说明与测试](GENERATION_AGENT_20261102.md)。生成首次真实测试触发预算，尚未完成编译和端到端交付，不能称已稳定可用。
+已实现主Agent、selection选型子Agent和generation生成子Agent；verification尚未接入。原生成流程仍可用；新协调模式需要显式进入。选型职责见[选型说明](SELECTION_AGENT.md)；生成职责与早期预算停止记录见[生成说明与测试](GENERATION_AGENT_20261102.md)。2026-11-05两次宿主调度实际子Agent的测试已编译导出成功，主协调LLM没有参与；使用临时100万token上限、未仿真，不能称默认预算下已稳定可用。最新结果和第三子Agent计划见[当前进度](PROGRESS_20261105.md)。
 
 ## 职责与工具
 
@@ -65,7 +65,7 @@ workspace/.tasks/coordinator.sqlite3   本地任务记录，不提交Git
 .\.venv\Scripts\python.exe -X utf8 -B main.py --task <任务ID> --question "继续讨论这个需求"
 ```
 
-selection可实际查询并交接；generation可创建绑定工程并调用读写、检查和编译工具，但本轮真实测试在编译前因token预算停止。verification仍返回STAGE_UNAVAILABLE。
+selection可实际查询并交接；generation可创建绑定工程并调用读写、检查和编译工具。早期真实测试在编译前因token预算停止；后续扩预算测试的成功与限制见[当前进度](PROGRESS_20261105.md)。verification仍返回STAGE_UNAVAILABLE。
 
 ## 验证记录
 
@@ -75,4 +75,4 @@ selection可实际查询并交接；generation可创建绑定工程并调用读�
 
 真实API测试任务 `efa79e3567624a628828569452122301`：查询任务状态 → 委派selection → 返回blocked/STAGE_UNAVAILABLE。没有创建工程，也没有执行硬件查询。3次LLM调用，5.73秒；提供方报告输入5,594、输出483、合计6,077 tokens。原始日志位于本地 `temp/coordinator-main/live-cli.log`。随后收紧了缺失执行器时的解释规则，避免要求用户粘贴已有资料绕过实现缺口；这项措辞调整没有再次付费实测。
 
-generation接入后的离线/真实结果见[生成测试](GENERATION_AGENT_20261102.md)。下一步先改善生成阶段上下文成本再恢复真实测试；不能将选型completed或编译通过当成功能验证。
+generation接入后的早期结果见[生成测试](GENERATION_AGENT_20261102.md)。最新安排是先开发第三个verification子Agent，资料按硬件/软件阶段拆分仍为后续优化；不能将选型completed或编译通过当成功能验证。实施顺序见[当前计划](PROGRESS_20261105.md)。

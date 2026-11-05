@@ -55,7 +55,10 @@ def make_project_tools(project):
     def update_project_design(expected_version: int, design: dict) -> dict:
         """Save a simulation design with selected hardware, endpoints and dependencies.
 
-        Read hardware details first. Board instance is mcu. Reject unsupported profiles,
+        Read hardware details first. board_id automatically creates mcu; components
+        contains peripherals ONLY, never a second mcu or board. instance_id is the
+        endpoint prefix, hardware_id is the catalog ID. Submit the full design.
+        Reject unsupported profiles,
         duplicate IDs, unknown pins and stale versions. Changes invalidate prior file checks.
         """
         if hasattr(design, "model_dump"):

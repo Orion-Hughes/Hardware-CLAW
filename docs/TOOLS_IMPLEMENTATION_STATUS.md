@@ -1,6 +1,6 @@
 # Hardware-CLAW 工具清单与实现状态
 
-2026-11-02新增可选主协调模式，只注册 `get_task_state`、`run_stage`、`deliver_project`。selection只开放search_hardware/read_hardware与结构化SelectionReport提交；generation已接入read_hardware、load_template和8个工程读写/检查/编译工具，不开放选型搜索、仿真、烧录和导出。verification尚未实现。下表17个工具仍属于原生成流程，未全部开放给主Agent。生成首轮真实测试因token预算停止，未完成编译交付；见[生成职责与测试](GENERATION_AGENT_20261102.md)、[主协调层](COORDINATOR_IMPLEMENTATION.md)与[选型职责](SELECTION_AGENT.md)。
+截至2026-11-05，可选主协调模式只注册 `get_task_state`、`run_stage`、`deliver_project`。selection只开放search_hardware/read_hardware与结构化SelectionReport提交；generation已接入read_hardware、load_template和8个工程读写/检查/编译工具，不开放选型搜索、仿真、烧录和导出。verification尚未实现，是下一步重点。下表17个工具仍属于原生成流程，未全部开放给主Agent。生成早期测试触发预算；最新两次在临时100万token上限下编译导出成功，未做仿真。见[最新进度](PROGRESS_20261105.md)、[生成职责](GENERATION_AGENT_20261102.md)及[主协调层](COORDINATOR_IMPLEMENTATION.md)。
 
 硬件接口更新：2026-11-02，硬件查询合并为search_hardware/read_hardware，现注册17个工具。新接口离线及真实API查询结果见[测试记录](HARDWARE_QUERY_TESTS_20261102.md)；下表其余编译/仿真结果是此前记录，不能外推为新库端到端验证。默认vscode模式保留编译与仿真接口，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
 

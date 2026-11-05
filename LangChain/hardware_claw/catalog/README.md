@@ -19,7 +19,16 @@ scope为local/upstream/all；上游ID采用`wokwi:<part-type>`，不和本地配
 
 连接卡每条文档登记load=essential或reference。read_hardware自动返回essential原文、所选器件的模型端点/驱动/缺口及限定平台配置；共享文档和平台配置只出现一次。reference只列入口，随后可传1–24个references补读，补读不重复基础包。此分级由维护者确定，不由Agent临时判断。
 
-完整JSON数据默认56000字符、最多60000字符，包含元数据、配置及JSON转义。documents.status区分included/reference/omitted/error；超预算文件标记omitted，不截断原文。单份文件超过最大预算不能靠重复查询解决，应报告读取缺口。complete仅表示本次选定资料齐全，不表示足够编程或功能通过。每份原文最多512KiB，上游文件核对sources.lock.json哈希，不联网追补资料。原始board.json可作为原文返回，不强制解析上游非严格JSON。
+2026-11-05：data JSON默认56000字符、最多120000字符（不是tokens），包含元数据、配置、续读指引及JSON转义。生成子Agent也使用该默认值，旧的64000字符结果拦截不再阻挡此接口；累计token预算未提高。documents.status区分included/reference/omitted/error；超预算文件标记omitted，不截断原文。每份原文最多512KiB，上游文件核对sources.lock.json哈希，不联网追补资料。原始board.json可作为原文返回，不强制解析上游非严格JSON。
+
+usage返回增加以下字段：
+
+- `missing_required_refs`：本次请求范围内尚未返回的必要原文，包含读取错误。
+- `unread_refs`：本次请求所有未返回的引用，包含显式请求的可选资料。
+- `next_reads`：可直接执行的`{tool, args}`列表；只补未返回的文档，按24引用和120000字符上限分批，参数预算依据完整补读JSON计算。已返回原文不重复发送。
+- `blockers`：损坏/缺失来源、单份原文加元数据超过上限等不可自动续读的问题，附处理说明，不建议原样重试。
+
+`complete`仅表示本次选定资料齐全，不表示整个生成阶段读齐或功能通过。生成包装器另在响应顶层提供`stage_usage`，累计记录必要缺项、未读器件、`next_reads`和`ready`；该宿主状态不计入工具的data字符预算。尝试在资料缺失时写工程，会返回`UNREAD_HARDWARE/MISSING_USAGE_SOURCE`，并在错误data中提供同样的续读指引。单份超过上限仍报告缺口，没有实现截断或分页。
 
 仅解析登记的ID和knowledge范围内的受控引用；拒绝绝对路径、路径穿越、符号链接和Windows reparse point。例程文本为外部参考数据，不能作为系统指令。校验失败不返回本机绝对路径或任意输入原文。目录仍须由应用维护，检查不构成对可并发篡改本机文件的完整OS沙箱。
 
