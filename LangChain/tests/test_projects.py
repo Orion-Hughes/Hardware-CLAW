@@ -95,6 +95,33 @@ class ProjectTests(unittest.TestCase):
             self.p.write_files(2, {"README.md": "overwrite"})
         self.assertEqual(caught.exception.code, "EXTERNAL_CHANGE")
 
+    def test_newline_preserving_writes_remain_editable(self):
+        self.ready()
+        version = 2
+        for content in ("中文\nnext\n", "中文\r\nnext\r\n", "中文\rnext\r", "中文\r\nnext\nlast\r"):
+            with self.subTest(content=repr(content)):
+                self.p.write_files(version, {"README.md": content})
+                version += 1
+                snapshot = self.p.meta / f"revisions/v{version:06d}/state.json"
+                original = snapshot.read_bytes()
+                self.assertEqual((self.p.files / "README.md").read_bytes(), content.encode("utf-8"))
+                self.assertEqual(self.p.read_file("README.md")["content"], content)
+                self.p.patch_file(version, "README.md", "next", "updated")
+                version += 1
+                self.assertEqual((self.p.files / "README.md").read_bytes(), content.replace("next", "updated").encode("utf-8"))
+                self.assertEqual(snapshot.read_bytes(), original)
+
+    def test_newline_only_and_invalid_utf8_external_changes_refused(self):
+        self.ready()
+        self.p.write_files(2, {"README.md": "line\r\n"})
+        for changed in (b"line\n", b"line\r", b"\xff"):
+            with self.subTest(changed=changed):
+                (self.p.files / "README.md").write_bytes(changed)
+                with self.assertRaises(ProjectError) as caught:
+                    self.p.write_files(3, {"README.md": "overwrite"})
+                self.assertEqual(caught.exception.code, "EXTERNAL_CHANGE")
+                self.assertEqual(self.p.get()["version"], 3)
+
     def test_hardlink_refused(self):
         self.ready()
         target = self.workspace / "outside.txt"

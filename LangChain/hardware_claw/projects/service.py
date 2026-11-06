@@ -161,7 +161,9 @@ class ProjectService:
             fail("EXTERNAL_CHANGE", "files目录被外部修改，需人工核对；不会自动覆盖。")
         for name, content in state["files"].items():
             path = safe_path(self.files, name)
-            if path.stat().st_size > MAX_FILE or path.read_text(encoding="utf-8") != content:
+            # Writes preserve newlines; universal-newline reads would falsely
+            # flag CRLF or mixed-newline content as an external modification.
+            if path.stat().st_size > MAX_FILE or path.read_bytes() != content.encode("utf-8"):
                 fail("EXTERNAL_CHANGE", f"文件{name}被外部修改，需人工核对。")
 
     def get(self):

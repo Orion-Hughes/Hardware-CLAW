@@ -92,7 +92,7 @@ def main():
     group.add_argument("--project", metavar="ID", help="Resume an existing workspace project")
     parser.add_argument("--template", choices=["arduino", "platformio", "vscode"], default="vscode")
     parser.add_argument("--require-delivery", action="store_true", help="Fail completion if current artifacts are not checked and exported")
-    parser.add_argument('--coordinator', action='store_true', help='Run the fixed-stage coordinator with selection and generation children (verification pending)')
+    parser.add_argument('--coordinator', action='store_true', help='Run selection, generation and planning-only verification through the fixed-stage coordinator')
     parser.add_argument('--task', help='Resume a coordinator task ID; implies --coordinator')
     args = parser.parse_args()
     # No hosted tracing configured by this experiment.
