@@ -1,0 +1,1 @@
+{"test_id":"T1","requirement_ids":["R1"],"duration_ms":1000,"events":[{"at_ms":0,"action":"set","channel":"<提供的可控输入>","value":0},{"at_ms":1000,"action":"read","channel":"<提供的可观察输出>","expected":"描述本次观察的预期及依据"}]}

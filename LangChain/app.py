@@ -209,6 +209,9 @@ async def respond(message: cl.Message):
             await cl.Message(content=data["text"]).send()
         elif kind == 'stage_start':
             await cl.Message(content=f"正在执行 `{data['stage']}` 子Agent；详细查询保存在阶段记录中。").send()
+        elif kind == 'verification_plan':
+            await cl.Message(content=f"仿真计划已生成：{data['cases']} 个场景，{data['gaps']} 个覆盖缺口。未执行仿真。",
+                elements=[cl.File(name='simulation-plan.md', path=data['path'], display='inline')]).send()
         elif kind == 'stage_summary':
             await cl.Message(content=(f"{data['role']} 子Agent：{data['status']} · {data['model_responses']} 次模型响应 · "
                 f"{data['elapsed_seconds']} 秒 · Token {data['tokens_reported']}"

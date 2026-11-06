@@ -63,8 +63,10 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
             if coordinator.builtin_stages:
                 from .stages.selection import attach_selection
                 from .stages.generation import attach_generation
+                from .stages.verification import attach_verification
                 attach_selection(coordinator, model, emit)
                 attach_generation(coordinator, model, emit)
+                attach_verification(coordinator, model, emit)
             coordinator.begin_turn(question)
             graph = build_coordinator(model, coordinator)
         else:

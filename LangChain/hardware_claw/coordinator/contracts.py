@@ -46,6 +46,7 @@ class StageResult(StrictModel):
     assumptions: list[str] = Field(default_factory=list, max_length=12)
     source_refs: list[str] = Field(default_factory=list, max_length=32)
     detail_ref: str | None = None
+    verification_plan_ref: str | None = None
     compatibility: CompatibilityReview | None = None
     removed_hardware_ids: list[str] = Field(default_factory=list, max_length=32)
     change_reason: str | None = Field(default=None, max_length=1200)

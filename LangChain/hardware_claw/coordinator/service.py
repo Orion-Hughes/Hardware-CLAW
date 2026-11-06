@@ -14,7 +14,7 @@ from ..projects.service import ProjectError
 STAGES = {
     'selection': '需求理解、资料查询与选型；讨论请求到此结束。',
     'generation': '接线与固件设计、生成和修正；通过当前修订基础检查与编译。',
-    'verification': '仿真、证据分析与诊断；证据不足明确报告，不自行修改固件。',
+    'verification': '根据当前工程生成具体仿真计划；仅规划，不编译、不运行仿真、不修改固件。',
 }
 
 
@@ -130,8 +130,12 @@ class Coordinator:
             p = self._check_project_version(result.project_version)
             if stage == 'generation' and (not passed(p.get('file_check')) or not passed(p.get('build'))):
                 raise WorkflowError('UNPROVEN_COMPLETION', '生成完成必须有当前检查和编译通过记录。')
-            if stage == 'verification' and p.get('behavior') != 'pass':
-                raise WorkflowError('UNPROVEN_COMPLETION', '未有当前修订的功能通过证据；返回blocked或failed并说明缺口。')
+            if stage == 'verification':
+                if getattr(self.executors.get(stage), 'planning_only', False) is True:
+                    from ..stages.verification import validate_saved_plan
+                    validate_saved_plan(self, result.verification_plan_ref)
+                elif p.get('behavior') != 'pass':
+                    raise WorkflowError('UNPROVEN_COMPLETION', '未有当前修订的功能通过证据；返回blocked或failed并说明缺口。')
 
     async def run_stage(self, stage, objective, expected_task_version, input_refs=None, expected_project_version=None):
         if stage not in STAGES:
@@ -185,7 +189,7 @@ class Coordinator:
                             expected_project_version = request['expected_project_version']
                 if stage in ('generation', 'verification'):
                     p = self._check_project_version(expected_project_version)
-                    if stage == 'verification' and (not passed(p.get('file_check')) or not passed(p.get('build'))):
+                    if stage == 'verification' and getattr(self.executors[stage], 'planning_only', False) is not True and (not passed(p.get('file_check')) or not passed(p.get('build'))):
                         raise WorkflowError('BUILD_REQUIRED', '验证需要当前修订检查和编译通过。')
                 async with asyncio.timeout(limits.COORDINATOR_STAGE_TIMEOUT_SECONDS):
                     # Host adapters own child context/tools; no parent transcript is passed.

@@ -1,6 +1,6 @@
 # Hardware-CLAW：硬件工程生成Agent
 
-截至2026-11-05，可选主协调模式已接入选型和生成子Agent：网页输入 `/coordinator`，CLI使用 `--coordinator`；主Agent有状态、阶段委派、交付3个工具。生成阶段可完成接线、固件、检查、真实编译，并由主Agent导出；第三个verification子Agent尚未实现，是下一步重点。原生成入口保留，详见[当前进度与测试](../docs/PROGRESS_20261105.md)、[主Agent说明](../docs/COORDINATOR_IMPLEMENTATION.md)和[选型子Agent](../docs/SELECTION_AGENT.md)。
+可选主协调模式已接入选型、生成和只读仿真规划子Agent：网页输入 `/coordinator`，CLI使用 `--coordinator`；主Agent有状态、阶段委派、交付3个工具。生成阶段可完成接线、固件、检查、真实编译，并由主Agent导出；verification参考firmware-testing-agent，固定提取需求、规划场景、逐例生成时间线并检查，输出计划后停止，不执行仿真。原生成入口保留。最新边界与实测见[第三Agent实现](../docs/AGENT3_FTA_PLANNER.md)、[测试记录](../docs/AGENT3_FTA_TEST_RESULTS.md)。
 
 本轮明确了工具字段、mcu保留ID和修正反馈；`read_hardware`默认56,000、最高120,000字符，返回必要缺项和可直接执行的续读参数。两次真实生成均编译导出成功，但使用的是临时100万token测试上限，生成阶段各约30万；默认生成预算仍为8万。未进行这两次工程的仿真验收，不能把测试成功外推为默认预算可完成或功能正确。详情见[读取服务](hardware_claw/catalog/README.md)。
 
@@ -33,6 +33,14 @@ Chainlit 2.12.0已安装在本项目`.venv`，网页已接入现有Agent、工�
 `chainlit-config.toml`与`chainlit.md`是界面配置和说明，启动时复制到`../temp/chainlit-runtime/`。运行日志、生成配置与附件缓存均保存在该临时目录。修改代码或配置后先停止再启动。端口8000被其他服务占用时会报错，不会停止其他服务。
 
 ### 当前命令行入口
+
+只生成已有工程的仿真计划（付费API，不编译/不仿真）：
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 -B -m hardware_claw.stages --stage verification --project 工程ID --question "根据当前需求与可用接口生成具体仿真计划，不执行"
+```
+
+结果在工程 `.hwclaw/verification_plans/<ID>/plan.md` 与 `plan.json`；失败保留原始候选和错误，无完整plan时不可视为完成。无需重复调用API来查看已有计划。只读规划成功不代表预期正确或功能通过。
 
 生成与恢复（使用项目.venv解释器）：
 

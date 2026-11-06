@@ -1,5 +1,7 @@
 # 主Agent协调层（2026-11-02）
 
+**Agent3重建后的变更：** verification已接入只读规划器，主Agent可委派生成具体计划，但不能执行仿真。该模式不要求已有构建，完成时检查本次工程版本的计划记录；`verified`交付仍要求真实功能证据。新数据流与实际测试见[规划器说明](AGENT3_FTA_PLANNER.md)及[测试记录](AGENT3_FTA_TEST_RESULTS.md)。下文“verification尚未接入/需要构建”的表述保留为旧协调层开发记录，当前规划入口以此更新为准。
+
 已实现主Agent、selection选型子Agent和generation生成子Agent；verification尚未接入。原生成流程仍可用；新协调模式需要显式进入。选型职责见[选型说明](SELECTION_AGENT.md)；生成职责与早期预算停止记录见[生成说明与测试](GENERATION_AGENT_20261102.md)。2026-11-05两次宿主调度实际子Agent的测试已编译导出成功，主协调LLM没有参与；使用临时100万token上限、未仿真，不能称默认预算下已稳定可用。最新结果和第三子Agent计划见[当前进度](PROGRESS_20261105.md)。
 
 ## 职责与工具

@@ -1,0 +1,1 @@
+{"test_plan":[{"test_id":"T1","requirement_ids":["R1"],"fault_type":"nominal","channel":"<提供的可用通道>","reason":"说明验证目标","expected_observable":"说明预期、实际观察途径及依据"}],"gaps":[]}
