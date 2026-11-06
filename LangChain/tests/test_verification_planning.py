@@ -108,6 +108,37 @@ class ContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'34操作（17个事件\\+17个等待）'):
             compile_timeline(Timeline.model_validate(data),Scenario.model_validate(CASE),IO)
 
+    def test_event_limit_does_not_hide_expanded_limit_or_channel_errors(self):
+        data=copy.deepcopy(TIMELINE)
+        data['duration_ms']=2600
+        data['events']=[{'at_ms':i*100,'action':'read','channel':'serial','expected':'fixture'} for i in range(1,27)]
+        data['events'][0]['channel']='unknown'
+        original=copy.deepcopy(data)
+        value=Timeline.model_validate(data)
+        with self.assertRaises(ValueError) as caught:
+            compile_timeline(value,Scenario.model_validate(CASE),IO)
+        message=str(caught.exception)
+        self.assertIn('events数量为26，上限24',message)
+        self.assertIn('52操作（26个事件+26个等待）',message)
+        self.assertIn('至少减少20个最终操作',message)
+        self.assertIn('events[0]',message)
+        self.assertEqual(data,original)
+        self.assertEqual(Timeline.model_json_schema()['properties']['events']['maxItems'],24)
+
+    def test_event_count_limit_still_applies_when_actions_fit(self):
+        data=copy.deepcopy(TIMELINE)
+        data['events']=[{'at_ms':0,'action':'read','channel':'serial','expected':'fixture'} for _ in range(25)]
+        with self.assertRaisesRegex(ValueError,'events数量为25，上限24'):
+            compile_timeline(Timeline.model_validate(data),Scenario.model_validate(CASE),IO)
+
+    def test_counts_include_long_gaps_and_trailing_wait(self):
+        data=copy.deepcopy(TIMELINE)
+        data['duration_ms']=60000
+        data['events']=[{'at_ms':20000,'action':'read','channel':'serial','expected':'fixture'} for _ in range(27)]
+        with self.assertRaises(ValueError) as caught:
+            compile_timeline(Timeline.model_validate(data),Scenario.model_validate(CASE),IO)
+        self.assertIn('33操作（27个事件+6个等待）',str(caught.exception))
+
 
 class PlannerTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):

@@ -3,6 +3,7 @@ from typing import Any, Literal
 from pydantic import Field
 from ..coordinator.contracts import StrictModel
 
+TIMELINE_EVENT_LIMIT = 24
 
 class Requirement(StrictModel):
     id: str = Field(pattern=r'^R[1-9][0-9]*$')
@@ -48,7 +49,9 @@ class Timeline(StrictModel):
     test_id: str
     requirement_ids: list[str] = Field(min_length=1, max_length=24)
     duration_ms: int = Field(ge=1, le=60000)
-    events: list[Event] = Field(min_length=1, max_length=24)
+    # Advertise the same contract to the model, but defer count enforcement to
+    # compile_timeline so it can report event AND expanded-action limits together.
+    events: list[Event] = Field(min_length=1, json_schema_extra={'maxItems':TIMELINE_EVENT_LIMIT})
 
 
 def check_requirements(value, spec_lines):
@@ -75,11 +78,24 @@ def check_plan(value, requirements, io_map):
 
 def compile_timeline(value, scenario, io_map):
     """Translate explicit events only. No simulator import, dispatch or behavioral verdict."""
-    from .simulation_mcp import MCPAction, InspectSimulationInput
-    if value.test_id != scenario.test_id or set(value.requirement_ids) != set(scenario.requirement_ids):
-        raise ValueError('test_id/requirement_ids必须与当前场景一致')
-    actions, observations, previous = [], [], 0
+    from .simulation_mcp import MCPAction, InspectSimulationInput, MCP_ACTION_LIMIT
     errors = []
+    if value.test_id != scenario.test_id or set(value.requirement_ids) != set(scenario.requirement_ids):
+        errors.append('test_id/requirement_ids必须与当前场景一致')
+    count = len(value.events)
+    if count > TIMELINE_EVENT_LIMIT:
+        errors.append(f'events数量为{count}，上限{TIMELINE_EVENT_LIMIT}，至少减少{count-TIMELINE_EVENT_LIMIT}个事件。')
+    times = [0, *[event.at_ms for event in value.events], value.duration_ms]
+    if all(a <= b for a,b in zip(times,times[1:])):
+        waits = sum((b-a+9999)//10000 for a,b in zip(times,times[1:]))
+        total = count + waits
+        if total > MCP_ACTION_LIMIT:
+            errors.append(f'按当前时间表转换后共{total}操作（{count}个事件+{waits}个等待），上限{MCP_ACTION_LIMIT}，'
+                f'需至少减少{total-MCP_ACTION_LIMIT}个最终操作。'
+                '每个事件占1操作，正时间差每10000ms向上取整增加wait，末尾duration_ms也可能增加wait。'
+                '请修改events列表或确实不需要间隔的观察时刻，保留必要刺激、响应等待与采证；'
+                '只缩短expected文字不会减少数量。减少事件后等待数也需重新计算。')
+    actions, observations, previous = [], [], 0
     for index, event in enumerate(value.events):
         prefix = f'events[{index}]'
         if event.at_ms < previous or event.at_ms > value.duration_ms:
@@ -121,7 +137,10 @@ def compile_timeline(value, scenario, io_map):
                                  'evaluation':'not_executed; textual criterion requires later evaluation'})
         elif event.expected is not None:
             errors.append(f'{prefix}:expected只用于read采证事件'); continue
-        actions.append(MCPAction(operation=binding['operation'], arguments=args))
+        try:
+            actions.append(MCPAction(operation=binding['operation'], arguments=args))
+        except ValueError as exc:
+            errors.append(f'{prefix}:工具参数无效：{exc}')
     if not observations:
         errors.append('至少需要一个read采证事件；设置输入的回执不是功能证据')
     if errors:
@@ -131,11 +150,6 @@ def compile_timeline(value, scenario, io_map):
         wait = min(remaining,10000)
         actions.append(MCPAction(operation='wait', arguments={'milliseconds':wait}))
         remaining -= wait
-    if len(actions) > 32:
-        waits = sum(a.operation == 'wait' for a in actions)
-        raise ValueError(f'转换后共{len(actions)}操作（{len(actions)-waits}个事件+{waits}个等待），上限32。'
-                         '正时间差会额外插入wait，末尾duration_ms也可能插入wait。'
-                         '请减少冗余采样，或将无需间隔的多个读取安排在同一at_ms；保留场景必要的输入与观察。')
     validated = InspectSimulationInput(expected_version=0, actions=actions)
     return {'test_id':scenario.test_id, 'expected_observable':scenario.expected_observable,
             'requirement_ids':scenario.requirement_ids, 'actions':[a.model_dump() for a in validated.actions],

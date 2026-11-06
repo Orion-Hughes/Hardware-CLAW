@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import Field, model_validator
 from .project import StrictModel
 
+MCP_ACTION_LIMIT = 32
 
 OPERATIONS = ("wokwi_start_simulation", "wokwi_stop_simulation", "wokwi_resume_simulation",
               "wokwi_restart_simulation", "wokwi_get_status", "wokwi_write_serial",
@@ -47,7 +48,7 @@ class MCPAction(StrictModel):
 
 class InspectSimulationInput(StrictModel):
     expected_version: int = Field(ge=0)
-    actions: list[MCPAction] = Field(min_length=1, max_length=32, description="单次独立MCP会话：宿主自动启动，依次执行动作，最后关闭。跨调用不保留仿真状态。")
+    actions: list[MCPAction] = Field(min_length=1, max_length=MCP_ACTION_LIMIT, description="单次独立MCP会话：宿主自动启动，依次执行动作，最后关闭。跨调用不保留仿真状态。")
 
     @model_validator(mode="after")
     def wait_budget(self):
