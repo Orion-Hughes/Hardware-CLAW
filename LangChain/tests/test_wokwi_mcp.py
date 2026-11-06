@@ -17,6 +17,12 @@ from tests import test_vscode_delivery as fixtures
 
 
 class MCPContractTests(unittest.TestCase):
+    def test_action_budget_accepts_64_and_rejects_65(self):
+        actions=[{'operation':'wokwi_get_status'} for _ in range(64)]
+        self.assertEqual(len(InspectSimulationInput(expected_version=1,actions=actions).actions),64)
+        with self.assertRaises(ValidationError):
+            InspectSimulationInput(expected_version=1,actions=actions+[{'operation':'wokwi_get_status'}])
+
     def test_paths_and_unbounded_inputs_rejected(self):
         bad = [
             {"operation": "wokwi_start_simulation", "arguments": {"projectPath": "D:/"}},

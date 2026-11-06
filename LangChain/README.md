@@ -2,7 +2,7 @@
 
 可选主协调模式已接入选型、生成和只读仿真规划子Agent：网页输入 `/coordinator`，CLI使用 `--coordinator`；主Agent有状态、阶段委派、交付3个工具。生成阶段可完成接线、固件、检查、真实编译，并由主Agent导出；verification参考firmware-testing-agent，固定提取需求、规划场景、逐例生成时间线并检查，输出计划后停止，不执行仿真。原生成入口保留。最新边界与实测见[第三Agent实现](../docs/AGENT3_FTA_PLANNER.md)、[测试记录](../docs/AGENT3_FTA_TEST_RESULTS.md)。
 
-本轮明确了工具字段、mcu保留ID和修正反馈；`read_hardware`默认56,000、最高120,000字符，返回必要缺项和可直接执行的续读参数。两次真实生成均编译导出成功，但使用的是临时100万token测试上限，生成阶段各约30万；默认生成预算仍为8万。未进行这两次工程的仿真验收，不能把测试成功外推为默认预算可完成或功能正确。详情见[读取服务](hardware_claw/catalog/README.md)。
+本轮明确了工具字段、mcu保留ID和修正反馈；`read_hardware`默认56,000、最高120,000字符，返回必要缺项和可直接执行的续读参数。历史两次真实生成均编译导出成功，当时使用临时100万token测试上限，生成阶段各约30万；未进行仿真验收。2026-11-06起主协调任务统一共享1,000,000 reported tokens，子阶段不再使用更低的token门槛，其他调用/超时保护保留；任务恢复不重置总量，最后一笔响应可能越过阈值。见[最新预算实测](../docs/AGENT_E2E_BUDGET_1M_20261106.md)及[读取服务](hardware_claw/catalog/README.md)。
 
 当前功能：通过API运行LangChain Agent，查询硬件、读取通用技能/配置模板、生成文件、检查、编译、Wokwi CLI限时观察，并交付VS Code仿真文件夹。工程专用验收规则已移除，通用功能验收尚未实现。见[仿真工具说明](../docs/AGENT_SIMULATION.md)和[工具状态](../docs/TOOLS_IMPLEMENTATION_STATUS.md)。
 

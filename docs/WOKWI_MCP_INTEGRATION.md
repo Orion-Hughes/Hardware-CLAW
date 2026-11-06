@@ -55,7 +55,7 @@ ST7789游戏保持原第6版；`workspace/web-project-f12d321cc23b/.hwclaw/mcp/9
 ## Harness与原始数据
 
 - Agent不能传projectPath、outputPath、sdcard、sdcardOut，VCD输出由宿主分配；当前拒绝额外配置、自定义芯片文件和SD卡挂载，尚未测试这些可选参数。
-- MCP一次最多32动作，总显式等待60秒；单请求45秒、会话180秒，与旧仿真共享每轮10次预算。时间/输出预算位于limits.py。
+- 本地MCP封装一次最多64动作（含等待，非Wokwi官方限制），总显式等待60秒；单请求45秒、会话180秒，与旧仿真共享每轮10次预算。规划器每场景最多32事件；时间/输出预算位于limits.py。
 - 原始JSON累计最多16MiB，单个证据文件最多16MiB；模型每项只收最多4000字符摘要，完整保存内容可分页读取。这不能恢复官方接口已经截掉或缓冲区丢失的数据。
 - 原始证据在`workspace/<id>/.hwclaw/mcp/<attempt>/`，含inventory、逐项response、binding、服务日志、VCD、哈希manifest；过程与失败证据保留在`temp/mcp-simulations/`。取消和过期修订不会覆盖现有验收结果。
 - 真实测过1秒超时，以及仿真已启动后取消；返回timeout/cancelled并关闭MCP进程。未发现残留wokwi-cli.exe。

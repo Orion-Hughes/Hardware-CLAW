@@ -103,41 +103,49 @@ class ContractTests(unittest.TestCase):
 
     def test_inserted_wait_overflow_reports_actionable_counts(self):
         data=copy.deepcopy(TIMELINE)
-        data['duration_ms']=1700
-        data['events']=[{'at_ms':i*100,'action':'read','channel':'serial','expected':'fixture'} for i in range(1,18)]
-        with self.assertRaisesRegex(ValueError,'34操作（17个事件\\+17个等待）'):
+        data['duration_ms']=3201
+        data['events']=[{'at_ms':i*100,'action':'read','channel':'serial','expected':'fixture'} for i in range(1,33)]
+        with self.assertRaisesRegex(ValueError,'65操作（32个事件\\+33个等待）'):
             compile_timeline(Timeline.model_validate(data),Scenario.model_validate(CASE),IO)
+
+    def test_event_and_expanded_action_boundaries_are_accepted(self):
+        data=copy.deepcopy(TIMELINE)
+        data['duration_ms']=3200
+        data['events']=[{'at_ms':i*100,'action':'read','channel':'serial','expected':'fixture'} for i in range(1,33)]
+        result=compile_timeline(Timeline.model_validate(data),Scenario.model_validate(CASE),IO)
+        self.assertEqual(len(result['actions']),64)
+        self.assertEqual(result['observations'][-1]['action_index'],63)
 
     def test_event_limit_does_not_hide_expanded_limit_or_channel_errors(self):
         data=copy.deepcopy(TIMELINE)
-        data['duration_ms']=2600
-        data['events']=[{'at_ms':i*100,'action':'read','channel':'serial','expected':'fixture'} for i in range(1,27)]
+        data['duration_ms']=3400
+        data['events']=[{'at_ms':i*100,'action':'read','channel':'serial','expected':'fixture'} for i in range(1,35)]
         data['events'][0]['channel']='unknown'
         original=copy.deepcopy(data)
         value=Timeline.model_validate(data)
         with self.assertRaises(ValueError) as caught:
             compile_timeline(value,Scenario.model_validate(CASE),IO)
         message=str(caught.exception)
-        self.assertIn('events数量为26，上限24',message)
-        self.assertIn('52操作（26个事件+26个等待）',message)
-        self.assertIn('至少减少20个最终操作',message)
+        self.assertIn('events数量为34，上限32',message)
+        self.assertIn('68操作（34个事件+34个等待）',message)
+        self.assertIn('至少减少4个最终操作',message)
         self.assertIn('events[0]',message)
         self.assertEqual(data,original)
-        self.assertEqual(Timeline.model_json_schema()['properties']['events']['maxItems'],24)
+        self.assertEqual(Timeline.model_json_schema()['properties']['events']['maxItems'],32)
 
     def test_event_count_limit_still_applies_when_actions_fit(self):
         data=copy.deepcopy(TIMELINE)
-        data['events']=[{'at_ms':0,'action':'read','channel':'serial','expected':'fixture'} for _ in range(25)]
-        with self.assertRaisesRegex(ValueError,'events数量为25，上限24'):
+        data['events']=[{'at_ms':0,'action':'read','channel':'serial','expected':'fixture'} for _ in range(33)]
+        with self.assertRaisesRegex(ValueError,'events数量为33，上限32'):
             compile_timeline(Timeline.model_validate(data),Scenario.model_validate(CASE),IO)
 
     def test_counts_include_long_gaps_and_trailing_wait(self):
         data=copy.deepcopy(TIMELINE)
         data['duration_ms']=60000
         data['events']=[{'at_ms':20000,'action':'read','channel':'serial','expected':'fixture'} for _ in range(27)]
-        with self.assertRaises(ValueError) as caught:
-            compile_timeline(Timeline.model_validate(data),Scenario.model_validate(CASE),IO)
-        self.assertIn('33操作（27个事件+6个等待）',str(caught.exception))
+        result=compile_timeline(Timeline.model_validate(data),Scenario.model_validate(CASE),IO)
+        self.assertEqual(len(result['actions']),33)
+        self.assertEqual(sum(a['arguments']['milliseconds'] for a in result['actions'] if a['operation']=='wait'),60000)
 
 
 class PlannerTests(unittest.IsolatedAsyncioTestCase):

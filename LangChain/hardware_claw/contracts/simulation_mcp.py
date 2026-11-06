@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import Field, model_validator
 from .project import StrictModel
 
-MCP_ACTION_LIMIT = 32
+MCP_ACTION_LIMIT = 64
 
 OPERATIONS = ("wokwi_start_simulation", "wokwi_stop_simulation", "wokwi_resume_simulation",
               "wokwi_restart_simulation", "wokwi_get_status", "wokwi_write_serial",

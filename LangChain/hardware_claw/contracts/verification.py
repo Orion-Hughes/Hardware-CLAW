@@ -3,7 +3,7 @@ from typing import Any, Literal
 from pydantic import Field
 from ..coordinator.contracts import StrictModel
 
-TIMELINE_EVENT_LIMIT = 24
+TIMELINE_EVENT_LIMIT = 32
 
 class Requirement(StrictModel):
     id: str = Field(pattern=r'^R[1-9][0-9]*$')
