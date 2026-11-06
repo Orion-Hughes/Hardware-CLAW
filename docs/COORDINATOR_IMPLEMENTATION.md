@@ -1,8 +1,8 @@
 # 主Agent协调层（2026-11-02）
 
-**Agent3重建后的变更：** verification已接入只读规划器，主Agent可委派生成具体计划，但不能执行仿真。该模式不要求已有构建，完成时检查本次工程版本的计划记录；`verified`交付仍要求真实功能证据。新数据流与实际测试见[规划器说明](AGENT3_FTA_PLANNER.md)及[测试记录](AGENT3_FTA_TEST_RESULTS.md)。下文“verification尚未接入/需要构建”的表述保留为旧协调层开发记录，当前规划入口以此更新为准。
+当前更新：2026-11-06。verification 已接入固定只读规划器，主 Agent 可委派生成计划，但不能执行仿真。规划不要求已有构建，完成时核对当前工程身份；导出仍要求匹配固件，`verified` 仍要求真实功能证据。见[规划器](AGENT3_FTA_PLANNER.md)及[最新维护](MAINTENANCE_MAIN_20261106.md)。
 
-已实现主Agent、selection选型子Agent和generation生成子Agent；verification尚未接入。原生成流程仍可用；新协调模式需要显式进入。选型职责见[选型说明](SELECTION_AGENT.md)；生成职责与早期预算停止记录见[生成说明与测试](GENERATION_AGENT_20261102.md)。2026-11-05两次宿主调度实际子Agent的测试已编译导出成功，主协调LLM没有参与；使用临时100万token上限、未仿真，不能称默认预算下已稳定可用。最新结果和第三子Agent计划见[当前进度](PROGRESS_20261105.md)。
+主协调层已经接入三个固定阶段。原生成流程仍可用，新协调模式需显式进入。主协调任务共享累计 1,000,000 reported tokens，恢复不重置。2026-11-06 的主协调真实测试完成了两个工程的编译、导出与规划，另一个任务编译失败，详见[完整测试](AGENT_E2E_BUDGET_1M_20261106.md)和[恢复记录](MAINTENANCE_MAIN_20261106.md)。这些记录均不代表功能验收。
 
 ## 职责与工具
 
@@ -14,7 +14,7 @@
 | run_stage | 委派selection、generation或verification，返回状态、摘要、交接引用和阻碍 |
 | deliver_project | 导出当前可交付工程；verified必须有宿主记录的功能通过证据 |
 
-旧生成Agent的17个工具没有直接暴露给主Agent。selection读取资料并确定需求/选型；generation开放10个业务工具，设计连线、生成或修正代码并检查、编译；verification预留采集仿真证据并诊断，交回生成阶段修正。
+旧生成 Agent 的 17 个工具不直接暴露给主 Agent。selection 读取资料并确定需求与选型；generation 开放 10 个业务工具，设计连线、生成或修正代码并检查、编译；verification 固定调用模型生成计划，tools=[]。真实仿真执行、判定与修正交接留待下一步。
 
 ## 文件与数据流
 
@@ -22,7 +22,7 @@
 用户 → runtime.execute_turn → 主Agent（prompts/coordinator.md）
                             ↓ get_task_state / run_stage / deliver_project
                      coordinator/service.py
-                            ↓ 固定阶段执行器接口（selection、generation已接入）
+                            ↓ 固定阶段执行器接口（selection、generation、verification）
                      简要交接 / 状态 / 引用
 
 LangChain/hardware_claw/coordinator/
@@ -67,7 +67,7 @@ workspace/.tasks/coordinator.sqlite3   本地任务记录，不提交Git
 .\.venv\Scripts\python.exe -X utf8 -B main.py --task <任务ID> --question "继续讨论这个需求"
 ```
 
-selection可实际查询并交接；generation可创建绑定工程并调用读写、检查和编译工具。早期真实测试在编译前因token预算停止；后续扩预算测试的成功与限制见[当前进度](PROGRESS_20261105.md)。verification仍返回STAGE_UNAVAILABLE。
+selection 可实际查询并交接；generation 可创建绑定工程并调用读写、检查与编译；verification 已通过固定规划流程生成计划。早期预算失败与后来恢复结果分别保留，见[历史进度](PROGRESS_20261105.md)及[维护报告](MAINTENANCE_MAIN_20261106.md)。
 
 ## 验证记录
 
@@ -77,4 +77,4 @@ selection可实际查询并交接；generation可创建绑定工程并调用读�
 
 真实API测试任务 `efa79e3567624a628828569452122301`：查询任务状态 → 委派selection → 返回blocked/STAGE_UNAVAILABLE。没有创建工程，也没有执行硬件查询。3次LLM调用，5.73秒；提供方报告输入5,594、输出483、合计6,077 tokens。原始日志位于本地 `temp/coordinator-main/live-cli.log`。随后收紧了缺失执行器时的解释规则，避免要求用户粘贴已有资料绕过实现缺口；这项措辞调整没有再次付费实测。
 
-generation接入后的早期结果见[生成测试](GENERATION_AGENT_20261102.md)。最新安排是先开发第三个verification子Agent，资料按硬件/软件阶段拆分仍为后续优化；不能将选型completed或编译通过当成功能验证。实施顺序见[当前计划](PROGRESS_20261105.md)。
+generation 接入后的早期结果见[生成测试](GENERATION_AGENT_20261102.md)。下一步是让已完成的规划器接入真实仿真执行与证据判读，见[执行接入安排](SIMULATION_EXECUTION_CHECKPOINT_20261106.md)。资料按硬件/软件阶段拆分仍为后续优化；选型 completed 或编译通过均不等于功能验证。

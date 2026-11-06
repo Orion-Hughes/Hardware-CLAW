@@ -2,11 +2,10 @@
 
 当前强制约束：禁止针对某个工程添加专用优化文件、提示词、业务模板、固定验收或修复分支。已有单工程特例已移除；自动功能验收目前未实现。器件事实保留在统一硬件资料中，核心只实施可泛化机制。详见根目录AGENTS.md及[当前工具状态](TOOLS_IMPLEMENTATION_STATUS.md)。
 
-- 日期：2026-10-26
-- 版本：v0.3
-- 状态：总体架构持续演进。2026-10-27已实现10个查询/技能/工程工具与基础检查/导出；编译仿真和真机工具仍为计划。当前清单和证据见 [工具实现状态](TOOLS_IMPLEMENTATION_STATUS.md)。
-- 配套文档：[项目总体计划](HARDWARE_CLAW_PROJECT_PLAN.md)。本文聚焦运行架构，不替代总体计划中的最终交付要求。
-- 正式第一版的文件布局、模块依赖、工具契约与任务数据流见 [GENERATOR_ARCHITECTURE.md](GENERATOR_ARCHITECTURE.md)。第一版建设完整生成程序，编译/仿真随后接入；本轮只完成目录准备，不代表新增工具已可用。
+- 更新：2026-11-06；本文保留总体能力设计，不作为逐工具实施状态。
+- 当前实现：LangChain 主协调层、固定 selection/generation/verification 阶段；工程生成、编译、只读仿真规划，以及尚未接入规划执行的 CLI/MCP 观测适配。
+- 未完成：自动计划执行、通用功能判定与闭环修正、真机烧录监控、Edge-AI 顾问。
+- 当前工具与权限以[工具清单](TOOLS_IMPLEMENTATION_STATUS.md)为准，数据流以[目录结构](../PROJECT_STRUCTURE.md)为准；最终目标见[项目计划](HARDWARE_CLAW_PROJECT_PLAN.md)。
 
 ## 1. 项目定位与边界
 

@@ -1,5 +1,7 @@
 # Git版本管理
 
+2026-11-06集成：本次将重建后的三阶段架构合并到本地 main，不推送 GitHub。旧 main 417d78b 备份于 codex/backup-main-before-integration-20261106；旧架构属于已回退的检查点，未重新引入。合并取舍、测试与清理见[维护报告](MAINTENANCE_MAIN_20261106.md)。
+
 根目录为Hardware-CLAW源码仓库，主分支main。GitHub默认使用私有仓库，当前本地基线不代表所有功能验收通过。
 
 纳入：LangChain程序、知识库及来源/许可、skills、模板、测试、项目文档、参考索引和Wokwi实验源码。

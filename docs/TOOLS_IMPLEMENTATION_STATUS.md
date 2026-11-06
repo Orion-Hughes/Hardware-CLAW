@@ -1,6 +1,6 @@
 # Hardware-CLAW 工具清单与实现状态
 
-截至2026-11-05，可选主协调模式只注册 `get_task_state`、`run_stage`、`deliver_project`。selection只开放search_hardware/read_hardware与结构化SelectionReport提交；generation已接入read_hardware、load_template和8个工程读写/检查/编译工具，不开放选型搜索、仿真、烧录和导出。verification尚未实现，是下一步重点。下表17个工具仍属于原生成流程，未全部开放给主Agent。生成早期测试触发预算；最新两次在临时100万token上限下编译导出成功，未做仿真。见[最新进度](PROGRESS_20261105.md)、[生成职责](GENERATION_AGENT_20261102.md)及[主协调层](COORDINATOR_IMPLEMENTATION.md)。
+截至2026-11-06，主协调模式注册 `get_task_state`、`run_stage`、`deliver_project`。selection 只开放 search_hardware/read_hardware 与结构化报告；generation 开放 read_hardware、load_template 和 8 个工程读写/检查/编译工具，不开放搜索、仿真、烧录或导出。verification 已实现固定只读规划流程，模型调用 tools=[]：程序准备工程与 io_map，模型生成需求、场景、时间线，程序转换并检查，停止在计划。下表 17 个工具属于保留的原生成入口，不能理解为所有阶段都有这些权限。主协调任务共享累计 100 万 token，当前边界见[规划器](AGENT3_FTA_PLANNER.md)、[运行限制](DEVELOPMENT_LIMITS.md)与[维护报告](MAINTENANCE_MAIN_20261106.md)。
 
 硬件接口更新：2026-11-02，硬件查询合并为search_hardware/read_hardware，现注册17个工具。新接口离线及真实API查询结果见[测试记录](HARDWARE_QUERY_TESTS_20261102.md)；下表其余编译/仿真结果是此前记录，不能外推为新库端到端验证。默认vscode模式保留编译与仿真接口，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
 
@@ -50,7 +50,7 @@
 
 | 工具 | 输入/输出方向 | 现状与前置工作 |
 |---|---|---|
-| 通用需求验收机制（待设计） | 需求、可观察能力→经核对的验收计划与证据判定 | 尚未实现；禁止以专用驱动补丁、单工程固定场景替代 |
+| 通用需求验收机制（部分实现） | 需求、可观察能力→计划→执行与判定 | 已有只读规划；执行、证据判定和闭环修正尚未接入 |
 | detect_devices | 受控接口→串口/设备与识别置信度 | 真机阶段；不把串口名等同准确型号 |
 | flash_firmware | 明确设备、固件修订和授权→烧录日志 | 真机阶段；不得用仿真基线直接保证N32R16V可烧录 |
 | monitor_serial | 设备、波特率、受控时限→日志 | 真机阶段；串口锁、超时、取消与日志上限 |
@@ -138,7 +138,7 @@ CLI：`python main.py --new-project 名称 --template arduino --question "需求
 - 每次写入需expected_version；同工程线程锁+进程文件锁；旧修订与旧ZIP保留。检测符号链接、junction和硬链接。这是应用层约束，不是抵御同机恶意进程竞争的操作系统沙箱。
 - 停止会取消Agent后续执行；已经开始的短文件事务可能先完成，保存的进度保留。未调用编译/仿真，因此当前无需回收那些进程。
 - 运行记录是本地项目记录，可能包含用户问题、源码和工具内容；不包含API请求头或原始SDK异常。分享工程使用导出包，不要盲目分享整个.hwclaw。
-- 未实现需求澄清专用状态机、Token硬预算和崩溃自动恢复；不能将这些规划写成已经完成。
+- 主协调任务已有累计 reported-token 停止线，但不是提供方预扣硬上限；最后一笔响应可能超出。需求澄清专用状态机与崩溃自动恢复仍未实现。
 
 ## 5. 本轮暴露的真实问题
 
