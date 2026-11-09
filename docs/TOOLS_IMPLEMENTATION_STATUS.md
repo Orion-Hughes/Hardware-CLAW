@@ -6,6 +6,8 @@
 
 ## 1. 已实现并接入Agent的17个工具
 
+2026-11-08 增量：增加程序派生的 GPIO 接线表，无新增模型工具。`get_project`、`scaffold_project`、`check_project_files` 返回当前表格；`write_project_files` / `apply_project_patch` 修改电路时返回全表，其他写入只返回版本、状态及文件引用。源数据为当前电路、保存的器件配置与来源锁定的板卡映射；缺口明确报告，不按编号猜测。报告位于 `.hwclaw/gpio_maps/v<version>/`，不混入固件文件。Agent3 通过 `io_map.wiring` 接收完整表格，既有 `inputs/outputs` 操作通道不变。详见 [GPIO接入与测试](GPIO_MAP_20261108.md)和 [Agent3 前后对照](AGENT3_IO_TABLE_AB_20261108.md)。
+
 | 工具 | 作用 | 实现位置 | 当前验证范围 |
 |---|---|---|---|
 | search_hardware | 发现元件并返回功能、I/O、接口、资源约束和缺口 | tools/hardware_catalog.py → catalog/service.py | 离线检索与真实Agent选型查询；不返回原文 |

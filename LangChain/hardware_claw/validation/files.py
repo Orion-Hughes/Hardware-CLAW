@@ -35,6 +35,18 @@ def check(state):
             issue("MISSING_FILE", name, "缺少必需文件或内容为空。")
     if not design:
         issue("MISSING_DESIGN", "design", "未保存设计。")
+    host_reserved_files = set()
+    try:
+        from ..catalog.driver_bundles import project_driver_bundles
+        for bundle in project_driver_bundles(state):
+            host_reserved_files.add(bundle["install"]["destination"] + "/bundle.json")
+            host_reserved_files.update(bundle["install"]["destination"] + "/" + item["path"]
+                                       for item in bundle["files"])
+    except Exception as exc:
+        issue("INVALID_DRIVER_BUNDLE", "design", getattr(exc, "message", str(exc)))
+    if set(files) & host_reserved_files:
+        issue("HOST_MANAGED_DEPENDENCY", ",".join(sorted(set(files) & host_reserved_files)),
+              "本地驱动包由宿主在编译和导出时注入；模型不得生成或修改这些文件。")
     if state["files_design_version"] != state["design_version"]:
         issue("STALE_FILES", "design", "文件未对应当前设计版本，需重新生成并检查。")
     hardware = state.get("hardware", {})
@@ -59,9 +71,14 @@ def check(state):
                 part = actual.get(ident, {})
                 if part.get("type") != definition["type"]:
                     issue("PART_TYPE_MISMATCH", "diagram.json", f"{ident}的type应为{definition['type']}。")
+                expected_attrs = info.get("profile", {}).get("simulation", {}).get("proposed_attrs", {})
                 attrs = part.get("attrs", {})
                 if not isinstance(attrs, dict):
                     raise ValueError("attrs must be object")
+                if attrs != expected_attrs:
+                    issue("SIMULATION_ATTRS_MISMATCH", "diagram.json",
+                          f"{ident}的attrs必须为{json.dumps(expected_attrs, ensure_ascii=False, sort_keys=True)}，"
+                          f"与硬件快照{info['summary']['id']}一致；请执行scaffold_project，不要手写或覆盖diagram。")
                 known = {a["name"] for a in definition.get("attrs", [])}
                 if set(attrs) - known:
                     issue("UNKNOWN_ATTRIBUTE", "diagram.json", f"{ident}包含上游定义未登记的属性。")
@@ -134,6 +151,11 @@ def check(state):
                 if not re.search(r'#\s*include\s*[<"]' + re.escape(header) + r'[>"]', source):
                     issue("MISSING_INCLUDE", source_name, f"缺少驱动头文件{header}。")
             for dep in info["profile"].get("driver_profile", {}).get("dependencies", []):
+                if dep.get("resolution") == "local_bundle":
+                    if any(d["name"] == dep["name"] and d["version"] == dep["version"] for d in design["dependencies"]):
+                        issue("LOCAL_DEPENDENCY_MUST_BE_HOST_MANAGED", "design",
+                              f"{dep['name']}@{dep['version']}是local_bundle；不要写入design.dependencies或lib_deps。")
+                    continue
                 if not any(d["name"] == dep["name"] and d["version"] == dep["version"] for d in design["dependencies"]):
                     issue("MISSING_DESIGN_DEPENDENCY", "design", f"设计未包含资料中的依赖{dep['name']}@{dep['version']}。")
         dependency_text = re.sub(r"[ \t]*@[ \t]*", "@", files.get("libraries.txt" if template == "arduino" else "platformio.ini", ""))

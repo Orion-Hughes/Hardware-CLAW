@@ -2,14 +2,16 @@
 import hashlib
 import json
 import os
+import shutil
 import uuid
 import time
 import zipfile
 from pathlib import Path
-from .service import TEMP, atomic_json, fail
+from .service import atomic_json, fail
 from .scaffold import baseline
 from ..adapters.compiler import fingerprint
 from ..validation.files import check
+from ..catalog.driver_bundles import bundle_bytes, project_driver_bundles
 
 
 def sha(data):
@@ -41,6 +43,11 @@ def verified_build(project, state):
         if not path.is_file() or sha(path.read_bytes()) != artifact.get("sha256"):
             fail("BUILD_CHANGED", "固件缺失或哈希不一致，不能交付。")
         blobs["firmware/" + name] = path.read_bytes()
+    for bundle in project_driver_bundles(state):
+        for name, data in bundle_bytes(bundle).items():
+            if name in blobs:
+                fail("HOST_MANAGED_DEPENDENCY", f"本地驱动包输出路径冲突：{name}。")
+            blobs[name] = data
     return build, blobs
 
 
@@ -60,6 +67,9 @@ def export(project, expected_version):
         build, blobs = verified_build(project, state)
         validation = project.validation_status(state)
         reserved = {"OPEN_IN_VSCODE.md", "_hwclaw_manifest.json"}
+        reserved.update(f'{bundle["install"]["destination"]}/bundle.json' for bundle in project_driver_bundles(state))
+        reserved.update(f'{bundle["install"]["destination"]}/{item["path"]}'
+                        for bundle in project_driver_bundles(state) for item in bundle["files"])
         if set(state["files"]) & reserved or any(name.startswith("firmware/") for name in state["files"]):
             fail("RESERVED_FILE", "firmware目录和交付说明保留给导出服务。")
         blobs.update({n: c.encode() for n, c in state["files"].items()})
@@ -90,19 +100,23 @@ def export(project, expected_version):
             except (OSError, ValueError, zipfile.BadZipFile):
                 fail("EXPORT_CONFLICT", "已有压缩包无法验证。")
         else:
-            stage = TEMP / ("delivery-" + uuid.uuid4().hex)
-            folder = stage / "simulation"
-            folder.mkdir(parents=True)
-            for name, data in blobs.items():
-                path = folder / name
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_bytes(data)
-            with zipfile.ZipFile(stage / "project.zip", "x", zipfile.ZIP_DEFLATED) as z:
-                for name, data in blobs.items():
-                    z.writestr(name, data)
-            (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
             target.parent.mkdir(exist_ok=True)
-            publish_directory(stage, target)
+            stage = target.parent / (".delivery-" + uuid.uuid4().hex + ".tmp")
+            try:
+                folder = stage / "simulation"
+                folder.mkdir(parents=True)
+                for name, data in blobs.items():
+                    path = folder / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(data)
+                with zipfile.ZipFile(stage / "project.zip", "x", zipfile.ZIP_DEFLATED) as z:
+                    for name, data in blobs.items():
+                        z.writestr(name, data)
+                (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+                publish_directory(stage, target)
+            finally:
+                if stage.exists():
+                    shutil.rmtree(stage)
         data = {"version": expected_version, "archive": str(target / "project.zip"),
                 "manifest": str(target / "manifest.json"), "simulation_folder": str(target / "simulation"),
                 "sha256": sha((target / "project.zip").read_bytes()), "folder_hashes": hashes,

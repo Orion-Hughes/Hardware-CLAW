@@ -5,7 +5,7 @@ from copy import deepcopy
 from ..catalog import KnowledgeCatalog, CatalogError
 from ..coordinator.store import WorkflowError
 
-PREFIXES = ('cards/', 'platforms/', 'upstream/', 'guidance/', 'catalog.json')
+PREFIXES = ('cards/', 'platforms/', 'upstream/', 'guidance/', 'drivers/', 'catalog.json')
 
 
 def digest(catalog, ref):
@@ -31,8 +31,11 @@ class SelectionEvidence:
             # These properties were parsed by the catalog, even if API source text was not loaded.
             programming = item.get('programming', {})
             for entry in programming.get('dependencies', []) + programming.get('declared_dependencies', []):
-                ref = entry.get('source_ref')
-                if ref:
+                dependency_refs = [entry.get('source_ref'), entry.get('bundle_manifest_ref')]
+                dependency_refs.extend(entry.get('bundle_files', []))
+                for ref in dependency_refs:
+                    if not ref:
+                        continue
                     self.hashes[ref] = digest(self.catalog, ref)
                     refs.add(ref)
         for document in data.get('documents', []):

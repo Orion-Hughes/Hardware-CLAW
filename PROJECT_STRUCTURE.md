@@ -1,6 +1,6 @@
 # 文件结构与数据流
 
-更新：2026-11-06。本文描述当前实现；长期目标见 [项目计划](docs/HARDWARE_CLAW_PROJECT_PLAN.md)。
+更新：2026-11-09。本文描述当前实现；长期目标见 [项目计划](docs/HARDWARE_CLAW_PROJECT_PLAN.md)。
 
 ```text
 Hardware_CLAW/
@@ -12,7 +12,7 @@ Hardware_CLAW/
 │  │  ├─ coordinator/                固定委派、任务状态与交接
 │  │  ├─ stages/                     selection、generation、verification
 │  │  ├─ catalog/                    硬件检索、资料组合、来源与补读
-│  │  ├─ projects/                   工程、修订、脚手架、交付
+│  │  ├─ projects/                   工程、修订、脚手架、GPIO接线表、交付
 │  │  ├─ contracts/                  工具参数、报告、测试计划
 │  │  ├─ tools/                      受控 Agent 工具
 │  │  ├─ adapters/                   PlatformIO / Wokwi CLI / MCP
@@ -26,13 +26,14 @@ Hardware_CLAW/
 │  ├─ prompts/ / skills/             提示词、通用开发指导与阶段职责
 │  ├─ templates/                     平台配置、通用规划 JSON 示例
 │  ├─ tests/                         软件回归测试
-│  └─ .venv/ / DS_Api.txt             本地环境和密钥，Git 忽略
-├─ workspace/                        本地运行数据，Git 忽略
+│  └─ .venv/ / DS_Api.txt / tester.txt 本地环境、密钥与测试者标识，Git 忽略
+├─ workspace/                        本地运行数据，Git 忽略；新ID为tester-hardware-task-random6
 │  ├─ .tasks/coordinator.sqlite3     任务、阶段交接、用量与记录
 │  └─ <project_id>/
 │     ├─ files/                      当前受管固件、diagram 和配置
 │     ├─ .hwclaw/
 │     │  ├─ revisions/v<version>/    不可变设计与文件快照
+│     │  ├─ gpio_maps/v<version>/    程序派生的接线表JSON/Markdown，文件名为报告哈希
 │     │  ├─ builds/ / runs/          编译工件 / 原生成入口运行记录
 │     │  └─ verification_plans/<id>/ 请求、响应、修正、用量、计划
 │     └─ exports/v<version>/        ZIP、manifest、simulation 文件夹
@@ -50,7 +51,8 @@ Hardware_CLAW/
 2. 主 Agent 通过 `get_task_state`、`run_stage`、`deliver_project` 调度，不直接获得全部工程工具。
 3. selection 查询连接卡与使用资料，形成选型和兼容性交接。卡片分别引用仿真、驱动 API、指导资料；保留来源、缺项和续读方法。
 4. generation 读取已选硬件资料，设计连线、生成文件、检查并编译。每次写入形成新修订，旧检查和固件不能冒充新版本结果。
-5. verification 由程序准备工程、需求和 `io_map`，模型依次生成需求、场景、时间线；程序检查并转换操作，保存计划后停止。实际请求、响应、错误与用量留存。
+   脚手架及电路写入后，程序从 `diagram.json` 和上游板卡 `board.json` 生成 GPIO 表，并通过现有工具返回；普通源码写入只返回表格引用。表格不由模型编写，不改变工程修订，不证明固件模式或电气正确性。
+5. verification 由程序准备工程、需求和 `io_map`：`inputs/outputs` 保留可操作通道，`wiring` 包含当前快照的完整程序生成 GPIO 表（含别名、常量、板级提示、来源、哈希和缺口）。场景规划、时间线及其修正请求完整传递此表；需求提取仍只接收需求原文。模型依次生成需求、场景、时间线；程序检查并转换操作，保存计划后停止。实际请求、响应、错误与用量留存。
 6. 主程序只导出满足门槛的当前工程。计划可以在没有成功构建时生成，但不能绕过固件交付门槛。
 
 下一步：工程与计划身份核对 → MCP 执行 → 原始证据 → 判定与缺口 → 有界修正 → 重编译及复测。**这条闭环尚未接通。**

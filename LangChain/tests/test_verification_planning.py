@@ -15,7 +15,8 @@ from hardware_claw import limits
 from hardware_claw.contracts.verification import (Requirements, TestPlan, Scenario, Timeline,
     check_requirements, check_plan, compile_timeline)
 from hardware_claw.coordinator import Coordinator, TaskStore, WorkflowError
-from hardware_claw.projects.service import ProjectService, ROOT
+from hardware_claw.projects.gpio_map import build_gpio_map
+from hardware_claw.projects.service import ProjectService, ProjectError, ROOT
 from hardware_claw.runtime import execute_turn
 from hardware_claw.stages.verification import attach_verification, validate_saved_plan
 from hardware_claw.stages.verification_context import planning_context, project_identity
@@ -275,6 +276,62 @@ class PlannerTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(context['documents'])
         self.assertFalse(any('/drivers/' in ref for ref in context['documents']))
         self.assertEqual(project_identity(self.project),self.before)
+
+    async def test_complete_wiring_report_reaches_plan_and_timeline(self):
+        from hardware_claw.projects.gpio_map import build_gpio_map
+        result=await self.invoke()
+        self.assertEqual(result['status'],'completed')
+        detail=self.detail(result)
+        folder=Path(detail['path'])
+        context=json.loads((folder/'context.json').read_text('utf8'))
+        with self.project.locked():
+            expected=build_gpio_map(self.project._load())
+        self.assertEqual(context['io_map']['wiring'],expected)
+        self.assertEqual([r['gpio'] for r in expected['rows']],[43,44])
+        self.assertEqual(expected['rows'][0]['board_pins'],['TX'])
+        self.assertTrue(expected['sources'])
+        for path in folder.glob('request-*.json'):
+            request=json.loads(path.read_text('utf8'))
+            payload=json.loads(request['messages'][1]['content'])['input']
+            if request['step']=='requirements':
+                self.assertNotIn('io_map',payload)  # Requirement extraction remains source-only.
+            else:
+                self.assertEqual(payload['io_map']['wiring'],expected)
+        self.assertEqual(project_identity(self.project),self.before)
+
+    async def test_wiring_is_included_in_corrections_but_not_an_operation(self):
+        result=await self.invoke('bad_channel')
+        self.assertEqual(result['status'],'blocked')
+        folder=Path(self.detail(result)['path'])
+        context=json.loads((folder/'context.json').read_text('utf8'))
+        for path in folder.glob('request-*.json'):
+            request=json.loads(path.read_text('utf8'))
+            payload=json.loads(request['messages'][1]['content'])
+            if request['step']=='timeline':
+                self.assertEqual(payload['input']['io_map'],context['io_map'])
+        for channel in ('wiring','GPIO43'):
+            value=Timeline.model_validate({**TIMELINE,'events':[
+                {'at_ms':0,'action':'read','channel':channel,'expected':'fixture'}]})
+            with self.assertRaises(ValueError):
+                compile_timeline(value,Scenario.model_validate(CASE),context['io_map'])
+
+    async def test_context_refreshes_wiring_and_preserves_unknown_endpoint_gap(self):
+        first=planning_context(self.c,{'user_request':'fixture','objective':'fixture'})
+        diagram=json.loads(self.project.read_file('diagram.json')['content'])
+        diagram['connections'].append(['mcu:999','$serialMonitor:RX','',[]])
+        with self.assertRaises(ProjectError) as caught:
+            self.project.write_files(self.project.get()['version'],{'diagram.json':json.dumps(diagram)})
+        self.assertEqual(caught.exception.code,'HOST_OWNED_FILE')
+        with self.project.locked():
+            state=self.project._load()
+            state['files']['diagram.json']=json.dumps(diagram)
+            report=build_gpio_map(state)
+        self.assertEqual(report['version'],self.project.get()['version'])
+        self.assertNotEqual(report['diagram_sha256'],first['io_map']['wiring']['diagram_sha256'])
+        self.assertEqual(report['status'],'partial')
+        self.assertIn('mcu:999',report['unmapped_board_endpoints'])
+        self.assertIn('UNKNOWN_BOARD_PIN',{item['code'] for item in report['issues']})
+        self.assertNotIn(999,[row['gpio'] for row in report['rows']])
 
 
 if __name__=='__main__': unittest.main()

@@ -5,6 +5,7 @@ DS_Api.txt
 **/DS_Api.txt
 **/.env
 **/.env.*
+LangChain/tester.txt
 **/.venv/
 **/__pycache__/
 *.pyc

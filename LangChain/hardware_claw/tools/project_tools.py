@@ -40,15 +40,28 @@ def result(operation):
 def make_project_tools(project):
     simulation_calls = 0
     simulation_lock = asyncio.Lock()
+
+    def receipt_with_gpio(data, *, full=False):
+        receipt = mutation_receipt(data)
+        if not any(f['path'] == 'diagram.json' for f in data['files']):
+            return receipt
+        report = project.gpio_map(data['version'])
+        receipt['gpio_map' if full else 'gpio_map_ref'] = report if full else {
+            k: report[k] for k in ('version', 'status', 'artifacts')}
+        return receipt
+
     @tool
     def get_project() -> dict:
         """Read the bound project's requirements, design, version and file manifest.
 
-        Call before writing; use its version as expected_version. No project path arguments.
+        Includes a host-derived gpio_map from diagram.json and source-backed board pins.
+        This is wire connectivity, not firmware validation. Call before writing;
+        use its version as expected_version. No project path arguments.
         """
         def read():
             data = project.get()
-            return data | {"build": compact_build(data.get("build"))}
+            return data | {"build": compact_build(data.get("build")),
+                           "gpio_map": project.gpio_map(data['version'])}
         return result(read)
 
     @tool(args_schema=UpdateDesignInput)
@@ -58,12 +71,13 @@ def make_project_tools(project):
         Read hardware details first. board_id automatically creates mcu; components
         contains peripherals ONLY, never a second mcu or board. instance_id is the
         endpoint prefix, hardware_id is the catalog ID. Submit the full design.
-        Reject unsupported profiles,
-        duplicate IDs, unknown pins and stale versions. Changes invalidate prior file checks.
+        Reject unsupported profiles, duplicate IDs, unknown pins and stale versions. dependencies
+        only contains registry dependencies; resolution=local_bundle drivers are omitted and
+        injected by the host. Changes invalidate prior file checks.
         """
         if hasattr(design, "model_dump"):
             design = design.model_dump()
-        return result(lambda: mutation_receipt(project.update_design(expected_version, design)))
+        return result(lambda: receipt_with_gpio(project.update_design(expected_version, design)))
 
     @tool(args_schema=ReadFileRangeInput)
     def read_project_file(path: str, start_line: int = 1, end_line: int | None = None) -> dict:
@@ -88,36 +102,47 @@ def make_project_tools(project):
 
         Save a design first. files is relative path -> full content. Use one batch for
         related files. Reject stale versions, external edits, paths outside files and scripts.
-        Writing does not compile, execute or validate firmware.
+        In vscode projects, diagram.json, platformio.ini and wokwi.toml are host-owned:
+        update the design and call scaffold_project instead. Model-authored files are normally
+        src/main.cpp, README.md and additional headers/sources. Writing does not compile,
+        execute or validate firmware.
         """
-        return result(lambda: mutation_receipt(project.write_files(expected_version, files)))
+        return result(lambda: receipt_with_gpio(project.write_files(expected_version, files)))
 
     @tool(args_schema=PatchInput)
     def apply_project_patch(path: str, expected_version: int, old_text: str, new_text: str) -> dict:
         """Replace exactly one matching text span in a previously read project file.
 
         Creates a revision, rejects stale versions and ambiguous/missing old_text.
-        This is literal replacement, not a shell command or unified-diff parser.
+        This is literal replacement, not a shell command or unified-diff parser. Host-owned
+        vscode configuration files cannot be patched; change the design and re-scaffold.
         """
-        return result(lambda: mutation_receipt(project.patch_file(expected_version, path, old_text, new_text)))
+        return result(lambda: receipt_with_gpio(project.patch_file(expected_version, path, old_text, new_text)))
 
     @tool
     def check_project_files() -> dict:
         """Check current artifacts deterministically: required files, diagram endpoints,
         design consistency, basic source declarations and supported build configuration.
 
+        Also returns the program-generated GPIO wiring map, including mapping gaps.
         data.verdict=pass means ONLY basic files passed. It never compiles or simulates.
         Modifying design/files invalidates this version-bound report.
         """
-        return result(project.check_files)
+        def check():
+            report = project.check_files()
+            return report | {'gpio_map': project.gpio_map(report['version'])}
+        return result(check)
 
     @tool(args_schema=VersionInput)
     def scaffold_project(expected_version: int) -> dict:
         """For vscode projects, instantiate fixed platformio.ini/wokwi.toml/diagram.json
-        from the saved design and read-only templates. Preserves business source/README.
+        from the saved design and read-only templates. Preserves business source/README and injects
+        local driver bundles only in compile/export snapshots. Dependencies in platformio.ini are
+        registry dependencies only. Returns a program-generated gpio_map; do not author a second pin-table format.
+        Returns a program-generated gpio_map; do not author a second pin-table format.
         Call after update_project_design, then write src/main.cpp and README.md.
         """
-        return result(lambda: mutation_receipt(project.scaffold(expected_version)))
+        return result(lambda: receipt_with_gpio(project.scaffold(expected_version), full=True))
 
     @tool(args_schema=VersionInput)
     async def compile_project(expected_version: int) -> dict:

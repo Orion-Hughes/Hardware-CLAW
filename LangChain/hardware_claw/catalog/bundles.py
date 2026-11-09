@@ -161,7 +161,7 @@ def read_hardware_bundle(catalog, hardware_ids, references=None, max_characters=
             continue
         doc.update(status='omitted', reason='response_budget', characters=None)
         try:
-            raw = catalog._bytes(ref, prefixes=('upstream/', 'guidance/'))
+            raw = catalog._bytes(ref, prefixes=('upstream/', 'guidance/', 'drivers/'))
             content = raw.decode('utf-8-sig')
             doc.update(characters=len(content), sha256=hashlib.sha256(raw).hexdigest())
             contents[ref] = content

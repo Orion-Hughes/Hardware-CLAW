@@ -12,6 +12,7 @@ from unittest.mock import patch, Mock
 from hardware_claw.projects.service import ProjectService, ProjectError, ROOT, atomic_json
 from hardware_claw.adapters.compiler import compile_project, fingerprint, run_process
 from hardware_claw.tools.templates import load_template, read_template
+from hardware_claw.validation.files import check
 from tests.test_projects import DESIGN
 from hardware_claw.projects.vscode_delivery import publish_directory
 
@@ -67,16 +68,27 @@ class VSCodeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.p.check_files()["verdict"], "pass")
         diagram = json.loads(self.p.read_file("diagram.json")["content"])
         diagram["connections"] = [e for e in diagram["connections"] if "$serialMonitor" not in str(e)]
-        self.p.write_files(3, {"diagram.json": json.dumps(diagram)})
-        self.assertIn("SERIAL_CONNECTION_REQUIRED", [e["code"] for e in self.p.check_files()["issues"]])
+        with self.assertRaises(ProjectError) as caught:
+            self.p.write_files(3, {"diagram.json": json.dumps(diagram)})
+        self.assertEqual(caught.exception.code, "HOST_OWNED_FILE")
+        with self.p.locked():
+            state = self.p._load()
+            state["files"]["diagram.json"] = json.dumps(diagram)
+            self.assertIn("SERIAL_CONNECTION_REQUIRED", [e["code"] for e in check(state)["issues"]])
 
     def test_fixed_config_and_serial_conflict(self):
-        self.p.write_files(3, {"platformio.ini": self.p.read_file("platformio.ini")["content"] + "extra_scripts = bad.py\n"})
-        self.assertEqual(self.p.check_files()["verdict"], "fail")
+        bad_config = self.p.read_file("platformio.ini")["content"] + "extra_scripts = bad.py\n"
+        with self.assertRaises(ProjectError) as caught:
+            self.p.write_files(3, {"platformio.ini": bad_config})
+        self.assertEqual(caught.exception.code, "HOST_OWNED_FILE")
+        with self.p.locked():
+            state = self.p._load()
+            state["files"]["platformio.ini"] = bad_config
+            self.assertEqual(check(state)["verdict"], "fail")
         bad = copy.deepcopy(DESIGN)
         bad["connections"].append({"a": "mcu:TX", "b": "$serialMonitor:TX"})
         with self.assertRaises(ProjectError):
-            self.p.update_design(4, bad)
+            self.p.update_design(3, bad)
 
     def test_export_requires_real_build_record(self):
         self.p.check_files()

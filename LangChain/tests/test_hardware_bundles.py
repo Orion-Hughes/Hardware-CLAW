@@ -189,7 +189,7 @@ class HardwareBundleTests(unittest.TestCase):
         self.assertNotIn('programming', second['hardware'][0])
 
     def test_optional_source_only_read_when_explicit(self):
-        ref = 'upstream/drivers/DHTesp/examples/DHT_ESP32/DHT_ESP32.ino'
+        ref = 'drivers/DHTesp/README.md'
         data = read_hardware.invoke({'hardware_ids': ['dht22_red_module']})['data']
         self.assertEqual(next(d['status'] for d in data['documents'] if d['ref'] == ref), 'reference')
         second = read_hardware.invoke({'hardware_ids': ['dht22_red_module'], 'references': [ref]})['data']
@@ -212,7 +212,7 @@ class HardwareBundleTests(unittest.TestCase):
     def test_corrupt_source_does_not_claim_complete(self):
         catalog = KnowledgeCatalog()
         original = catalog._bytes
-        ref = 'upstream/drivers/DHTesp/DHTesp.h'
+        ref = 'drivers/DHTesp/DHTesp.h'
         def read(path, **kwargs):
             if path == ref:
                 raise CatalogError('SOURCE_CHANGED', 'source hash mismatch')
@@ -220,9 +220,8 @@ class HardwareBundleTests(unittest.TestCase):
         with patch.object(catalog, '_bytes', side_effect=read):
             data = read_hardware_bundle(catalog, ['dht22_red_module'])
         self.assertFalse(data['complete'])
-        doc = next(d for d in data['documents'] if d['ref'] == ref)
-        self.assertEqual(doc['status'], 'error')
-        self.assertEqual(doc['reason'], 'SOURCE_CHANGED')
+        self.assertEqual(data['documents'], [])
+        self.assertEqual(data['errors'][0]['error_code'], 'SOURCE_CHANGED')
 
     def test_invalid_inputs_do_not_run(self):
         for args in ({'hardware_ids': []}, {'hardware_ids': ['a'] * 9},

@@ -37,6 +37,8 @@
 
 ## 文件与信息流
 
+2026-11-08 更新：`verification_context.py` 在原 `io_map.inputs/outputs` 之外增加完整的 `io_map.wiring`，使用同一工程快照调用通用 GPIO 解析器。所有已用 GPIO、别名、连接端点、常量、板级提示、哈希、来源及缺口完整传入场景规划、时间线与修正请求；不把接线表当成新增操作通道，不推断引脚模式或电气通过。需求提取仍只接收原始需求。加入前后各两次真实测试与开销见 [对照报告](AGENT3_IO_TABLE_AB_20261108.md)。
+
 | 文件 | 职责 |
 |---|---|
 | `LangChain/hardware_claw/stages/verification_context.py` | 本地工程快照、器件操作表、资料包和版本身份 |
