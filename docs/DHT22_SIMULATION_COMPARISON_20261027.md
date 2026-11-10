@@ -78,3 +78,9 @@ DHT通信不仅要求GPIO号和接口名称正确，也要求MCU释放总线后�
 - 对照失败：`temp/dht-comparison-20261027/original-driver-control.log`
 - 对照编译：`temp/dht-comparison-20261027/control-build.log`
 - 本轮LLM API调用：0；实际Wokwi CLI仿真调用：3。Wokwi服务的配额/计费以账户为准。
+
+## 2026-11-09补充
+
+本文写作时“修订驱动但去掉上拉”尚未运行。随后已按用户要求完成更简单的控制实验：仅保留 ESP32-S3 `3V3`、`GND`、`GPIO4→SDA` 三线，不加入电阻；使用 Hardware-CLAW 本地 DHTesp 1.19 开漏释放版本，通过受控 PlatformIO 编译、Wokwi CLI lint，并完成 `24°C/40% → 30°C/65% → 24°C/40%` 场景。日志见 `temp/dht22-local-driver-no-pullup-20261109/verification/no-pullup-serial.log`。
+
+该结果只证明当前 ESP32-S3 / Arduino / Wokwi / 本地驱动组合不需要外接上拉；不能推广到采购实物红板、其他板卡或所有仿真基线。当前知识卡的 API 只暴露这个本地驱动包，不再提供上游 DHTesp 作为可选驱动。

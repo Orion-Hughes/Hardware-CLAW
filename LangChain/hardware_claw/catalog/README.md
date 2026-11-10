@@ -41,7 +41,7 @@ usage返回增加以下字段：
 .\.venv\Scripts\python.exe -X utf8 -B -m hardware_claw.catalog read dht22_red_module
 .\.venv\Scripts\python.exe -X utf8 -B -m hardware_claw.catalog read esp32_s3_devkitc1_n32r16v ps2_joystick sg90_180
 .\.venv\Scripts\python.exe -X utf8 -B -m hardware_claw.catalog search --kind display
-.\.venv\Scripts\python.exe -X utf8 -B -m hardware_claw.catalog read dht22_red_module --ref upstream/drivers/DHTesp/README.md
+.\.venv\Scripts\python.exe -X utf8 -B -m hardware_claw.catalog read dht22_red_module --ref drivers/DHTesp/README.md
 .\.venv\Scripts\python.exe -X utf8 -B -m hardware_claw.catalog search led --scope upstream
 ```
 

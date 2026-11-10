@@ -21,6 +21,7 @@ from hardware_claw.projects.service import ProjectService, ProjectError
 from hardware_claw.chat_store import LocalChatStore, configure_local_auth
 from hardware_claw import limits
 from hardware_claw.coordinator import Coordinator, TaskStore
+from hardware_claw.web import ToolTimeline
 
 configure_local_auth()
 _store = None
@@ -103,6 +104,15 @@ async def identity(request):
 app.router.routes.insert(0, Route("/hardware-claw-health", identity))
 
 
+def chainlit_step_parent_id():
+    """Attach manual presentation Steps to Chainlit's current on_message run."""
+    try:
+        return cl.context.current_step.id
+    except Exception:
+        # Unit tests can execute the adapter outside a live Chainlit websocket.
+        return None
+
+
 @cl.on_chat_start
 async def start():
     cl.user_session.set("history", [])
@@ -110,7 +120,7 @@ async def start():
     cl.user_session.set("mode", "generate")
     cl.user_session.set('coordinator_task_id', None)
     await save_chat()
-    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。`/coordinator` 切换新主协调模式（选型与生成子Agent已接入，验证阶段待实现）。仿真统一采集原始日志，自动功能验收尚未实现，不标记功能通过。每轮显示工具、耗时、Token及真实验证状态。").send()
+    await cl.Message(content="Hardware-CLAW 已就绪，默认工程生成模式。直接输入需求即可创建VS Code工程；后续消息继续当前工程。`/new 需求` 另建工程，`/project 工程ID` 恢复，`/query` 切换只读查询。`/coordinator` 切换新主协调模式（选型与生成子Agent已接入，验证阶段待实现）。仿真统一采集原始日志，自动功能验收尚未实现，不标记功能通过。每轮折叠显示工具过程，并显示耗时、Token及真实验证状态。").send()
 
 
 @cl.on_message
@@ -174,22 +184,18 @@ async def respond(message: cl.Message):
     except ProjectError as exc:
         await cl.Message(content=f"{exc.code}：{exc}").send()
         return
-    steps = {}
+    timeline = ToolTimeline(
+        cl.Step,
+        lambda: datetime.now(timezone.utc).isoformat(),
+        root_parent_id=chainlit_step_parent_id(),
+    )
 
     async def emit(kind, data):
         if kind == "tool_request":
-            step = cl.Step(name=data["name"], type="tool")
-            step.start = datetime.now(timezone.utc).isoformat()
-            step.input = json.dumps(data["args"], ensure_ascii=False, indent=2)
-            steps[data["id"]] = step
-            await step.send()
+            await timeline.start_tool(data["id"], data["name"], data["args"])
         elif kind == "tool_result":
-            step = steps.get(data["id"])
+            step = await timeline.finish_tool(data["id"], data["content"])
             if step:
-                step.output = data["content"]
-                step.end = datetime.now(timezone.utc).isoformat()
-                step.language = "json"
-                await step.update()
                 if step.name in {"inspect_simulation", "read_simulation_evidence"}:
                     try:
                         from hardware_claw.adapters.wokwi_mcp import read_evidence
@@ -218,6 +224,7 @@ async def respond(message: cl.Message):
                 + ('' if data['usage_complete'] else '（提供方用量不完整）')),
                 elements=[cl.Text(name=f"{data['role']} 阶段用量", content=json.dumps(data, ensure_ascii=False, indent=2), display='side')]).send()
         elif kind == "summary":
+            await timeline.finish()
             tokens = data["tokens_reported"]
             label = str(tokens) if tokens is not None else "未返回"
             if not data["usage_complete"] and tokens is not None:

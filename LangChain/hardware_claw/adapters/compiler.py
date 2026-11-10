@@ -13,6 +13,7 @@ from pathlib import Path
 
 from ..projects.service import ROOT, atomic_json, digest, fail
 from ..validation.files import check
+from ..catalog.driver_bundles import bundle_bytes, project_driver_bundles
 from .. import limits
 
 PIO = ROOT / "tools/platformio-venv/Scripts/pio.exe"
@@ -21,7 +22,13 @@ MAX_LOG = 8 * 1024 * 1024
 
 
 def fingerprint(state):
-    return digest(json.dumps(state["files"], sort_keys=True, ensure_ascii=False))
+    bundles = [{
+        "manifest_ref": bundle["manifest_ref"], "manifest_sha256": bundle["manifest_sha256"],
+        "library_name": bundle["library_name"], "version": bundle["version"],
+        "files": [(item["path"], item["sha256"]) for item in bundle["files"]],
+    } for bundle in project_driver_bundles(state)]
+    return digest(json.dumps({"files": state["files"], "driver_bundles": bundles},
+                             sort_keys=True, ensure_ascii=False))
 
 
 async def kill_tree(process):
@@ -114,6 +121,18 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
         path = work / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8", newline="")
+    injected_bundles = []
+    for bundle in project_driver_bundles(state):
+        outputs = bundle_bytes(bundle)
+        for destination, data in outputs.items():
+            if destination in state["files"]:
+                fail("HOST_MANAGED_DEPENDENCY", f"{destination}保留给宿主注入的本地驱动包。")
+            path = work / destination
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+        injected_bundles.append({"library_name": bundle["library_name"], "version": bundle["version"],
+                                 "bundle_ref": bundle["bundle_ref"], "manifest_sha256": bundle["manifest_sha256"],
+                                 "files": list(outputs)})
     log = work / "build.log"
     try:
         verdict, code = await run_process([str(PIO), "run", "--project-dir", str(work), "--environment", "esp32s3"],
@@ -125,7 +144,8 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
     data = {"version": expected_version, "source_sha256": source_hash, "attempt": attempt,
             "verdict": verdict, "exit_code": code, "elapsed_seconds": round(time.monotonic() - started, 2),
             "log": str(log), "diagnostics": diagnostics[-20:], "log_tail": text[-2500:],
-            "artifacts": {}, "simulation": "not_run", "behavior": "not_run"}
+            "artifacts": {}, "driver_bundles": injected_bundles,
+            "simulation": "not_run", "behavior": "not_run"}
     outputs = {"firmware." + ext: work / ".pio/build/esp32s3" / ("firmware." + ext) for ext in ("bin", "elf")}
     if verdict == "pass" and not all(path.is_file() and path.stat().st_size > 0 for path in outputs.values()):
         data["verdict"] = "tool_error"

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "library_name": "DHT sensor library for ESPx",
+  "version": "1.19",
+  "origin": {
+    "upstream_repository": "https://github.com/beegee-tokyo/DHTesp",
+    "upstream_version": "1.19",
+    "license": "GPL-3.0-only",
+    "maintenance": "hardware_claw_local_bundle"
+  },
+  "install": {
+    "destination": "lib/DHTesp",
+    "managed_by": "host",
+    "platformio_lib_deps": false
+  },
+  "files": [
+    {"path": "DHTesp.cpp", "role": "source"},
+    {"path": "DHTesp.h", "role": "header"},
+    {"path": "library.json", "role": "metadata"},
+    {"path": "library.properties", "role": "metadata"},
+    {"path": "LICENSE", "role": "license"},
+    {"path": "PATCH.md", "role": "local_maintenance_note"},
+    {"path": "README.md", "role": "usage_reference"}
+  ]
+}

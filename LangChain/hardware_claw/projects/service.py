@@ -4,22 +4,24 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import threading
 import uuid
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from .. import limits
+from .naming import build_project_id, resolve_tester
 
 ROOT = Path(__file__).resolve().parents[3]
 WORKSPACE = ROOT / "workspace"
-TEMP = ROOT / "temp" / "project-service"
 ID = re.compile(r"[a-z0-9][a-z0-9_-]{0,95}\Z")
 LOCKS = {}
 LOCKS_GUARD = threading.Lock()
 MAX_FILE = limits.FILE_BYTES
 MAX_TOTAL = limits.PROJECT_BYTES
 ALLOWED_EXTENSIONS = {".ino", ".cpp", ".h", ".hpp", ".c", ".json", ".toml", ".ini", ".txt", ".md"}
+HOST_OWNED_VSCODE_FILES = {"diagram.json", "platformio.ini", "wokwi.toml"}
 
 
 class ProjectError(ValueError):
@@ -52,11 +54,14 @@ def digest(content):
 
 
 def atomic_json(path, data):
-    TEMP.mkdir(parents=True, exist_ok=True)
-    scratch = TEMP / (uuid.uuid4().hex + ".json")
-    scratch.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     path.parent.mkdir(parents=True, exist_ok=True)
-    os.replace(scratch, path)
+    scratch = path.parent / f".{path.name}.{uuid.uuid4().hex}.tmp"
+    try:
+        scratch.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(scratch, path)
+    finally:
+        if scratch.exists():
+            scratch.unlink()
 
 
 class ProjectService:
@@ -67,17 +72,20 @@ class ProjectService:
         self.id = self.root.name
 
     @classmethod
-    def create(cls, title, requirement, template="vscode", *, workspace=WORKSPACE):
+    def create(cls, title, requirement, template="vscode", *, tester=None, workspace=WORKSPACE):
         if template not in {"arduino", "platformio", "vscode"} or not requirement.strip() or len(requirement) > limits.INPUT_CHARACTERS:
             fail("INVALID_ARGUMENT", "需要有效需求和vscode/arduino/platformio模板。")
-        slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:32] or "project"
-        ident = f"{slug}-{uuid.uuid4().hex[:12]}"
+        try:
+            tester_id = resolve_tester(tester)
+            ident = build_project_id(title, requirement, tester_id)
+        except ValueError as exc:
+            fail("INVALID_TESTER", str(exc))
         root = safe_path(Path(workspace), ident)
         root.mkdir(parents=True, exist_ok=False)
         service = cls(root)
         service.files.mkdir()
         service.meta.mkdir()
-        state = {"schema_version": 1, "project_id": ident, "title": title[:120], "template": template,
+        state = {"schema_version": 1, "project_id": ident, "title": title[:120], "tester": tester_id, "template": template,
                  "version": 0, "created_at": datetime.now(timezone.utc).isoformat(),
                  "requirements": {"original": requirement, "version": 1}, "design": None,
                  "design_version": 0, "files": {}, "files_design_version": None}
@@ -179,7 +187,9 @@ class ProjectService:
         exported = json.loads(export_path.read_text(encoding="utf-8")) if export_path.exists() else None
         if exported and exported["version"] != state["version"]:
             exported = None
-        return {k: state[k] for k in ("project_id", "title", "template", "version", "requirements", "design", "design_version")} | {
+        data = {k: state[k] for k in ("project_id", "title", "template", "version", "requirements", "design", "design_version")}
+        data["tester"] = state.get("tester")
+        return data | {
             "files": [{"path": name, "sha256": digest(content), "bytes": len(content.encode())} for name, content in sorted(state["files"].items())],
             "file_check": current_check, "build": self.build_status(state), **self.validation_status(state),
             "files_design_version": state["files_design_version"], "file_root": str(self.files), "export": exported}
@@ -257,7 +267,7 @@ class ProjectService:
             content = state["files"][path]
             return {"path": path, "content": content, "sha256": digest(content), "version": state["version"]}
 
-    def write_files(self, expected_version, files):
+    def write_files(self, expected_version, files, *, host_transaction=False):
         with self.locked():
             state = self._load()
             self._check_version(state, expected_version)
@@ -266,6 +276,11 @@ class ProjectService:
                 fail("DESIGN_REQUIRED", "先保存设计，再生成工程文件。")
             if not isinstance(files, dict) or not files or len(files) > limits.PROJECT_FILES:
                 fail("INVALID_FILES", f"一次写入1到{limits.PROJECT_FILES}个文本文件。")
+            if state["template"] == "vscode" and not host_transaction:
+                owned = HOST_OWNED_VSCODE_FILES & set(files)
+                if owned:
+                    fail("HOST_OWNED_FILE", "diagram.json、platformio.ini、wokwi.toml由scaffold_project从硬件快照和只读模板生成。"
+                         "修改设计后先update_project_design，再scaffold_project；模型只写src/main.cpp、README.md和其他源码。")
             for name, content in files.items():
                 path = safe_path(self.files, name)
                 if path.suffix.lower() not in ALLOWED_EXTENSIONS:
@@ -280,10 +295,13 @@ class ProjectService:
                 for name, content in files.items():
                     path = safe_path(self.files, name)
                     path.parent.mkdir(parents=True, exist_ok=True)
-                    TEMP.mkdir(parents=True, exist_ok=True)
-                    scratch = TEMP / (uuid.uuid4().hex + ".txt")
-                    scratch.write_text(content, encoding="utf-8", newline="")
-                    os.replace(scratch, path)
+                    scratch = path.parent / f".{path.name}.{uuid.uuid4().hex}.tmp"
+                    try:
+                        scratch.write_text(content, encoding="utf-8", newline="")
+                        os.replace(scratch, path)
+                    finally:
+                        if scratch.exists():
+                            scratch.unlink()
                 state["files"] = merged
                 state["files_design_version"] = state["design_version"]
                 return self._commit(state)
@@ -314,6 +332,22 @@ class ProjectService:
             report = check(state)
             atomic_json(self.meta / "check.json", report)
             return report
+
+    def gpio_map(self, expected_version):
+        """Materialize host-owned wiring reports without changing sources or revisions."""
+        from .gpio_map import build_gpio_map, render_markdown
+        with self.locked():
+            state = self._load()
+            self._check_version(state, expected_version)
+            self._check_live_files(state)
+            report = build_gpio_map(state)
+            key = digest(json.dumps(report, ensure_ascii=False, sort_keys=True))
+            folder = self.meta / 'gpio_maps' / f"v{state['version']:06d}"
+            folder.mkdir(parents=True, exist_ok=True)
+            json_path, md_path = folder / (key + '.json'), folder / (key + '.md')
+            atomic_json(json_path, report)
+            md_path.write_text(render_markdown(report), encoding='utf-8', newline='\n')
+            return report | {'artifacts': {'json': str(json_path), 'markdown': str(md_path)}}
 
     def build_status(self, state):
         path = self.meta / "build.json"
@@ -352,7 +386,7 @@ class ProjectService:
             self._check_version(state, expected_version)
             self._check_live_files(state)
             files = render(state)
-        return self.write_files(expected_version, files)
+        return self.write_files(expected_version, files, host_transaction=True)
 
     def export(self, expected_version):
         from ..validation.files import check
@@ -391,15 +425,19 @@ class ProjectService:
                 except (OSError, ValueError, zipfile.BadZipFile, KeyError):
                     fail("EXPORT_CONFLICT", "已有导出损坏，不覆盖。")
             else:
-                stage = TEMP / ("export-" + uuid.uuid4().hex)
-                stage.mkdir(parents=True)
-                (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-                with zipfile.ZipFile(stage / "project.zip", "x", zipfile.ZIP_DEFLATED) as z:
-                    for name, content in sorted(state["files"].items()):
-                        z.writestr(name, content)
-                    z.writestr("_hwclaw_manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
                 target.parent.mkdir(exist_ok=True)
-                os.replace(stage, target)
+                stage = target.parent / (".export-" + uuid.uuid4().hex + ".tmp")
+                stage.mkdir(parents=True)
+                try:
+                    (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+                    with zipfile.ZipFile(stage / "project.zip", "x", zipfile.ZIP_DEFLATED) as z:
+                        for name, content in sorted(state["files"].items()):
+                            z.writestr(name, content)
+                        z.writestr("_hwclaw_manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
+                    os.replace(stage, target)
+                finally:
+                    if stage.exists():
+                        shutil.rmtree(stage)
             data = {"version": expected_version, "archive": str(archive), "manifest": str(target / "manifest.json"),
                     "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(), "delivery_status": "generated_not_simulated"}
             atomic_json(self.meta / "export.json", data)
@@ -420,7 +458,8 @@ class ProjectService:
                 archive = self.root / "exports" / f"v{state['version']:06d}" / "project.zip"
                 valid = archive.is_file() and hashlib.sha256(archive.read_bytes()).hexdigest() == exported["sha256"]
             return {"project_id": self.id, "version": state["version"], "delivery_status": "generated_not_simulated" if valid else "incomplete",
-                    "archive": str(archive) if valid else None, "build": "not_run", "simulation": "not_run", "behavior": "not_run"}
+                    "archive": str(archive) if valid else None, "build": "not_run", "simulation": "not_run", "behavior": "not_run",
+                    "evaluation_required": False, "simulation_execution_enabled": False, "simulation_owner": "verification"}
 
     def record_run(self, run_id, record):
         if not re.fullmatch(r"[a-f0-9]{32}", run_id):

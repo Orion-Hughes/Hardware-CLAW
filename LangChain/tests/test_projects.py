@@ -15,7 +15,7 @@ DESIGN = {
     "simulation_only": True, "board_id": "esp32_s3_devkitc1_n32r16v",
     "components": [{"instance_id": "dht", "hardware_id": "dht22_red_module"}],
     "connections": [{"a": "mcu:4", "b": "dht:SDA"}, {"a": "mcu:3V3.1", "b": "dht:VCC"}, {"a": "mcu:GND.1", "b": "dht:GND"}],
-    "dependencies": [{"name": "DHT sensor library for ESPx", "version": "1.19"}],
+    "dependencies": [],
     "assumptions": ["仅仿真，未编译或运行"], "pin_defines": {"DHT_PIN": 4},
 }
 
@@ -24,7 +24,7 @@ def artifacts():
     return {
         "sketch.ino": "#include <DHTesp.h>\nconstexpr int DHT_PIN = 4;\nvoid setup() {}\nvoid loop() {}\n",
         "diagram.json": json.dumps({"version": 1, "parts": [{"id": "mcu", "type": "board-esp32-s3-devkitc-1", "attrs": {}}, {"id": "dht", "type": "wokwi-dht22", "attrs": {}}], "connections": [[e["a"], e["b"], "green", []] for e in DESIGN["connections"]]}),
-        "libraries.txt": "DHT sensor library for ESPx@1.19\n",
+        "libraries.txt": "# Local driver bundles are injected by the host.\n",
         "README.md": "仿真示例，未编译、未仿真。",
     }
 
@@ -196,6 +196,8 @@ class ProjectTests(unittest.TestCase):
             self.assertEqual(set(z.namelist()), set(artifacts()) | {"_hwclaw_manifest.json"})
         self.assertEqual(self.p.export(2)["sha256"], exported["sha256"])
         self.assertEqual(self.p.delivery()["delivery_status"], "generated_not_simulated")
+        self.assertFalse(self.p.delivery()["evaluation_required"])
+        self.assertFalse(self.p.delivery()["simulation_execution_enabled"])
         self.p.patch_file(2, "README.md", "仿真示例", "修改示例")
         self.assertEqual(self.p.delivery()["delivery_status"], "incomplete")
         self.assertTrue(Path(exported["archive"]).exists())
@@ -206,7 +208,7 @@ class ProjectTests(unittest.TestCase):
         files = artifacts()
         files["src/main.cpp"] = "#include <Arduino.h>\n" + files.pop("sketch.ino")
         files.pop("libraries.txt")
-        files["platformio.ini"] = "[env:esp32-s3-devkitc-1]\nplatform = espressif32@6.12.0\nboard = esp32-s3-devkitc-1\nframework = arduino\nlib_deps = DHT sensor library for ESPx@1.19\n"
+        files["platformio.ini"] = "[env:esp32-s3-devkitc-1]\nplatform = espressif32@6.12.0\nboard = esp32-s3-devkitc-1\nframework = arduino\n"
         files["wokwi.toml"] = '[wokwi]\nversion = 1\nfirmware = ".pio/build/esp32-s3-devkitc-1/firmware.bin"\nelf = ".pio/build/esp32-s3-devkitc-1/firmware.elf"\n'
         p.write_files(1, files)
         self.assertEqual(p.check_files()["verdict"], "pass")
@@ -227,7 +229,7 @@ class ProjectTests(unittest.TestCase):
         state = self.p._load()
         state["template"] = "platformio"
         state["files"]["src/main.cpp"] = "#include <Arduino.h>\n" + state["files"].pop("sketch.ino")
-        state["files"]["platformio.ini"] = "[env:esp32s3]\nplatform=espressif32@6.12.0\nboard=esp32-s3-devkitc-1\nframework=arduino\nlib_deps=DHT sensor library for ESPx @ 1.19\n"
+        state["files"]["platformio.ini"] = "[env:esp32s3]\nplatform=espressif32@6.12.0\nboard=esp32-s3-devkitc-1\nframework=arduino\n"
         state["files"]["wokwi.toml"] = '[wokwi]\nfirmware=".pio/build/esp32s3/firmware.bin"\nelf=".pio/build/esp32s3/firmware.elf"'
         codes = {i["code"] for i in check(state)["issues"]}
         self.assertEqual(codes, {"WOKWI_VERSION_REQUIRED"})

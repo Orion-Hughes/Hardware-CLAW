@@ -126,16 +126,13 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
             require_delivery = require_delivery or project.get()["version"] != initial_version
             delivery, packaged = final_delivery(project, require_delivery)
             if packaged:
-                await emit("host_export", {"text": "宿主已打包当前已编译工程；未修改源码，行为状态保持实际评估结果。"})
+                await emit("host_export", {"text": "宿主已打包当前已编译工程；未修改源码。当前仿真执行未启用，行为状态保持not_run。"})
             if require_delivery and delivery["delivery_status"] not in {"generated_not_simulated", "ready_for_vscode"}:
                 status = "incomplete"
                 await emit("error", {"text": "工程尚未完成当前版本的基础检查与导出；已保存的进度保留，模型回答不作为交付成功依据。"})
-            elif require_delivery and delivery.get("evaluation_required"):
+            elif require_delivery:
                 verdict = delivery.get("behavior", "not_run")
-                if verdict == "not_run":
-                    status = "incomplete"
-                    await emit("error", {"text": "当前工程尚未执行仿真评估；可打开的交付物不等于功能通过。"})
-                elif verdict in {"fail", "timeout"}:
+                if verdict in {"fail", "timeout"}:
                     status = "validation_failed"
                 elif verdict in {"tool_error", "unsupported"}:
                     status = "validation_unavailable"

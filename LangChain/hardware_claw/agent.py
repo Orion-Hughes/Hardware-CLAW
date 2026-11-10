@@ -48,8 +48,8 @@ def build_agent(model, project=None):
         tools=[*HARDWARE_TOOLS, load_skill, load_template, *(make_project_tools(project) if project else [])],
         system_prompt=(PROMPT if project is None else PROMPT.replace("目前只提供本地资料查询，不生成或修改工程。", "当前绑定了工程，可以通过已注册工具保存仿真设计和工程文件。")
                        .replace("不要声称已生成、编译、烧录或仿真。", "只按工具实际结果报告文件、编译、仿真及行为结果；不得声称已烧录或全功能通过。")
-                       + "\n修改前先get_project读取版本，使用load_skill加载wokwi_generation；vscode工程必须加载simulation_feedback。只能使用本轮实际注册的工具。依赖版本的写操作顺序执行。源码较长时分文件写入，保持合法JSON。生成流程：基础检查→编译→simulate_project→evaluate_tests→导出。在预算内依据证据修正；连续无进展时停止并保留原始证据和可打开工程，如实报告。不得硬编码预期读数、伪造传感器变化或削弱测试。用户明确只检查时不擅自修改。"
-                       + "\n同一聊天的后续反馈针对当前绑定工程。先读取当前设计和相关源码，以当前文件为准，不依据旧回答重建工程。按反馈做最小必要修改；连线或依赖变化时同步设计与文件。解释、讨论和询问只读，不强行修改或编译。实际修改源码后重新检查、编译、运行受支持测试并导出当前版本；无测试覆盖必须说明。最终报告修改点、当前版本、验证结果和最新simulation路径，提醒旧导出目录是历史快照。"),
+                       + "\n修改前先get_project读取版本，使用load_skill加载wokwi_generation；vscode工程还须加载build_and_delivery。只能使用本轮实际注册的工具。依赖版本的写操作顺序执行。源码较长时分文件写入，保持合法JSON。生成流程：基础检查→编译→导出。当前版本不注册Wokwi CLI/MCP工具，也不要求或伪造仿真；仿真执行归verification阶段且暂未启用。在预算内依据编译诊断修正；连续无进展时停止并保留原始证据和可打开工程，如实报告。不得硬编码预期读数、伪造传感器变化或削弱测试。用户明确只检查时不擅自修改。"
+                       + "\n同一聊天的后续反馈针对当前绑定工程。先读取当前设计和相关源码，以当前文件为准，不依据旧回答重建工程。按反馈做最小必要修改；连线或依赖变化时同步设计与文件。解释、讨论和询问只读，不强行修改或编译。实际修改源码后重新检查、编译并导出当前版本；行为未运行必须明确说明。最终报告修改点、当前版本、编译结果、simulation/behavior=not_run以及最新simulation_folder路径，提醒旧导出目录是历史快照。"),
         middleware=[
             ModelCallLimitMiddleware(run_limit=limits.PROJECT_MODEL_CALLS if project else MODEL_CALL_LIMIT, exit_behavior="error"),
             ToolCallLimitMiddleware(run_limit=limits.PROJECT_TOOL_CALLS if project else TOOL_CALL_LIMIT, exit_behavior="error"),

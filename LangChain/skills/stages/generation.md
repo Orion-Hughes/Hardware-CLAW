@@ -2,8 +2,8 @@
 
 1. get_project读取当前设计、版本和文件清单。有文件时按本轮修改范围read_project_file，不依赖聊天里的旧源码。明确区分本轮要求与原始目标。
 2. 对selection中的硬件ID批量read_hardware(view=usage)，默认56000、最高120000字符（非token）。已有选型不重新查询候选。先完成必要资料：按stage_usage.missing_required_refs及next_reads给出的tool/args定向续读，ready=true后再提交设计；不要先读可选例程或重复整包。data.complete只针对本次返回，不代表累计读齐；blockers需报告，不能重复调用解决。接口/API/初始化/时序依据原文；资料无法支持则报告缺口，不联网猜测。
-3. 根据资料分配接口和GPIO，update_project_design保存完整设计。board_id自动创建mcu主板；components仅含外设，instance_id唯一且不能为mcu。连接端点使用mcu:*或外设instance_id:*，不是hardware_id。器件ID集合须与选型一致；多个同型号实例可有不同instance_id。明确simulation_only，仿真配置不作为实物Flash/PSRAM或额定电气参数。
-4. scaffold_project从只读平台模板生成固定配置与diagram.json。当前vscode平台只支持登记的ESP32-S3基线。需要核对时load_template；不自行改写构建安全配置、不增加未登记依赖、不运行安装命令。
+3. 根据资料分配接口和GPIO，update_project_design保存完整设计。board_id自动创建mcu主板；components仅含外设，instance_id唯一且不能为mcu。连接端点使用mcu:*或外设instance_id:*，不是hardware_id。器件ID集合须与选型一致；多个同型号实例可有不同instance_id。明确simulation_only，仿真配置不作为实物Flash/PSRAM或额定电气参数。`dependencies`只登记`resolution=registry`的远程固定版本；`resolution=local_bundle`的驱动不写入design.dependencies、lib_deps或工程文件。
+4. scaffold_project从只读平台模板和硬件快照生成固定platformio.ini、wokwi.toml与diagram.json，同时返回程序生成的gpio_map。这些文件由宿主拥有；禁止用write_project_files或apply_project_patch手写、覆盖或补丁修改。硬件卡simulation.proposed_attrs中的模型参数是硬契约，scaffold必须完整落到diagram；固件中的同类运行参数（如可寻址LED数量、分辨率、地址或量程）必须使用同一值，资料未给出时报告缺口，不得采用Wokwi/驱动默认值。按表核对连接与引脚常量，不另行编写GPIO表或猜测未知映射。表只反映连线，不能当作固件配置或电气验证；设计/电路不一致应先修正。get_project与check_project_files返回当前表，其他写入只返回报告引用，避免反复回传。当前vscode平台只支持登记的ESP32-S3基线。需要核对时load_template；不自行改写构建安全配置、不增加未登记依赖、不运行安装命令。registry驱动必须使用资料登记的固定版本，由编译器按lib_deps处理安装/解析；不能获取时报告实际依赖错误，不能自行换成latest或其他版本，也不能把缺包直接解释为禁止联网。local_bundle驱动由宿主在编译和导出快照中注入，模型不创建、修改或提交这些库文件。
 5. write_project_files保存src/main.cpp、README.md和必要源码；已有源码可用唯一片段apply_project_patch。按API初始化、处理读写错误、实现全部用户功能。README说明连线、依赖、操作和未验证范围。相互依赖的写操作必须顺序执行，expected_version使用最近工具实际返回值。
 6. check_project_files通过后compile_project。编译失败读取诊断，做最小必要修改，再检查编译；不要对未变代码重复编译，遇到资料/平台/工具缺口如实停止。编译与修改都保留原始修订。
 7. 当前版本检查与编译均pass后提交GenerationReport。此处没有仿真、功能验收、烧录或导出权限；不加载旧的simulation_feedback流程，不声称行为正确。主Agent负责交付或委派下一阶段。

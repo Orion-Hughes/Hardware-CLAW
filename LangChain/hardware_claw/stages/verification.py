@@ -15,6 +15,7 @@ from ..projects.service import atomic_json, digest
 from .verification_context import planning_context, project_identity
 
 ROOT = Path(__file__).resolve().parents[2]
+SIMULATION_EXECUTION_ENABLED = False
 
 
 def parse_json(raw):
@@ -108,6 +109,7 @@ class Planner:
 def render_plan(record):
     lines = ['# 仿真计划（未执行）','',f"工程：{record['project_id']}，版本：{record['project_version']}",
              '', '仅生成和静态校验计划；未编译、未仿真、未自动判定功能。',
+             '仿真执行归属verification阶段；当前执行模块未启用。',
              'at_ms为宿主相对调度时间，不是精确仿真时间；expected为文字判据，不是已实现的自动断言。', '', '## 需求']
     for r in record['requirements']: lines.append(f"- {r['id']}：{r['description']}（原文行{r['source_line']}）")
     for scenario,timeline,compiled in zip(record['test_plan'],record['timelines'],record['compiled']):
@@ -164,6 +166,7 @@ class VerificationExecutor:
                 record = {'run_id':ident,'kind':'verification_plan','stage_run_id':request['run_id'],
                     'project_id':c.project.id,'project_version':context['project_version'],
                     'project_identity':context['project_identity'],'execution_performed':False,
+                    'simulation_execution_enabled':SIMULATION_EXECUTION_ENABLED,
                     'status':'planned_with_gaps' if plan.gaps else 'planned',
                     **reqs.model_dump(),**plan.model_dump(),'timelines':timelines,'compiled':compiled}
                 record['plan_sha256'] = digest(json.dumps(record,ensure_ascii=False,sort_keys=True))

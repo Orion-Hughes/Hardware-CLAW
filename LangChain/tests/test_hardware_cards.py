@@ -26,7 +26,7 @@ class HardwareCardsTests(unittest.TestCase):
                 self.assertEqual(card.id, info['summary']['id'])
                 for group in card.documents.model_dump().values():
                     for doc in group:
-                        catalog._bytes(doc['ref'], prefixes=('upstream/', 'guidance/'))
+                        catalog._bytes(doc['ref'], prefixes=('upstream/', 'guidance/', 'drivers/'))
                 self.assertEqual(card.availability['simulation_test'], 'not_run')
                 self.assertEqual(card.availability['physical_test'], 'not_run')
         for part in index['upstream_parts']:
@@ -54,7 +54,7 @@ class HardwareCardsTests(unittest.TestCase):
 
     def test_budget_does_not_silently_truncate(self):
         result = read_documents(KnowledgeCatalog(), 'dht22_red_module',
-                                ['upstream/drivers/DHTesp/DHTesp.h'], 1000)
+                                ['drivers/DHTesp/DHTesp.h'], 1000)
         self.assertFalse(result['complete'])
         self.assertEqual(result['documents'], [])
         self.assertEqual(result['omitted'][0]['reason'], 'response_budget')
@@ -72,12 +72,12 @@ class HardwareCardsTests(unittest.TestCase):
         temp_root.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=temp_root) as tmp:
             target = Path(tmp)
-            for ref in ['library.json', 'sources.lock.json', 'upstream/drivers/DHTesp/DHTesp.h']:
+            for ref in ['library.json', 'sources.lock.json', 'upstream/wokwi-docs/docs/parts/wokwi-dht22.md']:
                 path = target / ref; path.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(ROOT / ref, path)
-            (target / 'upstream/drivers/DHTesp/DHTesp.h').write_text('changed', encoding='utf8')
+            (target / 'upstream/wokwi-docs/docs/parts/wokwi-dht22.md').write_text('changed', encoding='utf8')
             with self.assertRaises(CatalogError) as caught:
-                KnowledgeCatalog(target)._bytes('upstream/drivers/DHTesp/DHTesp.h', prefixes=('upstream/',))
+                KnowledgeCatalog(target)._bytes('upstream/wokwi-docs/docs/parts/wokwi-dht22.md', prefixes=('upstream/',))
             self.assertEqual(caught.exception.code, 'SOURCE_CHANGED')
 
     def test_failed_card_validation_is_explicit(self):

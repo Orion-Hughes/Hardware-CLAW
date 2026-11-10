@@ -3,6 +3,7 @@
 Only cards are maintained; the legacy profile is derived on read, never saved.
 No source lookup performs network access or runs upstream code.
 """
+import json
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -59,15 +60,33 @@ def to_profile(catalog, value):
     dependencies, declared, examples = [], [], []
     links = [entry for group in card['documents'].values() for entry in group]
     for link in links:
-        catalog._path(link['ref'], prefixes=('upstream/', 'guidance/'))
+        catalog._path(link['ref'], prefixes=('upstream/', 'guidance/', 'drivers/'))
         if link['read_when'] == 'example_needed':
             examples.append(link['ref'])
+    local_bundles = {}
+    for bundle in card['programming'].get('local_driver_bundles', []):
+        if not isinstance(bundle, dict) or not isinstance(bundle.get('bundle_manifest_ref'), str):
+            raise CatalogError('INVALID_CARD', '本地驱动包登记不完整。')
+        from .driver_bundles import load_bundle
+        value = load_bundle(catalog, bundle['bundle_manifest_ref'])
+        if value['bundle_ref'] != bundle.get('bundle_ref'):
+            raise CatalogError('INVALID_CARD', '本地驱动包路径与清单不一致。')
+        local_bundles[(value['library_name'], value['version'])] = value
     for ref in card['programming']['dependency_properties']:
-        raw = catalog._bytes(ref, prefixes=('upstream/drivers/',)).decode('utf-8-sig')
+        prefixes = ('drivers/',) if ref.startswith('drivers/') else ('upstream/drivers/',)
+        raw = catalog._bytes(ref, prefixes=prefixes).decode('utf-8-sig')
         props = properties(raw)
         if not props.get('name') or not props.get('version'):
             raise CatalogError('INVALID_DRIVER_METADATA', '驱动缺少名称或版本。')
-        dependencies.append({'name': props['name'], 'version': props['version'], 'source_ref': ref})
+        dependency = {'name': props['name'], 'version': props['version'], 'source_ref': ref}
+        bundle = local_bundles.get((props['name'], props['version']))
+        if bundle:
+            dependency.update(resolution='local_bundle', bundle_ref=bundle['bundle_ref'],
+                              bundle_manifest_ref=bundle['manifest_ref'],
+                              bundle_files=[item['ref'] for item in bundle['files']])
+        else:
+            dependency['resolution'] = 'registry'
+        dependencies.append(dependency)
         declared.append({'library': props['name'], 'declared_dependencies': props.get('depends', ''),
                          'architectures': props.get('architectures', ''), 'source_ref': ref})
     availability = card['availability']
@@ -87,7 +106,7 @@ def to_profile(catalog, value):
         'driver_profile': {'scope': card['programming']['scope'],
                            'headers': card['programming']['headers'],
                            'dependencies': dependencies, 'declared_dependencies': declared,
-                           'dependency_resolution': 'selected_versions_not_complete_build_lock',
+                           'dependency_resolution': 'per_dependency_host_bundle_or_registry',
                            'example_refs': examples,
                            'source_refs': [x['ref'] for x in card['documents']['api']]},
         'generation_profile': {'status': availability['generation_status'],
@@ -115,7 +134,7 @@ def read_documents(catalog, hardware_id, references, max_characters=24000):
     for ref in dict.fromkeys(references):
         if ref not in allowed:
             raise CatalogError('UNSAFE_REFERENCE', '只能读取当前硬件索引卡登记的资料。')
-        data = catalog._bytes(ref, prefixes=('upstream/', 'guidance/'))
+        data = catalog._bytes(ref, prefixes=('upstream/', 'guidance/', 'drivers/'))
         try:
             content = data.decode('utf-8-sig')
         except UnicodeError:

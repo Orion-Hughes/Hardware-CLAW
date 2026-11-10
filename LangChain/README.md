@@ -1,12 +1,14 @@
 # Hardware-CLAW：硬件工程生成Agent
 
+2026-11-10边界调整：Wokwi CLI/MCP执行工具已从生成入口拆出，归属verification/Agent3仿真执行模块；该模块尚未完成，当前不向任何阶段注册，也不会自动调用。生成阶段交付检查、编译和VS Code工程；verification当前只生成仿真计划。用户仍可在VS Code中手动启动Wokwi仿真。
+
 2026-11-06维护：修复换行符误报外部修改；219项离线回归通过。真实任务恢复已越过文件检查，但依赖包未找到导致编译失败，未导出；详情见[维护报告](../docs/MAINTENANCE_MAIN_20261106.md)。规划限制为每场景32事件/64操作，显式等待最多60秒。
 
 可选主协调模式已接入选型、生成和只读仿真规划子Agent：网页输入 `/coordinator`，CLI使用 `--coordinator`；主Agent有状态、阶段委派、交付3个工具。生成阶段可完成接线、固件、检查、真实编译，并由主Agent导出；verification参考firmware-testing-agent，固定提取需求、规划场景、逐例生成时间线并检查，输出计划后停止，不执行仿真。原生成入口保留。最新边界与实测见[第三Agent实现](../docs/AGENT3_FTA_PLANNER.md)、[测试记录](../docs/AGENT3_FTA_TEST_RESULTS.md)。
 
 本轮明确了工具字段、mcu保留ID和修正反馈；`read_hardware`默认56,000、最高120,000字符，返回必要缺项和可直接执行的续读参数。历史两次真实生成均编译导出成功，当时使用临时100万token测试上限，生成阶段各约30万；未进行仿真验收。2026-11-06起主协调任务统一共享1,000,000 reported tokens，子阶段不再使用更低的token门槛，其他调用/超时保护保留；任务恢复不重置总量，最后一笔响应可能越过阈值。见[最新预算实测](../docs/AGENT_E2E_BUDGET_1M_20261106.md)及[读取服务](hardware_claw/catalog/README.md)。
 
-当前功能：通过API运行LangChain Agent，查询硬件、读取通用技能/配置模板、生成文件、检查、编译、Wokwi CLI限时观察，并交付VS Code仿真文件夹。工程专用验收规则已移除，通用功能验收尚未实现。见[仿真工具说明](../docs/AGENT_SIMULATION.md)和[工具状态](../docs/TOOLS_IMPLEMENTATION_STATUS.md)。
+当前功能：通过API运行LangChain Agent，查询硬件、读取通用技能/配置模板、生成文件、检查、编译，并交付可手动打开的VS Code仿真文件夹。当前不自动执行Wokwi CLI/MCP，也不宣称行为验收通过；verification只生成仿真计划。见[仿真工具说明](../docs/AGENT_SIMULATION.md)和[工具状态](../docs/TOOLS_IMPLEMENTATION_STATUS.md)。
 
 网页支持同一工程持续修改与原生历史侧栏；聊天和工程绑定保存在本地SQLite，详见[会话管理](../docs/CHAT_HISTORY.md)。
 
@@ -14,7 +16,7 @@
 
 2026-11-02硬件接口改为两个：`search_hardware`提供选型信息，`read_hardware`批量读取板卡与外设的基础使用资料，共用文档去重，扩展原文按需补读。旧查询包装不再向Agent注册。现有工程工具通过内存适配读取新卡，不保留重复的手写profile。见 [知识库结构](knowledge/README.md)、[硬件查询工具说明](hardware_claw/catalog/README.md) 和 [双工具测试记录](../docs/HARDWARE_QUERY_TESTS_20261102.md)。
 
-官方MCP交互观测已接入：inspect_simulation与read_simulation_evidence支持交互批次及完整证据分页读取；已确认的截图、电压等限制见[接入与实测](../docs/WOKWI_MCP_INTEGRATION.md)。
+官方MCP交互观测适配器已完成历史接入实测：inspect_simulation与read_simulation_evidence支持交互批次及完整证据分页读取。2026-11-10起这些Wokwi执行/证据工具为verification预留且未注册；已确认的截图、电压等限制见[接入与实测](../docs/WOKWI_MCP_INTEGRATION.md)。
 
 ## 运行
 
@@ -26,7 +28,7 @@ Chainlit 2.12.0已安装在本项目`.venv`，网页已接入现有Agent、工�
 - 双击 `Stop-Agent.cmd`：停止本项目服务。关闭网页不会停止服务；未设置开机自启。
 - 网页输入问题即可。工具步骤可展开查看参数与结果，每轮显示耗时、Token与状态；停止按钮取消当前任务，已经发送的API请求仍可能计费。
 - 每个聊天独立保存工程绑定和最近六轮完成问答；完整消息及工具步骤持久化到本地历史，工具原始结果不全部跨轮发送给模型。侧栏可切换历史，重启服务后仍可恢复。
-- 支持文本查询、工程生成和Wokwi CLI仿真观察；当前没有自动功能验收，不支持真机上传。
+- 支持文本查询、工程生成和编译导出；当前没有自动Wokwi仿真、自动功能验收或真机上传。交付文件夹可由用户在VS Code中手动启动Wokwi。
 
 网页默认生成模式，直接输入需求即可创建含固件的VS Code工程；`/new 需求`另建工程；`/new-arduino 需求`、`/new-pio 需求`保留源码模式；`/project 工程ID`恢复；`/query`切换只读查询。绑定工程后可要求修改、检查、编译和导出；结果附simulation文件夹路径和ZIP。CLI仍通过`--new-project`显式创建工程。
 
@@ -92,7 +94,7 @@ API 配置单独放在 `hardware_claw/api_config.py`，由 Agent 调用 `create_
 - 查询模式最多16次模型、48次工具、128图步；工程模式最多60次模型、160次工具、512图步。预算统一在 hardware_claw/limits.py 中配置，见 [测试阶段预算](../docs/DEVELOPMENT_LIMITS.md)。达到上限退出并保留已保存工程。
 - 查询模式只读；绑定工程后提供受控files写入。没有任意Shell和真机操作工具。
 - 不输出密钥或原始异常请求；Token 缺失标记为 unavailable，不伪造为零。
-- 编译/仿真进程支持超时和取消回收；尚未实现 Token 硬预算与真机验收。`ready_for_vscode`只表示交付完整，行为判定单独展示；不支持的测试场景不会标记通过。
+- 编译进程支持超时和取消回收；Wokwi执行工具保留给未来verification执行器，当前未注册。尚未实现 Token 硬预算与真机验收。`ready_for_vscode`只表示交付完整，行为判定单独展示；不支持的测试场景不会标记通过。
 
 ## 离线测试
 
@@ -115,8 +117,8 @@ API 配置单独放在 `hardware_claw/api_config.py`，由 Agent 调用 `create_
 ## 整理后的目录（2026-10-24）
 
 - `main.py`：新的统一启动入口；`agent.py` 仅兼容旧命令。
-- `hardware_claw/tools/`：硬件查询、技能/模板读取和工程工具，完整工程模式共15个工具。
-- `hardware_claw/adapters/`：PlatformIO编译器和Wokwi CLI适配器。
+- `hardware_claw/tools/`：硬件查询、技能/模板读取和生成侧工程工具，完整工程模式共13个工具；Wokwi工具在`simulation_tools.py`中verification预留，当前未注册。
+- `hardware_claw/adapters/`：PlatformIO编译器，以及verification预留的Wokwi CLI/MCP适配器。
 - `hardware_claw/harness/`：预留公共约束，现有调用上限暂留 Agent 配置中。
 - `knowledge/`：upstream保存146条Wokwi定义，owned记录9类已购硬件及临时240×240屏幕，reference保留SSD1306，supplements保存公共配置/来源。已由查询tools接入主Agent，不代表真实接线已验证。见 [知识库说明](knowledge/README.md)。
 - `skills/`：待编写的项目领域指导，不自动加载参考文档。
