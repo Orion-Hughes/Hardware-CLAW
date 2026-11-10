@@ -126,22 +126,11 @@ class MCPStorageTests(unittest.IsolatedAsyncioTestCase):
             read_evidence(self.p,3,report['attempt'],'result.json')
         self.assertEqual(caught.exception.code,'EVIDENCE_CHANGED')
 
-    async def test_full_agent_routes_new_tool(self):
-        class Model(ScriptedModel):
-            def _generate(self, messages, stop=None, run_manager=None, **kwargs):
-                self._count += 1
-                if self._count == 1:
-                    message = AIMessage(content='',tool_calls=[{'name':'inspect_simulation','id':'mcp-1','type':'tool_call','args':{'expected_version':3,'actions':[{'operation':'wokwi_get_status'}]}}])
-                elif self._count == 2:
-                    evidence = json.loads(next(m.content for m in reversed(messages) if isinstance(m,ToolMessage)))['data']
-                    message = AIMessage(content='',tool_calls=[{'name':'read_simulation_evidence','id':'evidence-1','type':'tool_call','args':{'expected_version':3,'attempt':evidence['attempt'],'filename':'result.json','limit':1000}}])
-                else:
-                    assert any(isinstance(m,ToolMessage) and 'not_evaluated' in m.content for m in messages)
-                    message = AIMessage(content='Observed; behavior not evaluated.')
-                return ChatResult(generations=[ChatGeneration(message=message)])
-        events=[]
-        async def emit(kind,data): events.append((kind,data))
-        with patch('hardware_claw.adapters.wokwi_mcp.run_session', side_effect=self.fake_session), patch('hardware_claw.adapters.wokwi_mcp.read_token', return_value='TEST_ONLY'), patch('hardware_claw.adapters.wokwi_mcp.CLI', Path(__file__)):
-            status=await execute_turn(Model(),'inspect current simulation',[],emit,project=self.p)
-        self.assertEqual(status,'completed')
-        self.assertEqual(events[-1][1]['tool_requests'],2)
+    async def test_generation_agent_cannot_route_disabled_simulation_tools(self):
+        from hardware_claw.tools.project_tools import make_project_tools
+        from hardware_claw.tools.simulation_tools import make_simulation_tools
+        generation_names = {t.name for t in make_project_tools(self.p)}
+        reserved_names = {t.name for t in make_simulation_tools(self.p)}
+        self.assertIn("compile_project", generation_names)
+        self.assertIn("export_project", generation_names)
+        self.assertEqual(generation_names & reserved_names, set())

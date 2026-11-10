@@ -1,8 +1,10 @@
-# Agent通用仿真观察
+# Agent通用仿真观察（verification预留）
+
+2026-11-10当前状态：Wokwi CLI/MCP执行、交互和证据读取工具已从生成工具拆出，保存在`tools/simulation_tools.py`，归属verification/Agent3仿真执行模块。该执行模块尚未完成，当前没有任何阶段注册这些工具，也不会自动消耗Wokwi CI/MCP额度。verification现在只输出计划；以下实现描述用于说明已保留的执行边界和历史验证，不代表当前生成流程会调用。
 
 2026-10-27更新：删除了只针对单个工程的固定刺激、专用日志解析、验收条件和业务模板。开发约束见根目录AGENTS.md。历史测试报告仅记录旧流程，不代表当前功能。
 
-## 当前执行
+## 预留执行实现（当前未注册）
 
 `simulate_project(expected_version)`检查修订、基础检查和真实编译固件，在temp复制电路、配置与固件，调用Wokwi CLI进行限时观察。无需特定元件，不传scenario，不改变元件控制值，不要求业务串口格式。Token只进入子进程环境。
 

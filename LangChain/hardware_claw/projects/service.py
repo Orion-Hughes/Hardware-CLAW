@@ -458,7 +458,8 @@ class ProjectService:
                 archive = self.root / "exports" / f"v{state['version']:06d}" / "project.zip"
                 valid = archive.is_file() and hashlib.sha256(archive.read_bytes()).hexdigest() == exported["sha256"]
             return {"project_id": self.id, "version": state["version"], "delivery_status": "generated_not_simulated" if valid else "incomplete",
-                    "archive": str(archive) if valid else None, "build": "not_run", "simulation": "not_run", "behavior": "not_run"}
+                    "archive": str(archive) if valid else None, "build": "not_run", "simulation": "not_run", "behavior": "not_run",
+                    "evaluation_required": False, "simulation_execution_enabled": False, "simulation_owner": "verification"}
 
     def record_run(self, run_id, record):
         if not re.fullmatch(r"[a-f0-9]{32}", run_id):

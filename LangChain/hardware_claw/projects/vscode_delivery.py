@@ -147,4 +147,6 @@ def delivery(project):
                 "archive": exported["archive"] if valid else None,
                 "simulation_folder": exported["simulation_folder"] if valid else None,
                 "build": build.get("verdict") if isinstance(build, dict) else build,
-                **project.validation_status(state), "evaluation_required": True}
+                **project.validation_status(state), "evaluation_required": False,
+                "simulation_execution_enabled": False,
+                "simulation_owner": "verification"}

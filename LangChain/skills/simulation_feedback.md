@@ -1,4 +1,6 @@
-# 仿真观察与反馈
+# 仿真观察与反馈（verification预留，当前未启用）
+
+本技能描述未来verification执行模块的观察边界。当前生成阶段不注册simulate_project、inspect_simulation、read_simulation_evidence或evaluate_tests，不得加载本文来要求执行仿真。
 
 需要交互观测时可用inspect_simulation(expected_version, actions)：宿主通过官方Wokwi MCP启动独立会话，顺序执行动作并关闭。每次调用重新启动，跨调用不保留状态。操作名以wokwi_开头：get_status、read_serial、write_serial、read_pin、set_control、take_screenshot、export_vcd、stop_simulation（暂停）、resume_simulation、restart_simulation、start_simulation。参数遵循工具Schema，不传文件路径。wait动作的milliseconds是墙钟等待；模拟时间以get_status的nanos为准。read_resource仅允许name=diagram.json或wokwi.toml。
 

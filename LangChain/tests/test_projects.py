@@ -196,6 +196,8 @@ class ProjectTests(unittest.TestCase):
             self.assertEqual(set(z.namelist()), set(artifacts()) | {"_hwclaw_manifest.json"})
         self.assertEqual(self.p.export(2)["sha256"], exported["sha256"])
         self.assertEqual(self.p.delivery()["delivery_status"], "generated_not_simulated")
+        self.assertFalse(self.p.delivery()["evaluation_required"])
+        self.assertFalse(self.p.delivery()["simulation_execution_enabled"])
         self.p.patch_file(2, "README.md", "仿真示例", "修改示例")
         self.assertEqual(self.p.delivery()["delivery_status"], "incomplete")
         self.assertTrue(Path(exported["archive"]).exists())

@@ -13,9 +13,9 @@ class ProjectNamingTests(unittest.TestCase):
         ident = build_project_id(
             "web-project",
             "ESP32-S3 和 DHT22 每2秒通过串口输出温湿度",
-            "hmy",
+            "user",
         )
-        self.assertRegex(ident, r"^hmy-dht22_esp32_s3-serial_output-[0-9a-f]{6}$")
+        self.assertRegex(ident, r"^user-dht22_esp32_s3-serial_output-[0-9a-f]{6}$")
 
     def test_hardware_and_task_are_separate_segments(self):
         self.assertEqual(hardware_slug("web-project", "摇杆和屏幕显示输入位置"), "joystick_display")
@@ -29,11 +29,11 @@ class ProjectNamingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             project = ProjectService.create(
                 "web-project", "摇杆控制屏幕上的小圆点", "vscode",
-                tester="hmy", workspace=Path(directory),
+                tester="user", workspace=Path(directory),
             )
-            self.assertRegex(project.id, r"^hmy-joystick_display-input_visualizer-[0-9a-f]{6}$")
+            self.assertRegex(project.id, r"^user-joystick_display-input_visualizer-[0-9a-f]{6}$")
             state = project.get()
-            self.assertEqual(state["tester"], "hmy")
+            self.assertEqual(state["tester"], "user")
             self.assertEqual(ProjectService.open(project.id, workspace=Path(directory)).id, project.id)
 
     def test_invalid_tester_is_rejected(self):

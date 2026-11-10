@@ -54,6 +54,24 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.events[-1][1]['project']['behavior'],'fail')
         self.assertTrue(self.events[-1][1]['host_packaged'])
 
+    async def test_unsimulated_build_can_deliver_without_validation_claim(self):
+        from unittest.mock import Mock
+        project = Mock()
+        project.get.return_value = {"version": 3}
+        project.delivery.side_effect = [
+            {"version": 3, "build": "pass", "archive": None, "delivery_status": "incomplete"},
+            {"version": 3, "build": "pass", "archive": "test.zip", "delivery_status": "ready_for_vscode",
+             "behavior": "not_run", "simulation": "not_run"},
+        ]
+        class Graph:
+            async def astream(self, *args, **kwargs):
+                yield {"model": {"messages": [AIMessage(content="已生成并编译；未仿真。")]}}
+        with patch("hardware_claw.runtime.build_agent", return_value=Graph()):
+            status = await execute_turn(None, "generate", [], self.emit, project=project, require_delivery=True)
+        self.assertEqual(status, "completed")
+        project.export.assert_called_once_with(3)
+        self.assertEqual(self.events[-1][1]["project"]["behavior"], "not_run")
+
     async def asyncSetUp(self):
         self.events = []
 

@@ -1,10 +1,10 @@
 # Hardware-CLAW 工具清单与实现状态
 
-截至2026-11-06，主协调模式注册 `get_task_state`、`run_stage`、`deliver_project`。selection 只开放 search_hardware/read_hardware 与结构化报告；generation 开放 read_hardware、load_template 和 8 个工程读写/检查/编译工具，不开放搜索、仿真、烧录或导出。verification 已实现固定只读规划流程，模型调用 tools=[]：程序准备工程与 io_map，模型生成需求、场景、时间线，程序转换并检查，停止在计划。下表 17 个工具属于保留的原生成入口，不能理解为所有阶段都有这些权限。主协调任务共享累计 100 万 token，当前边界见[规划器](AGENT3_FTA_PLANNER.md)、[运行限制](DEVELOPMENT_LIMITS.md)与[维护报告](MAINTENANCE_MAIN_20261106.md)。
+截至2026-11-10，主协调模式注册 `get_task_state`、`run_stage`、`deliver_project`。selection 只开放 search_hardware/read_hardware 与结构化报告；generation 开放 read_hardware、load_template 和 8 个工程读写/检查/编译工具，不开放搜索、仿真、烧录或导出。verification 已实现固定只读规划流程，模型调用 tools=[]：程序准备工程与 io_map，模型生成需求、场景、时间线，程序转换并检查，停止在计划。下表 17 个工具中，13 个属于当前生成/查询入口，4 个Wokwi执行与证据工具属于verification预留、当前未注册；不能理解为所有阶段都有这些权限。主协调任务共享累计 100 万 token，当前边界见[规划器](AGENT3_FTA_PLANNER.md)、[运行限制](DEVELOPMENT_LIMITS.md)与[维护报告](MAINTENANCE_MAIN_20261106.md)。
 
-硬件接口更新：2026-11-02，硬件查询合并为search_hardware/read_hardware，现注册17个工具。新接口离线及真实API查询结果见[测试记录](HARDWARE_QUERY_TESTS_20261102.md)；下表其余编译/仿真结果是此前记录，不能外推为新库端到端验证。默认vscode模式保留编译与仿真接口，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
+硬件接口更新：2026-11-02，硬件查询合并为search_hardware/read_hardware。绑定工程的原生成入口当前注册13个工具，不注册Wokwi执行工具；`make_simulation_tools()`只是verification的预留构造器。新接口离线及真实API查询结果见[测试记录](HARDWARE_QUERY_TESTS_20261102.md)；下表其余编译/仿真结果是此前记录，不能外推为新库端到端验证。默认vscode模式保留编译与导出接口，通用功能验收尚未实现。详见[仿真工具与评估](AGENT_SIMULATION.md)，根目录AGENTS.md禁止项目特例优化。
 
-## 1. 已实现并接入Agent的17个工具
+## 1. 已实现工具：13个生成侧注册 + 4个verification预留
 
 2026-11-08 增量：增加程序派生的 GPIO 接线表，无新增模型工具。`get_project`、`scaffold_project`、`check_project_files` 返回当前表格；`write_project_files` / `apply_project_patch` 修改电路时返回全表，其他写入只返回版本、状态及文件引用。源数据为当前电路、保存的器件配置与来源锁定的板卡映射；缺口明确报告，不按编号猜测。报告位于 `.hwclaw/gpio_maps/v<version>/`，不混入固件文件。Agent3 通过 `io_map.wiring` 接收完整表格，既有 `inputs/outputs` 操作通道不变。详见 [GPIO接入与测试](GPIO_MAP_20261108.md)和 [Agent3 前后对照](AGENT3_IO_TABLE_AB_20261108.md)。
 
@@ -16,10 +16,10 @@
 | load_template | 列出/读取只读平台配置 | tools/templates.py → templates/ | 白名单ID与SHA256；不提供专用业务示例 |
 | scaffold_project | 从设计生成固定配置与电路图 | projects/scaffold.py | 自动串口连接；固定构建配置；真实Agent综合生成 |
 | compile_project | 编译当前已检查修订 | adapters/compiler.py | 真实PlatformIO、900秒时限、取消进程树、源码/固件哈希绑定 |
-| simulate_project | 当前固件与电路的统一限时观察 | adapters/simulator.py | CLI、凭据隔离、30秒模拟/180秒墙钟、每轮最多10次，原始证据与哈希；无元件条件 |
-| inspect_simulation | 官方MCP交互批次，自动关闭会话 | adapters/wokwi_mcp.py | 11个官方工具逐项实测；补丁版支持完整PNG；引脚仅数字电平，不测电压；详见WOKWI_MCP_INTEGRATION.md |
-| read_simulation_evidence | 当前修订MCP证据分页读取 | 同上 | 哈希/修订检查、路径拒绝、分页测试与真实Agent回填 |
-| evaluate_tests | 核验证据与报告执行状态、验收缺口 | validation/observation.py | 正常观察返回unsupported，功能未验证；不再使用专用预期和解析器 |
+| simulate_project | verification预留：当前固件与电路的统一限时观察 | tools/simulation_tools.py → adapters/simulator.py | 实现与旧实测保留；当前未注册，不会消耗Wokwi CI额度 |
+| inspect_simulation | verification预留：官方MCP交互批次，自动关闭会话 | tools/simulation_tools.py → adapters/wokwi_mcp.py | 11个官方工具逐项实测；当前未注册；引脚仅数字电平，不测电压，详见WOKWI_MCP_INTEGRATION.md |
+| read_simulation_evidence | verification预留：当前修订MCP证据分页读取 | 同上 | 哈希/修订检查、路径拒绝、分页测试与真实Agent回填；当前未注册 |
+| evaluate_tests | verification预留：核验证据与报告执行状态、验收缺口 | tools/simulation_tools.py → validation/observation.py | 正常观察返回unsupported，功能未验证；当前未注册 |
 | get_project | 查看绑定工程、需求、设计、版本、文件及报告 | tools/project_tools.py → projects/service.py | 初始空工程、设计后、写入后、恢复工程的真实查询 |
 | update_project_design | 保存选型、元件实例、端点、依赖、假设 | 同上；contracts/project.py | 查询真实资料后保存设计再读回；拒绝未知端点、重复ID、blocked硬件及过期版本 |
 | read_project_file | 读取files内文本与哈希 | 同上 | 不存在文件、越界拒绝、写入后读回；不开放任意文件系统 |
@@ -28,13 +28,13 @@
 | check_project_files | Python基础文件与部分一致性检查 | tools/project_tools.py → validation/files.py | 缺文件→Agent补齐→pass；错误GPIO定义、端点/连线不符、电源短接、依赖、配置检查 |
 | export_project | 当前修订ZIP与哈希清单 | tools/project_tools.py → projects/service.py | 真实检查→导出；离线验证旧检查不能导出、包不含密钥/环境/日志 |
 
-查询模式注册search_hardware/read_hardware/load_skill/load_template；绑定工程后注册全部17个。旧get_hardware_info/read_hardware_documents仅保留内部兼容，不向Agent注册。execution_status表示工具是否正常执行；行为读取evaluate_tests的verdict。默认底层服务、CLI及网页/new均使用vscode。导出可含失败工程供调试，ready_for_vscode不是行为通过。
+查询模式注册search_hardware/read_hardware/load_skill/load_template；绑定工程后注册13个生成侧工具，不注册4个Wokwi工具。旧get_hardware_info/read_hardware_documents仅保留内部兼容，不向Agent注册。execution_status表示工具是否正常执行；当前生成交付保留`simulation/behavior=not_run`。默认底层服务、CLI及网页/new均使用vscode。导出可含失败工程供调试，ready_for_vscode不是行为通过。
 
 ## 2. 后续要实现的工具
 
-### 官方MCP已接入，存在已确认的数据缺口
+### 官方MCP适配器已实测，当前为verification预留且未注册
 
-通过官方stdio MCP + Python SDK新增inspect_simulation和read_simulation_evidence。保留原simulate_project/evaluate_tests；新观测不冒充功能验收。11个官方工具、两个资源已实测，详细记录与边界见[官方MCP接入](WOKWI_MCP_INTEGRATION.md)。
+通过官方stdio MCP + Python SDK实现inspect_simulation和read_simulation_evidence，并保留原simulate_project/evaluate_tests适配器；它们现在统一放在verification预留的simulation_tools中，当前没有任何阶段注册。新观测不冒充功能验收。11个官方工具、两个资源已实测，详细记录与边界见[官方MCP接入](WOKWI_MCP_INTEGRATION.md)。
 
 状态、串口读写、控制、暂停/恢复/重启可用；VCD需接线分析仪。原版截图截断已通过通用MCP返回补丁修复；仍取决于模型framebuffer支持。pinRead明确只提供数字高低电平，不读取电压。官方对未知control也可能返回成功，宿主按统一知识库检查控制名和范围。完整波形分析和需求验收仍待实现。
 
@@ -48,7 +48,7 @@
 - 诊断与判定分开；修正需关联失败证据，重新构建并复测。设置调用/时间/token预算、最大修正次数和无进展停止条件。
 - 不新增单工程专用技能、业务模板、固定预期、解析器或驱动补丁。测试参数由通用结构表达，不写成核心程序的案例特例。
 
-以下名称是开发计划，不代表已经注册的工具。通用验收优先完善现有simulate_project/evaluate_tests；是否拆出新工具待接口设计，不以工具数量衡量完成度。
+以下名称是开发计划，不代表已经注册的工具。通用验收优先复用verification预留的simulate_project/evaluate_tests及MCP证据读取；是否拆出新工具待接口设计，不以工具数量衡量完成度。
 
 | 工具 | 输入/输出方向 | 现状与前置工作 |
 |---|---|---|
@@ -96,7 +96,7 @@
 
 ## 3. 实际数据流与目录
 
-入口创建/恢复工程 → LangChain循环 → 查询/技能/配置模板 → 保存设计 → 脚手架 → 业务文件 → 基础检查 → 编译 → 统一仿真观察 → 核验证据并报告验收缺口 → 有依据的有限修正或导出。宿主核对版本、固件、证据及交付物，不依赖模型口头宣布通过。
+入口创建/恢复工程 → LangChain循环 → 查询/技能/配置模板 → 保存设计 → 脚手架 → 业务文件 → 基础检查 → 编译 → 导出。verification另行生成计划，当前不执行仿真。未来启用后才会进入仿真观察、证据核验与有依据的有限修正。宿主核对版本、固件及交付物，不依赖模型口头宣布通过。
 
 ```text
 LangChain/

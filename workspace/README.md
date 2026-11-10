@@ -11,8 +11,8 @@
 示例：
 
 ```text
-hmy-dht22_esp32_s3-serial_output-9f8638
-hmy-joystick_display-input_visualizer-a1b2c3
+user-dht22_esp32_s3-serial_output-9f8638
+user-joystick_display-input_visualizer-a1b2c3
 ```
 
 - `tester`：测试者标识，来自 `HARDWARE_CLAW_TESTER` 环境变量，或本地忽略文件 `LangChain/tester.txt`；未配置时使用 `local`。

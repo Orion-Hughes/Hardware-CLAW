@@ -13,8 +13,8 @@
 示例：
 
 ```text
-hmy-dht22_esp32_s3-serial_output-9f8638
-hmy-joystick_display-input_visualizer-a1b2c3
+user-dht22_esp32_s3-serial_output-9f8638
+user-joystick_display-input_visualizer-a1b2c3
 ```
 
 规则：
@@ -33,7 +33,7 @@ hmy-joystick_display-input_visualizer-a1b2c3
 2. `LangChain/tester.txt` 第一行；
 3. `local` fallback。
 
-`LangChain/tester.txt` 已加入 `.gitignore`，适合每台机器单独配置。当前本机为 `hmy`。
+`LangChain/tester.txt` 已加入 `.gitignore`，适合每台机器单独配置。当前本机使用去标识化的 `user`。
 
 ## 旧工程兼容
 
