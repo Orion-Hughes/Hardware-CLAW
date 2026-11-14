@@ -8,7 +8,7 @@ selection已作为固定子Agent接入主协调器，使用现有LangChain和API
 
 输入：objective、original_request（初始目标）、user_request（本轮修改）、工程ID、accepted_selection（宿主提供的有效选型资料）、未完成阶段的简短反馈。主Agent只转达目标和约束，不应凭记忆补充硬件候选或实现细节。
 
-输出：status、summary、requirements、hardware_ids、decisions、assumptions、blockers、source_refs、next_stage，以及compatibility、removed_hardware_ids、change_reason。宿主补入detail_ref和selection_update，分别指向详细记录和本次复用/读取/移除的实际记录。next_stage仅为建议，主Agent遵从用户范围决定是否继续，子Agent不能主动启动其他阶段。
+输出：status、summary、requirements、hardware_ids、decisions、assumptions、blockers、source_refs，以及compatibility、removed_hardware_ids、change_reason。宿主补入detail_ref和selection_update，分别指向详细记录和本次复用/读取/移除的实际记录。主 Agent 根据本轮请求和交接结果决定是否继续；选型子 Agent 不提交下一阶段字段。
 
 退出状态：
 

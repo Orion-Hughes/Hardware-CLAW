@@ -23,9 +23,10 @@ def _result(operation):
 def make_coordinator_tools(coordinator):
     @tool
     def get_task_state() -> dict:
-        """Read task version, request, project revision, available stages and compact handoffs.
+        """Read current request, task/project versions, available stages and stage_progress.
 
-        Use before delegation. No raw hardware documents or source files are returned.
+        Use before delegation. stage_progress separates the latest attempt from the accepted
+        handoff and its project revision. No raw hardware documents or source files are returned.
         Stage availability is real host registration, never inferred from the role name.
         """
         return _result(coordinator.state)
@@ -36,7 +37,8 @@ def make_coordinator_tools(coordinator):
         """Delegate a bounded task to selection, generation or verification.
 
         Only host-installed executors can run; there is no arbitrary spawn or prompt editing.
-        Returns status, handoff_ref, task_version and blockers. STAGE_UNAVAILABLE means
+        Returns status, handoff_ref, task_version and blockers. Choose whether to continue
+        from this evidence and the user's request. STAGE_UNAVAILABLE means
         implementation is absent: report it and stop retrying. A returned report alone
         never proves hardware acceptance. Calls for the same task must be sequential.
         """

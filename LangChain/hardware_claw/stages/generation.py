@@ -8,7 +8,7 @@ from typing import Literal
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelCallLimitMiddleware, ToolCallLimitMiddleware
 from langchain.agents.structured_output import ToolStrategy
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.tools import StructuredTool
 from pydantic import Field, create_model, model_validator
 
@@ -41,7 +41,6 @@ class GenerationReport(StrictModel):
     assumptions: list[str] = Field(default_factory=list, max_length=12)
     blockers: list[str] = Field(default_factory=list, max_length=20)
     source_refs: list[str] = Field(default_factory=list, max_length=32)
-    next_stage: Literal['verification'] | None = None
 
 
 class GenerationReadInput(ReadHardwareInput):
@@ -205,9 +204,9 @@ class GenerationExecutor:
             return value
         schema = create_model('GenerationReport', __base__=GenerationReport, __validators__={'audit':audit})
         def invalid_report(exc):
-            if isinstance(getattr(exc,'ai_message',None), AIMessage): trace.record_message(exc.ai_message)
-            trace.reject_report(last_error or WorkflowError('INVALID_HANDOFF','两次报告校验失败，停止。'))
-            return f'宿主拒绝报告：{last_error or "Schema格式错误"}。提交当前候选修订或说明阻碍。'
+            nonlocal last_error
+            error, last_error = last_error, None
+            return trace.report_feedback(exc, error)
         graph = create_agent(self.model, tools=trace.make_tools(), system_prompt=prompt,
             response_format=ToolStrategy(schema, handle_errors=invalid_report), middleware=[trace,
                 ModelCallLimitMiddleware(run_limit=limits.GENERATION_MODEL_CALLS, exit_behavior='error'),

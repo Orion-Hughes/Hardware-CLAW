@@ -34,7 +34,7 @@ class MalformedModel(FixtureModel):
         msg = result.generations[0].message
         if index == 1:
             return result  # Actual local read_hardware, no API.
-        malformed = (index == 2 and self.mode != 'semantic_then_json') or self.mode == 'json_twice' or (
+        malformed = (index == 2 and self.mode not in ('semantic_then_json', 'legacy_stage_hint')) or self.mode == 'json_twice' or (
             index == 3 and self.mode == 'semantic_then_json')
         if index == 2 and self.mode == 'no_report':
             msg = AIMessage(content='no report', usage_metadata=msg.usage_metadata)
@@ -47,6 +47,8 @@ class MalformedModel(FixtureModel):
             msg = AIMessage(content='', tool_calls=valid_calls,
                 invalid_tool_calls=[{'name':'read_hardware' if self.mode == 'unrelated_invalid' else 'SelectionReport',
                     'args':BAD_JSON, 'id':f'bad-{index}', 'error':'invalid JSON'}], usage_metadata=msg.usage_metadata)
+        elif self.mode == 'legacy_stage_hint' and index == 2:
+            msg.tool_calls[0]['args']['next_stage'] = 'null'
         elif self.mode in ('json_then_semantic', 'semantic_then_json'):
             msg.tool_calls[0]['args']['source_refs'] = ['upstream/invented.md']
         elif self.mode == 'json_then_schema':
@@ -117,6 +119,17 @@ class JsonRepairTests(unittest.IsolatedAsyncioTestCase):
         _, result, detail = await self.run_child('json_then_schema')
         self.assertEqual(result['result']['blockers'],['INVALID_HANDOFF'])
         self.assertEqual(detail['metrics']['tokens_reported'],36)
+
+    async def test_extra_routing_field_gets_exact_removal_feedback(self):
+        model, result, detail = await self.run_child('legacy_stage_hint')
+        self.assertEqual(result['status'], 'completed')
+        self.assertNotIn('next_stage', result['result'])
+        self.assertEqual(model.bound_names[-1], ['SelectionReport'])
+        self.assertEqual(detail['metrics']['tool_calls'], 1)
+        feedback = next(m for m in model.seen[-1] if isinstance(m, ToolMessage) and m.name == 'SelectionReport')
+        issue = json.loads(feedback.content)['issues'][0]
+        self.assertEqual((issue['field'], issue['type'], issue['received'], issue['fix']),
+                         ('next_stage', 'extra_forbidden', '"null"', '删除该字段。'))
 
     async def test_repair_still_obeys_token_budget(self):
         with patch.object(limits,'SELECTION_TOTAL_TOKENS',24):

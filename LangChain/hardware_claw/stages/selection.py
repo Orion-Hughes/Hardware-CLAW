@@ -8,7 +8,7 @@ from typing import Literal
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelCallLimitMiddleware, ToolCallLimitMiddleware
 from langchain.agents.structured_output import ToolStrategy
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.tools import StructuredTool
 from pydantic import Field, create_model, model_validator
 
@@ -24,7 +24,6 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class SelectionReport(StageResult):
     """Submit the final selection handoff after consulting tools; never claim runtime validation."""
-    next_stage: Literal['generation'] | None = None
     detail_ref: None = None  # Assigned by the host, never invented by the model.
     project_version: None = None
     selection_update: None = None  # Host computes changes, not a model claim.
@@ -144,6 +143,7 @@ class SelectionExecutor:
         @model_validator(mode='after')
         def audit_report(value):
             nonlocal last_validation_error
+            last_validation_error = None
             try:
                 trace.validate(value)
             except WorkflowError as exc:
@@ -153,13 +153,9 @@ class SelectionExecutor:
         audited_schema = create_model('SelectionReport', __base__=SelectionReport,
                                       __validators__={'audit_report': audit_report})
         def invalid_report(exc):
-            # Structured-output handling can raise before the model wrapper returns.
-            # Record rejected billed responses, including syntax -> schema failures.
-            if isinstance(getattr(exc, 'ai_message', None), AIMessage):
-                trace.record_message(exc.ai_message)
-            trace.reject_report(last_validation_error or WorkflowError('INVALID_HANDOFF', '两次交接校验未通过，停止本阶段。'))
-            reason = str(last_validation_error) if last_validation_error else '交接格式不符合Schema。'
-            return f'宿主拒绝本次交接：{reason} 请修正报告或返回blocked。保留真实缺口，不重复已读资料，不降低标准。'
+            nonlocal last_validation_error
+            error, last_validation_error = last_validation_error, None
+            return trace.report_feedback(exc, error)
         graph = create_agent(self.model, tools=trace.make_tools(), system_prompt=prompt,
             response_format=ToolStrategy(audited_schema, handle_errors=invalid_report),
             middleware=[trace,

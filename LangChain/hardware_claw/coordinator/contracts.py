@@ -41,7 +41,6 @@ class StageResult(StrictModel):
     hardware_ids: list[str] = Field(default_factory=list, max_length=32)
     decisions: list[str] = Field(default_factory=list, max_length=20)
     blockers: list[str] = Field(default_factory=list, max_length=20)
-    next_stage: Stage | None = None
     project_version: int | None = Field(default=None, ge=0)
     assumptions: list[str] = Field(default_factory=list, max_length=12)
     source_refs: list[str] = Field(default_factory=list, max_length=32)

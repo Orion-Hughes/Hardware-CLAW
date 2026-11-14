@@ -65,10 +65,31 @@ class Coordinator:
 
     def state(self):
         state = self.store.load(self.task_id)
-        return state | {'project': self.project_state(),
+        project = self.project_state()
+        accepted = {stage: self.store.record(self.task_id, ref) for stage, ref in state['latest'].items()}
+        attempts = state.get('latest_attempts', {})
+        progress = {}
+        for stage in STAGES:
+            handoff = accepted.get(stage)
+            ref = attempts.get(stage) or (handoff and handoff['run_id'])
+            attempt = handoff if handoff and ref == handoff['run_id'] else (
+                self.store.record(self.task_id, ref) if ref else None)
+            report = attempt['result'] if attempt else {}
+            progress[stage] = {
+                'accepted_ref': handoff['run_id'] if handoff else None,
+                'accepted_project_version': handoff['result'].get('project_version') if handoff else None,
+                'latest_status': attempt['status'] if attempt else 'not_started',
+            }
+            if attempt and attempt['status'] != 'completed':
+                progress[stage]['blockers'] = report.get('blockers', [])
+                progress[stage]['summary'] = report.get('summary')
+        return state | {'project': project,
             'stages': {name: {'description': description, 'available': name in self.executors}
                        for name, description in STAGES.items()},
-            'handoffs': [self.store.record(self.task_id, ref) for ref in state['latest'].values()],
+            'stage_progress': progress,
+            # Older saved reports may have a next_stage hint; preserve it in raw records only.
+            'handoffs': [record | {'result': {k: v for k, v in record['result'].items() if k != 'next_stage'}}
+                         for record in accepted.values()],
             'budget': {'token_limit': limits.COORDINATOR_TOTAL_TOKENS,
                        'remaining_reported_tokens': max(0, limits.COORDINATOR_TOTAL_TOKENS - state['usage']['total_tokens']),
                        'usage_complete': state['usage']['missing_usage_responses'] == 0,

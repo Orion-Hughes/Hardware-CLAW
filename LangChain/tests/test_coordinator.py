@@ -77,7 +77,7 @@ class CoordinatorTests(unittest.IsolatedAsyncioTestCase):
         async def selected(request):
             self.assertNotIn('messages', request)
             return {'status': 'completed', 'summary': '选型fixture', 'hardware_ids': ['dht22_red_module'],
-                    'requirements': ['测量温度'], 'next_stage': 'generation'}
+                    'requirements': ['测量温度']}
         self.c.executors['selection'] = selected
         first = await self.invoke()
         self.assertEqual(first['status'], 'completed')
@@ -90,7 +90,26 @@ class CoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(seen[0]['handoffs'][0]['run_id'], first['run_id'])
         self.assertNotIn('handoffs', second)
         self.assertEqual(second['input_refs'], [first['run_id']])
-        self.assertEqual(self.c.state()['latest']['selection'], first['run_id'])
+        state = self.c.state()
+        self.assertEqual(state['latest']['selection'], first['run_id'])
+        self.assertEqual(state['stage_progress']['selection'], {
+            'accepted_ref': first['run_id'], 'accepted_project_version': None,
+            'latest_status': 'needs_input', 'blockers': ['missing constraint'], 'summary': '请补充需求'})
+        self.assertEqual(state['stage_progress']['generation']['latest_status'], 'not_started')
+        self.assertNotIn('next_stage', state['handoffs'][0]['result'])
+
+    async def test_legacy_stage_hint_does_not_affect_restored_task(self):
+        self.c.executors['selection'] = AsyncMock(return_value={
+            'status': 'completed', 'summary': 'accepted', 'hardware_ids': ['dht22_red_module'],
+            'requirements': ['measurement']})
+        first = await self.invoke()
+        first['result']['next_stage'] = 'generation'
+        with self.store.connect() as con:
+            self.store.save_record(con, self.c.task_id, first)
+        state = self.c.state()
+        self.assertEqual(state['stage_progress']['selection']['accepted_ref'], first['run_id'])
+        self.assertNotIn('next_stage', state['handoffs'][0]['result'])
+        self.assertEqual(self.store.record(self.c.task_id, first['run_id'])['result']['next_stage'], 'generation')
 
     async def test_unknown_hardware_cannot_be_saved_as_completed(self):
         async def invalid(request):

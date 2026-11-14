@@ -1,9 +1,10 @@
-"""Shared stage accounting and bounded structured-report syntax feedback."""
+"""Shared stage accounting and bounded structured-report feedback."""
 import json
 import time
 from langchain.agents.middleware import AgentMiddleware
 from langchain.agents.middleware.types import hook_config
 from langchain_core.messages import AIMessage, ToolMessage
+from pydantic import ValidationError
 from .. import limits
 from ..coordinator.store import WorkflowError
 
@@ -23,6 +24,32 @@ class StageTrace(AgentMiddleware):
         self.invalid_reports += 1
         if self.invalid_reports >= 2:
             raise error
+
+    def report_feedback(self, exc, audit_error=None):
+        # LangChain can call the feedback handler before the model middleware sees the response.
+        message = getattr(exc, 'ai_message', None)
+        if isinstance(message, AIMessage):
+            self.record_message(message)
+        source = getattr(exc, 'source', None)
+        if not isinstance(source, ValidationError):
+            source = getattr(source, '__cause__', None)
+        issues = []
+        if isinstance(source, ValidationError):
+            for issue in source.errors(include_url=False, include_context=False)[:8]:
+                detail = {'field': '.'.join(map(str, issue['loc']))[:200],
+                          'type': issue['type'], 'message': issue['msg'][:240]}
+                value = issue.get('input')
+                if isinstance(value, (str, int, float, bool)) and issue['type'] != 'missing':
+                    detail['received'] = json.dumps(value, ensure_ascii=False)[:160]
+                if issue['type'] == 'extra_forbidden':
+                    detail['fix'] = '删除该字段。'
+                issues.append(detail)
+        self.reject_report(audit_error or WorkflowError('INVALID_HANDOFF', '两次报告校验失败，停止本阶段。'))
+        self.json_repair_pending = True
+        return json.dumps({'error_code': audit_error.code if audit_error else 'INVALID_HANDOFF',
+            'summary': str(audit_error) if audit_error else '报告不符合工具格式。', 'issues': issues,
+            'instruction': f'按反馈在当前上下文重提一次{self.report_name}；如确有阻碍则在报告中说明。'
+                           '保留已确认事实及约束，不重查资料或重写工程。'}, ensure_ascii=False)
 
     @hook_config(can_jump_to=['model'])
     async def aafter_model(self, state, runtime):
@@ -83,7 +110,8 @@ class StageTrace(AgentMiddleware):
             if self.role == 'generation':
                 self.coordinator.stop_model_calls(error)
             raise error
-        if self.json_repair_pending:
+        repair_pending = self.json_repair_pending
+        if repair_pending:
             # The same graph/context and output schema remain; only report
             # resubmission is offered during this syntax correction.
             request = request.override(tools=[])
@@ -94,11 +122,11 @@ class StageTrace(AgentMiddleware):
                 self.record_message(msg)
             elif isinstance(msg, ToolMessage):
                 self.events.append({'kind': 'submission_feedback', 'name': msg.name, 'content': msg.content})
-        if self.json_repair_pending and any(
+        if repair_pending and any(
             call['name'] != self.report_name
             for msg in response.result if isinstance(msg, AIMessage) for call in msg.tool_calls
         ):
-            raise WorkflowError('REPORT_REPAIR_SCOPE', 'JSON修正只允许重提报告，未执行新的硬件查询。')
+            raise WorkflowError('REPORT_REPAIR_SCOPE', '报告修正只允许重提报告，未执行新的业务工具。')
         return response
 
     def metrics(self):
