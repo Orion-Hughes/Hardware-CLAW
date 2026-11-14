@@ -17,7 +17,9 @@ class HardwareCardsTests(unittest.TestCase):
     def test_all_cards_and_links_and_registry_definitions(self):
         catalog = KnowledgeCatalog()
         index = json.loads((ROOT / 'catalog.json').read_text('utf8'))
-        self.assertEqual(len(index['records']), 15)
+        self.assertEqual(len(index['records']), len({entry['id'] for entry in index['records']}))
+        self.assertEqual({entry['path'] for entry in index['records']},
+                         {f'cards/{file.name}' for file in (ROOT / 'cards').glob('*.json')})
         self.assertEqual(sum(r['owned'] for r in index['records']), 9)
         for entry in index['records']:
             with self.subTest(entry=entry['id']):
@@ -27,8 +29,8 @@ class HardwareCardsTests(unittest.TestCase):
                 for group in card.documents.model_dump().values():
                     for doc in group:
                         catalog._bytes(doc['ref'], prefixes=('upstream/', 'guidance/', 'drivers/'))
-                self.assertEqual(card.availability['simulation_test'], 'not_run')
-                self.assertEqual(card.availability['physical_test'], 'not_run')
+                self.assertEqual(card.simulation['simulation_test'], card.availability['simulation_test'])
+                self.assertEqual(card.simulation['hardware_test'], card.availability['physical_test'])
         for part in index['upstream_parts']:
             self.assertIsNotNone(catalog.get('wokwi:' + part)['upstream_definition'])
 

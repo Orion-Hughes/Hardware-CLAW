@@ -1,0 +1,177 @@
+{
+  "schema_version": 3,
+  "record_role": "reference",
+  "inventory": {
+    "owned": false,
+    "scope": "simulation_reference_not_purchased"
+  },
+  "id": "bmp180",
+  "name": "BMP180 I²C 气压与温度传感器",
+  "kind": "sensor",
+  "aliases": [
+    "BMP180",
+    "气压计",
+    "气压传感器",
+    "barometer"
+  ],
+  "selection": {
+    "description": "通过 I²C 读取大气压与温度。",
+    "inputs": [
+      "大气压",
+      "环境温度"
+    ],
+    "outputs": [
+      "气压（Pa）",
+      "温度（°C）"
+    ],
+    "interfaces": [
+      "I2C"
+    ],
+    "constraints": [
+      "Wokwi 模型的 I²C 地址为 0x77；同一总线避免地址冲突。",
+      "此卡使用 MCU 3.3V 接模型 VCC，模型 3.3V 端是内部 3.3V 电源端，不与 VCC 混用。实物供电与上拉须按模块原理图确认。",
+      "先以实际布线初始化 Wire，再检查驱动 begin() 的返回值；readPressure() 返回 Pa。"
+    ],
+    "pin_requirements": [
+      {
+        "signal": "I2C_SDA",
+        "resource": "i2c_data"
+      },
+      {
+        "signal": "I2C_SCL",
+        "resource": "i2c_clock"
+      }
+    ],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/parts/board-bmp180.md",
+      "upstream/drivers/Adafruit-BMP085-Library/Adafruit_BMP085.h",
+      "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+      "upstream/drivers/Adafruit-BMP085-Library/library.properties",
+      "upstream/drivers/Adafruit-BMP085-Library/README.md",
+      "upstream/drivers/Adafruit-BMP085-Library/examples/BMP085test/BMP085test.ino",
+      "upstream/wokwi-boards/boards/bmp180/board.json"
+    ]
+  },
+  "simulation": {
+    "part_type": "board-bmp180",
+    "logical_signal_to_model_pin": {
+      "POWER": "VCC",
+      "GROUND": "GND",
+      "I2C_SDA": "SDA",
+      "I2C_SCL": "SCL"
+    },
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/board-bmp180.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "candidate_part_type": null,
+    "match_status": "reference_model_not_physical_module"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "Wire.h",
+      "Adafruit_BMP085.h"
+    ],
+    "dependency_properties": [
+      "upstream/drivers/Adafruit-BMP085-Library/library.properties",
+      "upstream/drivers/Adafruit_Sensor/library.properties",
+      "upstream/drivers/Adafruit_BusIO/library.properties"
+    ],
+    "simulation_supply_v": 3.3
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/parts/board-bmp180.md",
+        "purpose": "模型针脚、操作和自动化控制的官方说明。",
+        "read_when": "wiring",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/wokwi-boards/boards/bmp180/board.json",
+        "purpose": "官方板级定义，区分 VCC 输入和内部 3.3V 电源节点。",
+        "read_when": "wiring",
+        "load": "reference"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/drivers/Adafruit-BMP085-Library/Adafruit_BMP085.h",
+        "purpose": "驱动初始化以及温度、气压读取的正式 API。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/Wire.h",
+        "purpose": "当前框架 I²C API 声明。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-BMP085-Library/library.properties",
+        "purpose": "驱动维护者发布的库名、版本、架构和依赖。",
+        "read_when": "dependency_selection",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-BMP085-Library/README.md",
+        "purpose": "驱动说明和许可。",
+        "read_when": "implementation",
+        "load": "reference"
+      },
+      {
+        "ref": "upstream/drivers/Adafruit-BMP085-Library/examples/BMP085test/BMP085test.ino",
+        "purpose": "上游读数示例；GPIO 以实际连接为准。",
+        "read_when": "example_needed",
+        "load": "reference"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "说明仿真与实物的适用范围及引脚映射。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "实际模块供电、引脚顺序和 I²C 上拉未验证。"
+    ],
+    "compile_test": "pass",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [
+    {
+      "name": "temperature",
+      "type": "float",
+      "unit": "celsius",
+      "range": [
+        -40,
+        85
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/board-bmp180.md"
+    },
+    {
+      "name": "pressure",
+      "type": "float",
+      "unit": "pascal",
+      "range": [
+        30000,
+        110000
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/board-bmp180.md"
+    }
+  ],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": null
+  }
+}

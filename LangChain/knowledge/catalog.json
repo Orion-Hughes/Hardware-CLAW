@@ -75,6 +75,16 @@
       "id": "potentiometer",
       "path": "cards/potentiometer.json",
       "owned": false
+    },
+    {
+      "id": "pushbutton_12mm",
+      "path": "cards/pushbutton_12mm.json",
+      "owned": false
+    },
+    {
+      "id": "bmp180",
+      "path": "cards/bmp180.json",
+      "owned": false
     }
   ],
   "upstream_parts": {
@@ -228,5 +238,5 @@
   "simulation_defaults": {
     "display": "st7789_240x240_simulation"
   },
-  "note": "Local cards link upstream sources. No device validation performed."
+  "note": "Local cards link upstream sources. See card availability for validation status."
 }

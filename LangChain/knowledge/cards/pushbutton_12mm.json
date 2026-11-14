@@ -1,0 +1,118 @@
+{
+  "schema_version": 3,
+  "record_role": "reference",
+  "inventory": {
+    "owned": false,
+    "scope": "simulation_reference_not_purchased"
+  },
+  "id": "pushbutton_12mm",
+  "name": "12mm 轻触按钮（瞬时开关）",
+  "kind": "input",
+  "aliases": [
+    "pushbutton",
+    "按键",
+    "按钮",
+    "轻触开关"
+  ],
+  "selection": {
+    "description": "按下时闭合两个触点，松开后断开。",
+    "inputs": [
+      "按下/释放"
+    ],
+    "outputs": [
+      "触点闭合/断开"
+    ],
+    "interfaces": [
+      "GPIO input"
+    ],
+    "constraints": [
+      "1.l/1.r 常通，2.l/2.r 常通；用两个不同触点。",
+      "参考接法是一个触点接 GPIO 并启用 INPUT_PULLUP，另一个接 GND：按下 LOW、松开 HIGH。",
+      "Wokwi 默认模拟触点抖动；需要一次按压产生一个事件时应去抖。"
+    ],
+    "pin_requirements": [
+      {
+        "signal": "SIGNAL",
+        "resource": "digital_input"
+      }
+    ],
+    "source_refs": [
+      "upstream/wokwi-docs/docs/parts/wokwi-pushbutton.md",
+      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h"
+    ]
+  },
+  "simulation": {
+    "part_type": "wokwi-pushbutton",
+    "logical_signal_to_model_pin": {
+      "SIGNAL": "1.l",
+      "GROUND": "2.l"
+    },
+    "proposed_attrs": {},
+    "backend": "wokwi",
+    "upstream_definition_ref": "upstream/wokwi-diagram-lint/parts/wokwi-pushbutton.json",
+    "simulation_test": "not_run",
+    "hardware_test": "not_run",
+    "candidate_part_type": null,
+    "match_status": "reference_model_not_physical_module"
+  },
+  "programming": {
+    "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
+    "platform_ref": "platforms/esp32_s3_simulation.json",
+    "headers": [
+      "Arduino.h"
+    ],
+    "dependency_properties": [],
+    "simulation_supply_v": null
+  },
+  "documents": {
+    "simulation": [
+      {
+        "ref": "upstream/wokwi-docs/docs/parts/wokwi-pushbutton.md",
+        "purpose": "模型针脚、操作和自动化控制的官方说明。",
+        "read_when": "wiring",
+        "load": "essential"
+      }
+    ],
+    "api": [
+      {
+        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+        "purpose": "Arduino-ESP32 GPIO 模式及数字读取声明。",
+        "read_when": "implementation",
+        "load": "essential"
+      }
+    ],
+    "guidance": [
+      {
+        "ref": "guidance/usage-boundaries.md",
+        "purpose": "说明仿真与实物的适用范围及引脚映射。",
+        "read_when": "before_implementation",
+        "load": "essential"
+      }
+    ]
+  },
+  "availability": {
+    "generation_status": "documented_not_tested",
+    "blockers": [],
+    "missing_information": [
+      "实际开关的触点针序和机械规格未验证。"
+    ],
+    "compile_test": "pass",
+    "simulation_test": "not_run",
+    "physical_test": "not_run"
+  },
+  "observation_controls": [
+    {
+      "name": "pressed",
+      "type": "int",
+      "range": [
+        0,
+        1
+      ],
+      "source_ref": "upstream/wokwi-docs/docs/parts/wokwi-pushbutton.md"
+    }
+  ],
+  "provenance": {
+    "association_origin": "local_source_linking_not_upstream_certification",
+    "inventory_ref": null
+  }
+}

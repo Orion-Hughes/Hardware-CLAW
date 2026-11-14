@@ -23,11 +23,11 @@ class RealCatalogTests(unittest.TestCase):
         self.catalog = KnowledgeCatalog()
 
     def test_search_all_local_and_inventory_filters(self):
-        self.assertEqual(self.catalog.search(limit=30)["total"], 15)
+        self.assertEqual(self.catalog.search(limit=30)["total"], 17)
         self.assertEqual(self.catalog.search(owned=True)["total"], 9)
-        self.assertEqual(self.catalog.search(owned=False)["total"], 6)
+        self.assertEqual(self.catalog.search(owned=False)["total"], 8)
         ready = self.catalog.search(generation_status="documented_not_tested")
-        self.assertEqual(ready["total"], 10)
+        self.assertEqual(ready["total"], 12)
 
     def test_display_default_is_virtual_without_relabeling_real_hardware(self):
         displays = self.catalog.search(kind="display")["items"]

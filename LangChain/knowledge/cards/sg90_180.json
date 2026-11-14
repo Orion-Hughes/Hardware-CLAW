@@ -29,7 +29,8 @@
       "PWM"
     ],
     "constraints": [
-      "Wokwi 是通用舵机模型，不保证实物行程、电流或精度。"
+      "Wokwi 是通用舵机模型，不保证实物行程、电流或精度。",
+      "当前 ESP32-S3 / Arduino-ESP32 2.0.17 仿真平台使用框架内置 LEDC 输出，不声明第三方舵机库。"
     ],
     "pin_requirements": [
       {
@@ -40,12 +41,7 @@
     ],
     "source_refs": [
       "upstream/wokwi-docs/docs/parts/wokwi-servo.md",
-      "upstream/drivers/ESP32Servo/src/ESP32Servo.h",
-      "upstream/drivers/ESP32Servo/library.properties",
-      "upstream/drivers/ESP32Servo/README.md",
-      "upstream/drivers/ESP32Servo/examples/Sweep/Sweep.ino",
-      "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
-      "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
+      "guidance/sg90-ledc.md",
       "upstream/vendor/towerpro-sg90.html",
       "upstream/vendor/wokwi-servo-timing.html"
     ]
@@ -69,11 +65,9 @@
     "scope": "arduino_esp32_2.0.17_simulation_only_not_verified",
     "platform_ref": "platforms/esp32_s3_simulation.json",
     "headers": [
-      "ESP32Servo.h"
+      "Arduino.h"
     ],
-    "dependency_properties": [
-      "upstream/drivers/ESP32Servo/library.properties"
-    ],
+    "dependency_properties": [],
     "simulation_supply_v": 5
   },
   "documents": {
@@ -87,40 +81,10 @@
     ],
     "api": [
       {
-        "ref": "upstream/drivers/ESP32Servo/src/ESP32Servo.h",
-        "purpose": "正式 API：参数、类型与方法声明。",
+        "ref": "guidance/sg90-ledc.md",
+        "purpose": "锁定框架的 LEDC API、PWM 时序及依赖规则。",
         "read_when": "implementation",
         "load": "essential"
-      },
-      {
-        "ref": "upstream/drivers/ESP32Servo/library.properties",
-        "purpose": "库名称、固定版本、声明架构和依赖。",
-        "read_when": "dependency_selection",
-        "load": "reference"
-      },
-      {
-        "ref": "upstream/drivers/ESP32Servo/README.md",
-        "purpose": "驱动维护者的使用说明与限制。",
-        "read_when": "implementation",
-        "load": "reference"
-      },
-      {
-        "ref": "upstream/drivers/ESP32Servo/examples/Sweep/Sweep.ino",
-        "purpose": "上游驱动示例；引脚、平台与业务行为不能直接套用。",
-        "read_when": "example_needed",
-        "load": "reference"
-      },
-      {
-        "ref": "upstream/platform/arduino-esp32-2.0.17/Arduino.h",
-        "purpose": "框架 API 声明；按实际使用接口读取。",
-        "read_when": "platform_api_needed",
-        "load": "reference"
-      },
-      {
-        "ref": "upstream/platform/arduino-esp32-2.0.17/esp32-hal-gpio.h",
-        "purpose": "框架 API 声明；按实际使用接口读取。",
-        "read_when": "platform_api_needed",
-        "load": "reference"
       },
       {
         "ref": "upstream/vendor/towerpro-sg90.html",

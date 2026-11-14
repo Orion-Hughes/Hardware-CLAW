@@ -76,6 +76,19 @@
       "destination": "upstream/drivers/ESP32Servo",
       "origin": "community_driver",
       "archive_sha256": "23387200c6bf6268e39b26257a5d5059d059aeb72042ac1d2ffe2e659a0cd945"
+    },
+    {
+      "repo": "adafruit/Adafruit-BMP085-Library",
+      "destination": "upstream/drivers/Adafruit-BMP085-Library",
+      "origin": "driver_maintainer",
+      "archive_sha256": "07d1fad421be9220ecde5881000f6d7d821769000b21fe968e5a6e98be02f548",
+      "revision": "9d5057fb3e41afe0b4b7d97ceae1a97d53925c15"
+    },
+    {
+      "repo": "wokwi/wokwi-boards",
+      "destination": "upstream/wokwi-boards",
+      "origin": "simulator_official",
+      "revision": "962b19d5636756537a93bb5337ac99abd775eae0"
     }
   ],
   "documentation_snapshot": {
@@ -6390,6 +6403,66 @@
       "reused_verified_snapshot": true,
       "imported_from_git": "417d78b",
       "original_local_path": "upstream/wokwi-docs/web/wokwi-led-ring.html"
+    },
+    {
+      "repo": "adafruit/Adafruit-BMP085-Library",
+      "revision": "9d5057fb3e41afe0b4b7d97ceae1a97d53925c15",
+      "upstream_path": "Adafruit_BMP085.h",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit-BMP085-Library/9d5057fb3e41afe0b4b7d97ceae1a97d53925c15/Adafruit_BMP085.h",
+      "origin": "driver_maintainer",
+      "local_path": "upstream/drivers/Adafruit-BMP085-Library/Adafruit_BMP085.h",
+      "bytes": 3827,
+      "sha256": "93abb4157fdb1e88b2eca3a17502b17bbad17428a69848370f1575fe8fbfa6d0"
+    },
+    {
+      "repo": "adafruit/Adafruit-BMP085-Library",
+      "revision": "9d5057fb3e41afe0b4b7d97ceae1a97d53925c15",
+      "upstream_path": "Adafruit_BMP085.cpp",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit-BMP085-Library/9d5057fb3e41afe0b4b7d97ceae1a97d53925c15/Adafruit_BMP085.cpp",
+      "origin": "driver_maintainer",
+      "local_path": "upstream/drivers/Adafruit-BMP085-Library/Adafruit_BMP085.cpp",
+      "bytes": 6979,
+      "sha256": "1b3485610f32ddfbd004d8a1aa259414f586c9f1d3426489850422ced8d4f318"
+    },
+    {
+      "repo": "adafruit/Adafruit-BMP085-Library",
+      "revision": "9d5057fb3e41afe0b4b7d97ceae1a97d53925c15",
+      "upstream_path": "README.md",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit-BMP085-Library/9d5057fb3e41afe0b4b7d97ceae1a97d53925c15/README.md",
+      "origin": "driver_maintainer",
+      "local_path": "upstream/drivers/Adafruit-BMP085-Library/README.md",
+      "bytes": 1774,
+      "sha256": "a5d3fecc3ebbb7c36ed029b7eafad6050423b56960e02ba71117f1e90dfe641f"
+    },
+    {
+      "repo": "adafruit/Adafruit-BMP085-Library",
+      "revision": "9d5057fb3e41afe0b4b7d97ceae1a97d53925c15",
+      "upstream_path": "library.properties",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit-BMP085-Library/9d5057fb3e41afe0b4b7d97ceae1a97d53925c15/library.properties",
+      "origin": "driver_maintainer",
+      "local_path": "upstream/drivers/Adafruit-BMP085-Library/library.properties",
+      "bytes": 353,
+      "sha256": "3e447ed833998ce0b6c80cb863e7544361f21ab01cf118da23bf24a87be47981"
+    },
+    {
+      "repo": "adafruit/Adafruit-BMP085-Library",
+      "revision": "9d5057fb3e41afe0b4b7d97ceae1a97d53925c15",
+      "upstream_path": "examples/BMP085test/BMP085test.ino",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit-BMP085-Library/9d5057fb3e41afe0b4b7d97ceae1a97d53925c15/examples/BMP085test/BMP085test.ino",
+      "origin": "driver_maintainer",
+      "local_path": "upstream/drivers/Adafruit-BMP085-Library/examples/BMP085test/BMP085test.ino",
+      "bytes": 2185,
+      "sha256": "709d92958189cea1c8302f76ee293f6a4e964279bdd29a607735bde3fef3ea52"
+    },
+    {
+      "repo": "wokwi/wokwi-boards",
+      "revision": "962b19d5636756537a93bb5337ac99abd775eae0",
+      "upstream_path": "boards/bmp180/board.json",
+      "url": "https://raw.githubusercontent.com/wokwi/wokwi-boards/962b19d5636756537a93bb5337ac99abd775eae0/boards/bmp180/board.json",
+      "origin": "simulator_official",
+      "local_path": "upstream/wokwi-boards/boards/bmp180/board.json",
+      "bytes": 529,
+      "sha256": "18a21379e7666ec7aebf47095e3bce2d1989bde9e59d718b480e19bec08c4c8e"
     }
   ]
 }

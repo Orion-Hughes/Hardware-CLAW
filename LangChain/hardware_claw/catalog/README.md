@@ -10,7 +10,7 @@
 
 | 接口 | 参数 | 结果 |
 |---|---|---|
-| search_hardware | query、kind、scope、generation_status、owned、limit、offset | 选型摘要含功能、输入输出、接口、引脚需求和缺口；默认查15张卡，不读取原文进上下文 |
+| search_hardware | query、kind、scope、generation_status、owned、limit、offset | 选型摘要含功能、输入输出、接口、引脚需求和缺口；默认查本地索引卡，不读取原文进上下文 |
 | read_hardware | hardware_ids、references、max_characters、view | 一次读取1–8个硬件；默认usage为基础使用包，references用于定向补读；selection为无原文的选型信息和资料目录 |
 
 scope为local/upstream/all；上游ID采用`wokwi:<part-type>`，不和本地配置ID混用。query对名称、ID、类型、模型及本地notes做不区分大小写的关键词AND匹配，不依赖LLM语义检索。kind只过滤本地语义分类；上游category原样保留，不把所有isBoard条目误当MCU。
