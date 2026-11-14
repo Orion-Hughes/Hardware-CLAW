@@ -15,21 +15,24 @@ from pydantic import Field, create_model, model_validator
 from .. import limits
 from ..coordinator.contracts import StrictModel, StageResult
 from ..coordinator.store import WorkflowError
-from ..coordinator.service import passed
+from ..coordinator.service import TOKEN_STOPS
+from ..projects.service import ProjectError
 from ..tools.hardware_catalog import read_hardware, ReadHardwareInput, _invalid_input
 from ..tools.project_tools import make_project_tools
 from ..tools.templates import load_template
 from .common import StageTrace
+from .generation_finish import finish_candidate
 from .selection_state import SelectionEvidence, accepted_baseline
+from ..validation.files import REQUIRED
 
 ROOT = Path(__file__).resolve().parents[2]
 PROJECT_TOOLS = {'get_project', 'update_project_design', 'scaffold_project', 'read_project_file',
-                 'write_project_files', 'apply_project_patch', 'check_project_files', 'compile_project'}
+                 'write_project_files', 'apply_project_patch'}
 
 
 class GenerationReport(StrictModel):
-    """Submit actual generated revision and build status; never claim functional acceptance."""
-    status: Literal['completed', 'needs_input', 'blocked', 'failed']
+    """Submit the current candidate for host checks; only the host can complete delivery."""
+    status: Literal['candidate', 'needs_input', 'blocked', 'failed']
     summary: str = Field(min_length=1, max_length=2000)
     project_version: int | None = Field(default=None, ge=0)
     hardware_ids: list[str] = Field(default_factory=list, max_length=32)
@@ -53,6 +56,7 @@ class GenerationTrace(StageTrace):
         self.loaded, self.required_docs, self.included_docs = set(), set(), set()
         self.repetitions = {}
         self.read_plans, self.read_blockers = [], {}
+        self.authored_revision = None
 
     def usage_status(self):
         """Stage-wide progress; a successful supplement is not the entire stage."""
@@ -116,6 +120,9 @@ class GenerationTrace(StageTrace):
                     result = {'execution_status':'error','error_code':exc.code,'summary':str(exc),
                               'data': self.usage_status() if exc.code in {'UNREAD_HARDWARE', 'MISSING_USAGE_SOURCE'} else None}
                 self.events.append({'kind':'tool','name':source.name,'args':kwargs,'result':result})
+                if result.get('execution_status') == 'ok' and source.name in {'write_project_files', 'apply_project_patch'}:
+                    version = result['data']['version']
+                    self.authored_revision = max(version, self.authored_revision or 0)
                 if source.name == 'read_hardware' and isinstance(result, dict) and result.get('execution_status') == 'ok':
                     data = result['data']
                     self.evidence.observe(data)
@@ -140,19 +147,31 @@ class GenerationTrace(StageTrace):
     def validate(self, report):
         if set(report.source_refs) - set(self.evidence.hashes):
             raise WorkflowError('UNREAD_SOURCE', '报告引用必须来自本轮实际返回的来源。')
-        if report.status != 'completed':
+        if report.status != 'candidate':
             return
         self.require_usage()
         if report.blockers or set(report.hardware_ids) != self.selected:
-            raise WorkflowError('INCOMPLETE_GENERATION', '完成报告必须保留全部已选器件且无未解决阻碍。')
+            raise WorkflowError('INCOMPLETE_GENERATION', '候选提交必须保留全部已选器件且无未解决阻碍。')
         p = self.coordinator.project.get()
         if p['design'] is None:
             raise WorkflowError('DESIGN_REQUIRED', '尚未保存设计。')
         self.validate_design(p['design'])
         if report.project_version != p['version']:
-            raise WorkflowError('PROJECT_VERSION_CONFLICT', '完成报告不是当前工程修订。')
-        if not passed(p.get('file_check')) or not passed(p.get('build')):
-            raise WorkflowError('UNPROVEN_COMPLETION', '完成生成必须有当前修订检查与真实编译通过记录。')
+            raise WorkflowError('PROJECT_VERSION_CONFLICT', '候选报告不是当前工程修订。')
+
+    def recover_candidate(self, request):
+        """Keep a saved complete revision when the token stop preempts the report."""
+        p = self.coordinator.project.get()
+        version = self.authored_revision
+        if (version is None or version == request['expected_project_version'] or p['version'] != version
+                or not p['design'] or p['design_version'] != p['files_design_version']
+                or not REQUIRED[p['template']] <= {f['path'] for f in p['files']}):
+            return None
+        proposal = GenerationReport(status='candidate', project_version=version, hardware_ids=sorted(self.selected),
+                                    summary='模型预算耗尽前已保存候选；程序接管检查。')
+        self.validate(proposal)
+        self.events.append({'kind': 'candidate_recovered', 'version': version})
+        return proposal
 
 
 class GenerationExecutor:
@@ -188,7 +207,7 @@ class GenerationExecutor:
         def invalid_report(exc):
             if isinstance(getattr(exc,'ai_message',None), AIMessage): trace.record_message(exc.ai_message)
             trace.reject_report(last_error or WorkflowError('INVALID_HANDOFF','两次报告校验失败，停止。'))
-            return f'宿主拒绝报告：{last_error or "Schema格式错误"}。修正真实问题或返回blocked；不能伪造检查/编译证据。'
+            return f'宿主拒绝报告：{last_error or "Schema格式错误"}。提交当前候选修订或说明阻碍。'
         graph = create_agent(self.model, tools=trace.make_tools(), system_prompt=prompt,
             response_format=ToolStrategy(schema, handle_errors=invalid_report), middleware=[trace,
                 ModelCallLimitMiddleware(run_limit=limits.GENERATION_MODEL_CALLS, exit_behavior='error'),
@@ -197,20 +216,34 @@ class GenerationExecutor:
         if self.emit: await self.emit('stage_start',{'stage':'generation','run_id':request['run_id']})
         try:
             async with asyncio.timeout(limits.GENERATION_TIMEOUT_SECONDS):
-                output = await graph.ainvoke({'messages':[HumanMessage(content=json.dumps(context, ensure_ascii=False))]},
-                    config={'recursion_limit':128})
-            proposed = output.get('structured_response')
-            if proposed is None: raise WorkflowError('MISSING_REPORT','生成子Agent未提交有效报告。')
-            trace.validate(proposed)
-            report = StageResult.model_validate(proposed.model_dump())
+                try:
+                    output = await graph.ainvoke({'messages':[HumanMessage(content=json.dumps(context, ensure_ascii=False))]},
+                        config={'recursion_limit':128})
+                    proposed = output.get('structured_response')
+                except WorkflowError as exc:
+                    if exc.code not in TOKEN_STOPS:
+                        raise
+                    proposed = trace.recover_candidate(request)
+                    if proposed is None:
+                        raise
+                if proposed is None:
+                    raise WorkflowError('MISSING_REPORT','生成子Agent未提交有效报告。')
+                trace.validate(proposed)
+                values = proposed.model_dump()
+                if proposed.status == 'candidate':
+                    version = await finish_candidate(trace, request['run_id'], proposed.project_version, self.model)
+                    values.update(status='completed', project_version=version,
+                                  summary='程序已检查、编译并导出当前修订。功能状态以实际验证记录为准。')
+                report = StageResult.model_validate(values)
         except asyncio.CancelledError:
             error = 'CANCELLED'
             report = StageResult(status='cancelled',summary='生成已取消，已有文件保留。')
             raise
         except Exception as exc:
-            error = exc.code if isinstance(exc,WorkflowError) else type(exc).__name__
-            report = StageResult(status='blocked' if isinstance(exc,WorkflowError) else 'failed',
-                summary=f'生成未完成：{error}。' + (str(exc) if isinstance(exc,WorkflowError) else '详见阶段记录。'), blockers=[error])
+            expected = isinstance(exc, (WorkflowError, ProjectError))
+            error = exc.code if expected else type(exc).__name__
+            report = StageResult(status='blocked' if expected else 'failed',
+                summary=f'生成未完成：{error}。' + (str(exc) if expected else '详见阶段记录。'), blockers=[error])
         finally:
             report = report or StageResult(status='failed',summary='生成未返回结果。')
             report.detail_ref = detail_id

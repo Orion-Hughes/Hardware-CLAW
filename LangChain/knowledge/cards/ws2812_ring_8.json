@@ -145,6 +145,12 @@
         "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",
         "read_when": "before_implementation",
         "load": "essential"
+      },
+      {
+        "ref": "guidance/ws2812-light-output.md",
+        "purpose": "指导亮度控制、状态更新、闪烁周期和非阻塞定时。",
+        "read_when": "implementation",
+        "load": "essential"
       }
     ]
   },

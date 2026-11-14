@@ -144,7 +144,20 @@ async def execute_turn(model, question, history, emit, timeout=None, project=Non
         status = "cancelled"
         raise
     except Exception as exc:
-        if coordinator is not None and coordinator.model_stop_reason is not None:
+        from .coordinator.service import TOKEN_STOPS
+        if coordinator is not None and getattr(exc, 'code', None) in TOKEN_STOPS:
+            # A child can finish and export deterministically after paid calls have stopped.
+            generated = next((c for c in reversed(child_summaries) if c['role'] == 'generation'), None)
+            if (generated and generated['status'] == 'completed' and coordinator.project is not None
+                    and coordinator.store.load(coordinator.task_id)['latest_outcome'] == 'completed'):
+                delivered = coordinator.project.delivery()
+                if delivered.get('delivery_status') == 'ready_for_vscode':
+                    status = 'completed'
+                    await emit('host_export', {'text': '模型预算已用尽；程序已完成候选工程的检查、编译和导出。'
+                                                       '后续模型阶段没有继续，功能状态以验证记录为准。'})
+                    return status
+            status = 'blocked'
+        elif coordinator is not None and coordinator.model_stop_reason is not None:
             status = 'blocked'
         await emit("error", {"text": error_message(exc)})
         return status

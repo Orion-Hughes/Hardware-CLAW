@@ -13,9 +13,10 @@ from ..projects.service import ProjectError
 
 STAGES = {
     'selection': '需求理解、资料查询与选型；讨论请求到此结束。',
-    'generation': '接线与固件设计、生成和修正；通过当前修订基础检查与编译。',
+    'generation': '接线与固件设计、生成候选；程序检查、编译并导出当前修订。',
     'verification': '根据当前工程生成具体仿真计划；仅规划，不编译、不运行仿真、不修改固件。',
 }
+TOKEN_STOPS = {'TOKEN_BUDGET', 'GENERATION_TOKEN_BUDGET'}
 
 
 def passed(report):
@@ -59,7 +60,8 @@ class Coordinator:
             return None
         p = self.project.get()
         return {k: p.get(k) for k in ('project_id', 'version', 'template', 'requirements',
-                                     'file_check', 'build', 'simulation', 'behavior')}
+                                     'file_check', 'build', 'simulation', 'behavior')} | {
+            'export': {k: p['export'].get(k) for k in ('version','archive','simulation_folder')} if p.get('export') else None}
 
     def state(self):
         state = self.store.load(self.task_id)
@@ -81,6 +83,24 @@ class Coordinator:
     def stop_model_calls(self, reason):
         """A stage cost/runaway stop cannot be bypassed by another delegation this turn."""
         self.model_stop_reason = reason
+
+    def reserve_generation_repair(self, run_id, revision):
+        """Atomically spend a single extra model request per task, before sending it."""
+        with self.store.connect() as con:
+            con.execute('BEGIN IMMEDIATE')
+            state = self.store._load(con, self.task_id)
+            stop = self.model_stop_reason
+            if (state['active_run'] != run_id or state.get('generation_repair_reserve')
+                    or state['usage']['missing_usage_responses']
+                    or (stop is not None and stop.code not in TOKEN_STOPS)
+                    or self.project is None or self.project.get()['version'] != revision):
+                return False
+            if stop is None and state['usage']['total_tokens'] < limits.COORDINATOR_TOTAL_TOKENS:
+                return False
+            state['generation_repair_reserve'] = {'run_id': run_id, 'project_version': revision,
+                                                   'reserved_at': timestamp()}
+            con.execute('UPDATE tasks SET data=? WHERE id=?', (json.dumps(state, ensure_ascii=False), self.task_id))
+            return True
 
     def create_generation_project(self, request, requirement):
         from ..projects.service import ProjectService

@@ -90,6 +90,19 @@ class VSCodeTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ProjectError):
             self.p.update_design(3, bad)
 
+    def test_observation_accepts_fixed_macro_but_not_ambiguous_baud(self):
+        state = self.p._load()
+        source = state["files"]["src/main.cpp"].replace("Serial.begin(115200)", "Serial.begin(BAUD)")
+        for prefix, expected in (
+            ("#define BAUD 115200\n", "pass"),
+            ("#define BAUD 9600\n", "fail"),
+            ("#if 0\n#define BAUD 115200\n#endif\n", "fail"),
+            ("#define BAUD 115200\n#undef BAUD\n", "fail"),
+        ):
+            with self.subTest(prefix=prefix):
+                state["files"]["src/main.cpp"] = prefix + source
+                self.assertEqual(check(state)["verdict"], expected)
+
     def test_export_requires_real_build_record(self):
         self.p.check_files()
         with self.assertRaises(ProjectError) as caught:

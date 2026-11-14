@@ -17,7 +17,7 @@ from hardware_claw import limits
 from hardware_claw.coordinator import Coordinator, TaskStore, WorkflowError
 from hardware_claw.projects.service import ProjectService, ROOT, atomic_json
 from hardware_claw.adapters.compiler import fingerprint
-from hardware_claw.stages.generation import GenerationTrace, GenerationReport, attach_generation
+from hardware_claw.stages.generation import GenerationTrace, attach_generation
 from hardware_claw.stages.selection_state import SelectionEvidence
 from hardware_claw.tools.hardware_catalog import read_hardware
 from hardware_claw.runtime import execute_turn
@@ -37,19 +37,26 @@ class GenerationModel(BaseChatModel):
     def _generate(self, messages, stop=None, run_manager=None, **kwargs):
         child = '生成子Agent' in messages[0].content
         last = messages[-1]
+        if '一次性提交最小文字补丁' in messages[0].content:
+            old = 'void loop(){ delay(100); }' if self.mode == 'bad_repair' else 'void cycle(){ delay(100); }'
+            edit = {'path':'src/main.cpp','old_text':old,'new_text':'void loop(){ delay(75); }'}
+            msg = AIMessage(content='', tool_calls=[{'name':'GenerationRepair','args':{'edits':[edit]},'id':'repair'}],
+                            usage_metadata={'input_tokens':10,'output_tokens':2,'total_tokens':12})
+            return ChatResult(generations=[ChatGeneration(message=msg)])
         prior = [json.loads(m.content)['data'] for m in messages if isinstance(m,ToolMessage)
                  and m.name in {'get_project','update_project_design','scaffold_project','write_project_files'}]
         version = prior[-1]['version'] if prior else 0
         if child:
-            report = {'status':'completed','summary':'fixture checked build','hardware_ids':[BOARD],'project_version':version}
+            report = {'status':'candidate','summary':'fixture candidate','hardware_ids':[BOARD],'project_version':version}
             if self.mode == 'claim': name,args='GenerationReport',report
             elif not isinstance(last,ToolMessage) or self.mode == 'loop': name,args='get_project',{}
             elif last.name=='get_project': name,args='read_hardware',{'hardware_ids':[BOARD]}
             elif last.name=='read_hardware': name,args='update_project_design',{'expected_version':version,'design':DESIGN}
             elif last.name=='update_project_design': name,args='scaffold_project',{'expected_version':version}
-            elif last.name=='scaffold_project': name,args='write_project_files',{'expected_version':version,'files':{'src/main.cpp':SOURCE,'README.md':'software fixture only'}}
-            elif last.name=='write_project_files': name,args='check_project_files',{}
-            elif last.name=='check_project_files': name,args='compile_project',{'expected_version':version}
+            elif last.name=='scaffold_project':
+                source = SOURCE.replace('void loop', 'void cycle') if self.mode in {'repair','bad_repair'} else SOURCE
+                name,args='write_project_files',{'expected_version':version,'files':{'src/main.cpp':source,'README.md':'software fixture only'}}
+            elif last.name=='write_project_files' and self.mode=='preempted_report': name,args='get_project',{}
             else: name,args='GenerationReport',report
             if name=='GenerationReport' and self.mode=='json' and not self._malformed:
                 self._malformed=True
@@ -61,11 +68,6 @@ class GenerationModel(BaseChatModel):
             d=json.loads(last.content)['data']
             name,args='run_stage',{'stage':'generation','objective':'fixture generate','expected_task_version':d['version'],
                 'expected_project_version':d['project']['version'] if d['project'] else None}
-        elif last.name=='run_stage':
-            d=json.loads(last.content)['data']
-            if d['status']=='completed':
-                name,args='deliver_project',{'expected_task_version':d['task_version'],'expected_project_version':d['result']['project_version']}
-            else: name,args=None,None
         else: name,args=None,None
         msg=AIMessage(content='' if name else 'fixture result, not hardware acceptance',
             tool_calls=[{'name':name,'args':args,'id':str(len(messages))}] if name else [],
@@ -141,8 +143,8 @@ class GenerationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['status'],'completed')
         self.assertEqual(self.c.state()['project_id'],self.c.project.id)
         detail=self.c.store.record(self.c.task_id,result['result']['detail_ref'])
-        self.assertEqual(detail['metrics']['model_responses'],8)
-        self.assertEqual(self.c.state()['usage_by_role']['generation']['total_tokens'],96)
+        self.assertEqual(detail['metrics']['model_responses'],6)
+        self.assertEqual(self.c.state()['usage_by_role']['generation']['total_tokens'],72)
         self.assertEqual(self.c.project.get()['file_check']['verdict'],'pass')
         self.assertEqual(self.c.project.delivery()['behavior'],'not_run')
         self.assertNotIn('messages',detail['context'])
@@ -154,8 +156,8 @@ class GenerationTests(unittest.IsolatedAsyncioTestCase):
             status=await execute_turn(GenerationModel(),'fixture generate',[],emit,coordinator=self.c)
         self.assertEqual(status,'completed')
         summary=events[-1][1]
-        self.assertEqual(summary['model_responses'],12)
-        self.assertEqual(summary['tokens_reported'],144)
+        self.assertEqual(summary['model_responses'],9)
+        self.assertEqual(summary['tokens_reported'],108)
         self.assertEqual(summary['project']['delivery_status'],'ready_for_vscode')
         self.assertEqual(summary['project']['behavior'],'not_run')
 
@@ -182,6 +184,57 @@ class GenerationTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(WorkflowError): await self.child()
         self.c.begin_turn('new explicit request');self.c.check_budget()
 
+    async def test_budget_after_candidate_write_still_exports_without_extra_call(self):
+        with patch.object(limits,'GENERATION_TOTAL_TOKENS',72), patch.object(limits,'COORDINATOR_TOTAL_TOKENS',60+1):
+            result=await self.child()
+        self.assertEqual(result['status'],'completed')
+        self.assertEqual(self.c.project.delivery()['delivery_status'],'ready_for_vscode')
+        self.assertNotIn('generation_repair_reserve',self.c.state())
+
+    async def test_token_stop_before_report_recovers_candidate_and_parent_does_not_recall(self):
+        self.c.builtin_stages=True; events=[]
+        async def emit(k,d):events.append((k,d))
+        # The sixth child response requests another tool, but the budget has now been exhausted.
+        with patch.object(limits,'COORDINATOR_TOTAL_TOKENS',85), \
+                patch('hardware_claw.adapters.compiler.compile_project',side_effect=self.fake_compile):
+            status=await execute_turn(GenerationModel(mode='preempted_report'),'fixture generate',[],emit,coordinator=self.c)
+        self.assertEqual(status,'completed')
+        self.assertEqual(events[-1][1]['project']['delivery_status'],'ready_for_vscode')
+        self.assertEqual(events[-1][1]['main_model_responses'],2)
+
+    async def test_one_extra_repair_for_actionable_diagnostics(self):
+        with patch.object(limits,'GENERATION_TOTAL_TOKENS',72):
+            result=await self.child('repair')
+        self.assertEqual(result['status'],'completed')
+        self.assertIn('delay(75)',self.c.project.read_file('src/main.cpp')['content'])
+        detail=self.c.store.record(self.c.task_id,result['result']['detail_ref'])
+        self.assertEqual(detail['metrics']['api_attempts'],7)
+        self.assertEqual([e['reserve'] for e in detail['events'] if e['kind']=='candidate_repair_request'],[True])
+        self.assertEqual([e['step'] for e in detail['events'] if e['kind']=='candidate_check'],['static','build'])
+        self.assertIsNotNone(self.c.state().get('generation_repair_reserve'))
+
+    async def test_out_of_scope_extra_repair_preserves_candidate_and_reserve_is_spent(self):
+        with patch.object(limits,'GENERATION_TOTAL_TOKENS',72):
+            result=await self.child('bad_repair')
+        self.assertEqual(result['result']['blockers'],['REPAIR_SCOPE'])
+        self.assertIn('void cycle',self.c.project.read_file('src/main.cpp')['content'])
+        self.assertNotEqual(self.c.project.delivery()['delivery_status'],'ready_for_vscode')
+        first = self.c.state()['generation_repair_reserve']
+        self.c.begin_turn('retry fixture')
+        with patch.object(limits,'GENERATION_TOTAL_TOKENS',72):
+            retry=await self.child('repair',expected=self.c.project.get()['version'])
+        self.assertEqual(retry['result']['blockers'],['CANDIDATE_STATIC_FAILED'])
+        self.assertEqual(self.c.state()['generation_repair_reserve'],first)
+
+    async def test_compiler_infrastructure_failure_does_not_consume_extra_request(self):
+        attach_generation(self.c,GenerationModel())
+        with patch.object(limits,'GENERATION_TOTAL_TOKENS',72), \
+                patch('hardware_claw.adapters.compiler.compile_project',
+                      return_value={'verdict':'fail','diagnostics':['UnknownPackageError: Could not find the package']}):
+            result=await self.c.run_stage('generation','fixture',self.c.state()['version'])
+        self.assertEqual(result['result']['blockers'],['CANDIDATE_BUILD_FAILED'])
+        self.assertNotIn('generation_repair_reserve',self.c.state())
+
     async def test_repeat_tool_loop_stops_without_spending_full_budget(self):
         result=await self.child('loop')
         self.assertEqual(result['result']['blockers'],['GENERATION_NO_PROGRESS'])
@@ -195,13 +248,13 @@ class GenerationTests(unittest.IsolatedAsyncioTestCase):
         feedback=[e for e in detail['events'] if e['kind']=='submission_feedback' and 'INVALID_REPORT_JSON' in e['content']]
         self.assertEqual(len(feedback),1)
         self.assertIn('GenerationReport Schema',feedback[0]['content'])
-        self.assertEqual(detail['metrics']['model_responses'],9)
+        self.assertEqual(detail['metrics']['model_responses'],7)
 
     async def test_scope_and_tool_surface(self):
         await self.child()
         trace=GenerationTrace(self.c,[BOARD]);tools={t.name:t for t in trace.make_tools()}
         self.assertEqual(set(tools),{'read_hardware','load_template','get_project','update_project_design','scaffold_project',
-            'read_project_file','write_project_files','apply_project_patch','check_project_files','compile_project'})
+            'read_project_file','write_project_files','apply_project_patch'})
         bad=await tools['read_hardware'].ainvoke({'hardware_ids':['sg90_180']})
         self.assertEqual(bad['error_code'],'SELECTION_SCOPE')
         await tools['read_hardware'].ainvoke({'hardware_ids':[BOARD]})

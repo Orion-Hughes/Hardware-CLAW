@@ -13,6 +13,7 @@
 | 阶段与工具范围 | [主协调层](COORDINATOR_IMPLEMENTATION.md)、[工具与技能](TOOLS_IMPLEMENTATION_STATUS.md) |
 | 硬件资料 | [新硬件入库指南](HARDWARE_ONBOARDING.md)、[知识库](../LangChain/knowledge/README.md)、[读取服务](../LangChain/hardware_claw/catalog/README.md) |
 | 当前硬件支持状态 | [活跃硬件支持矩阵](OWNED_HARDWARE_SUPPORT_MATRIX_20261109.md) |
+| 显示与绘图设计 | [ESP-Claw 调研与拟议实现](DISPLAY_RENDERING_PLAN.md) |
 | 子阶段实现 | [选型](SELECTION_AGENT.md)、[生成](GENERATION_AGENT_20261102.md)、[规划器](AGENT3_FTA_PLANNER.md) |
 | GPIO 表与固定驱动版本 | [实现、测试与 Agent3 接入建议](GPIO_MAP_20261108.md) |
 | Agent3 完整 IO 接线表 | [加入前后各两次真实对照](AGENT3_IO_TABLE_AB_20261108.md) |

@@ -324,10 +324,12 @@ class ProjectService:
             fail("PATCH_MISMATCH", "old_text必须在文件中恰好出现一次。")
         return self.write_files(expected_version, {path: current["content"].replace(old_text, new_text, 1)})
 
-    def check_files(self):
+    def check_files(self, expected_version=None):
         from ..validation.files import check
         with self.locked():
             state = self._load()
+            if expected_version is not None:
+                self._check_version(state, expected_version)
             self._check_live_files(state)
             report = check(state)
             atomic_json(self.meta / "check.json", report)

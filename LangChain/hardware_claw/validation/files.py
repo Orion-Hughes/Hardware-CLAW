@@ -24,6 +24,29 @@ def strict_json(text):
     return json.loads(text, object_pairs_hook=unique, parse_constant=invalid)
 
 
+def has_fixed_serial_baud(source):
+    """Recognize the literal or an unambiguous local object macro; do not evaluate C++."""
+    macros = {}
+    depth = 0
+    for line in source.splitlines():
+        directive = re.match(r"\s*#\s*(if|ifdef|ifndef|endif|define|undef)\b(.*)", line)
+        if not directive:
+            continue
+        action, body = directive.groups()
+        if action in {"if", "ifdef", "ifndef"}:
+            depth += 1
+        elif action == "endif":
+            depth = max(0, depth - 1)
+        else:
+            name = re.match(r"\s*([A-Za-z_]\w*)(.*)", body)
+            if name:
+                key, value = name.groups()
+                macros[key] = (key not in macros and depth == 0 and action == "define"
+                               and value.strip() == "115200")
+    return any(arg == "115200" or macros.get(arg, False)
+               for arg in re.findall(r"\bSerial\s*\.\s*begin\s*\(\s*(115200|[A-Za-z_]\w*)\s*\)", source))
+
+
 def check(state):
     issues = []
     def issue(code, path, message):
@@ -177,8 +200,11 @@ def check(state):
             if diagram.get("serialMonitor", {}).get("display") != "always":
                 issue("SERIAL_DISPLAY_REQUIRED", "diagram.json", "serialMonitor.display必须为always。")
             source = files.get("src/main.cpp", "")
-            if not re.search(r"Serial\s*\.\s*begin\s*\(\s*115200\s*\)", source) or "HWCLAW_BOOT" not in source:
-                issue("OBSERVATION_REQUIRED", "src/main.cpp", "初始化Serial.begin(115200)并输出HWCLAW_BOOT启动标记。")
+            serial_source = re.sub(r'/\*[\s\S]*?\*/|//[^\n]*', '', source)
+            if not has_fixed_serial_baud(serial_source) or "HWCLAW_BOOT" not in serial_source:
+                issue("OBSERVATION_REQUIRED", "src/main.cpp",
+                      "请在setup中用Serial.begin(115200)或值为115200的无条件本地宏初始化，并输出HWCLAW_BOOT。"
+                      "复杂表达式和条件宏无法通过此基础检查。")
         except (ValueError, KeyError, TypeError):
             issue("INVALID_VSCODE_CONFIG", "design", "vscode配置不符合受控基线；检查依赖、串口和设计。")
     if template == "platformio":
