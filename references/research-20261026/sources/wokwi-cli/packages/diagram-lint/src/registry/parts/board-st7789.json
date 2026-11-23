@@ -1,7 +1,0 @@
-{
-  "type": "board-st7789",
-  "pins": ["BL", "CS", "DC", "GND", "RST", "SCL", "SDA", "VCC"],
-  "documented": false,
-  "isBoard": true,
-  "category": "boards"
-}

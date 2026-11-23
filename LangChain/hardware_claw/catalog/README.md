@@ -49,7 +49,7 @@ usage返回增加以下字段：
 
 ## 检测
 
-`tests/test_hardware_catalog.py`覆盖资料查询、库存/仿真区分、分页、旧版本、元数据、损坏数据、越界和符号链接，以及离线模型的search→read→ToolMessage循环。test_hardware_bundles.py覆盖两工具注册、批量去重、全卡读取、基础/扩展分级、预算补读、混合未知ID、越界和哈希异常。真实查询记录见根目录docs/HARDWARE_QUERY_TESTS_20261102.md。
+`tests/test_hardware_catalog.py`覆盖资料查询、库存/仿真区分、分页、旧版本、元数据、损坏数据、越界和符号链接，以及离线模型的search→read→ToolMessage循环。test_hardware_bundles.py覆盖两工具注册、批量去重、全卡读取、基础/扩展分级、预算补读、混合未知ID、越界和哈希异常。这些是软件机制测试，不是器件功能验收。
 
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 -B -m unittest discover -s tests -v

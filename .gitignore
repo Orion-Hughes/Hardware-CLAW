@@ -1,8 +1,10 @@
 # Local credentials (do not expose to generated-project tools)
 .secrets/
+**/.secrets/
 DS API.txt
 DS_Api.txt
 **/DS_Api.txt
+**/wokwi-cli-token.txt
 **/.env
 **/.env.*
 LangChain/tester.txt
@@ -16,6 +18,22 @@ workspace/.chat/
 /workspace/*
 !/workspace/README.md
 /项目总体信息/
+/backups/
+/docs/presentations/
+
+# Public package: research and historical experiments remain local.
+/Wokwi/
+/references/*
+!/references/HARDWARE_INVENTORY.md
+!/references/SOURCES.md
+/docs/*
+!/docs/README.md
+!/docs/STATUS.md
+!/docs/guides/
+!/docs/architecture/
+/docs/architecture/*
+!/docs/architecture/README.md
+!/docs/architecture/OVERVIEW.md
 
 # Installed toolchains, downloaded reference checkout and UI runtime caches
 /pio/
@@ -26,6 +44,10 @@ workspace/.chat/
 **/.pio/
 **/node_modules/
 **/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/htmlcov/
 *.log
 *.sqlite3
 *.sqlite3-*

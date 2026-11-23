@@ -40,10 +40,10 @@ class ApiConfigTests(unittest.TestCase):
             api_config.create_model()
             self.assertEqual(constructor.call_args.kwargs["api_key"], "fake-test")
             self.assertEqual(constructor.call_args.kwargs["api_base"], api_config.BASE_URL)
-            self.assertEqual(constructor.call_args.kwargs["max_tokens"], api_config.limits.QUERY_OUTPUT_TOKENS)
+            self.assertEqual(constructor.call_args.kwargs["max_tokens"], api_config.limits.COORDINATOR_OUTPUT_TOKENS)
             self.assertEqual(constructor.call_args.kwargs["timeout"], api_config.limits.API_TIMEOUT_SECONDS)
-            api_config.create_model(max_tokens=api_config.limits.PROJECT_OUTPUT_TOKENS)
-            self.assertEqual(constructor.call_args.kwargs["max_tokens"], api_config.limits.PROJECT_OUTPUT_TOKENS)
+            api_config.create_model(max_tokens=api_config.limits.GENERATION_OUTPUT_TOKENS)
+            self.assertEqual(constructor.call_args.kwargs["max_tokens"], api_config.limits.GENERATION_OUTPUT_TOKENS)
 
 
 if __name__ == "__main__":

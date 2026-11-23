@@ -114,7 +114,14 @@
     "dependency_properties": [
       "upstream/drivers/Adafruit-ST7735-Library/library.properties",
       "upstream/drivers/Adafruit-GFX-Library/library.properties",
-      "upstream/drivers/Adafruit_BusIO/library.properties"
+      "upstream/drivers/Adafruit_BusIO/library.properties",
+      "drivers/HwClawGraphics/library.properties"
+    ],
+    "local_driver_bundles": [
+      {
+        "bundle_ref": "drivers/HwClawGraphics",
+        "bundle_manifest_ref": "drivers/HwClawGraphics/bundle.json"
+      }
     ],
     "simulation_supply_v": 3.3
   },
@@ -220,6 +227,12 @@
       }
     ],
     "guidance": [
+      {
+        "ref": "drivers/HwClawGraphics/README.md",
+        "purpose": "本地绘图库 API、硬件 SPI 提交和局部刷新规则，供不同显示应用复用。",
+        "read_when": "implementation",
+        "load": "essential"
+      },
       {
         "ref": "guidance/usage-boundaries.md",
         "purpose": "解释资料可信范围、引脚映射和仿真/实物区别。",

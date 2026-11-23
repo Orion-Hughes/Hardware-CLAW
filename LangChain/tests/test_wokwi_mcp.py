@@ -1,18 +1,12 @@
-import asyncio
-import json
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from pydantic import ValidationError
-from langchain_core.messages import AIMessage, ToolMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
 
 from hardware_claw.contracts.simulation_mcp import InspectSimulationInput, MCPAction
 from hardware_claw.adapters.wokwi_mcp import decode_result, validate_config, validate_controls, inspect, read_evidence
 from hardware_claw.projects.service import ProjectError, atomic_json
-from hardware_claw.runtime import execute_turn
-from test_agent import ScriptedModel
 from tests import test_vscode_delivery as fixtures
 
 

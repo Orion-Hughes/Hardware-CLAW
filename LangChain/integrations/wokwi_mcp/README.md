@@ -22,4 +22,4 @@
 
 没有安装修复版时使用原版CLI，保留原版截图截断限制；安装文件损坏时明确报错，不静默回退。当前ST7789模型的framebuffer接口问题未解决，此补丁不能创造服务没有提供的图像。
 
-测试和证据见[集成文档](../../../docs/WOKWI_MCP_INTEGRATION.md)。测试夹具仅验证通用接口，绝不作为生产Agent生成答案。
+接口边界见[当前架构](../../../docs/architecture/OVERVIEW.md)，回归位于`LangChain/tests/test_wokwi_mcp.py`。测试夹具仅验证通用接口，绝不作为生产Agent生成答案。

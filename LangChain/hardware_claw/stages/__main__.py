@@ -24,8 +24,8 @@ async def run(question, stage='selection', task_id=None, project_id=None):
     c.begin_turn(question)
     async def emit(kind, data):
         print(f'[{kind}] ' + json.dumps(data, ensure_ascii=False), flush=True)
-    model = create_model(max_tokens={'generation':limits.PROJECT_OUTPUT_TOKENS,
-        'verification':limits.VERIFICATION_OUTPUT_TOKENS,'selection':limits.QUERY_OUTPUT_TOKENS}[stage])
+    model = create_model(max_tokens={'generation':limits.GENERATION_OUTPUT_TOKENS,
+        'verification':limits.VERIFICATION_OUTPUT_TOKENS,'selection':limits.COORDINATOR_OUTPUT_TOKENS}[stage])
     {'selection':attach_selection,'generation':attach_generation,'verification':attach_verification}[stage](c, model, emit)
     result = await c.run_stage(stage, question, c.state()['version'],
         expected_project_version=project.get()['version'] if project and stage in ('generation','verification') else None)

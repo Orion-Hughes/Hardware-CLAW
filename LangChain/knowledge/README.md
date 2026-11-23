@@ -1,6 +1,6 @@
 # Hardware-CLAW 硬件资料入口
 
-现有 17 张索引卡（9 类已购、1 个明确仿真变体、7 个非采购参考），另有 146 个原始 Wokwi 元件定义。新增或更新卡片请按[新硬件入库指南](../../docs/HARDWARE_ONBOARDING.md)操作，实际验证记录与卡片状态分开看。
+现有 17 张索引卡（9 类已购、1 个明确仿真变体、7 个非采购参考），另有 146 个原始 Wokwi 元件定义。新增或更新卡片请按[新硬件入库指南](../../docs/guides/HARDWARE_ONBOARDING.md)操作，实际验证记录与卡片状态分开看。
 
 ## 目录
 
@@ -51,10 +51,10 @@ Agent仅注册两个硬件工具：`search_hardware`返回可用于选型的功�
 
 `read_hardware`默认读取load=essential的文件，load=reference的文件只列出入口。documents.status区分included/reference/omitted/error；预算不足的文件不截断，标为omitted。补读时传references，只读指定原文，不重复基础包和平台说明。JSON预算默认56000字符，最多60000，包含元数据；单份原文过大仍可能无法装入，不能重复调用冒充已读。complete不表示足以编程或验证通过。
 
-`KnowledgeCatalog`仍为现有工程服务派生兼容profile，不在磁盘维护第二套资料。旧get_hardware_info/read_hardware_documents包装仅留作内部兼容及测试，不再向Agent注册。阶段和子Agent机制尚未实现。
+`KnowledgeCatalog`为工程服务派生兼容profile，不在磁盘维护第二套资料。旧get_hardware_info/read_hardware_documents包装仅留作内部兼容及测试，不再向Agent注册。主协调和三个固定子Agent已实现，见[架构](../../docs/architecture/OVERVIEW.md)。
 
-完整上游数据保留在本地，不代表全部发送给模型。索引卡负责选型，后续仅按任务需要读取对应入口。更进一步的阶段上下文和子 Agent 系统尚未实现。
+完整上游数据随运行库保留，不代表全部发送给模型。索引卡负责选型，后续按阶段与任务需要读取对应入口。
 
-来源调研见 [调研报告](../../docs/WOKWI_LIBRARY_SOURCE_SURVEY.md)。旧库备份位于 `backups/hardware-cards-20261102/knowledge`（相对项目根目录），仅保留作回溯，不参与运行。
+上游版本、路径和哈希见`sources.lock.json`；许可和来源范围见[说明](../../THIRD_PARTY_NOTICES.md)。历史库和实验材料不属于公开运行包。
 
-初次建库完成116项离线测试；双工具接口改造后126项离线测试通过，覆盖批量组合、共享去重、补读、路径拒绝、哈希异常和预算遗漏。真实Agent查询结果另见[双工具测试记录](../../docs/HARDWARE_QUERY_TESTS_20261102.md)。未编译目标固件、运行器件仿真或验证实物。SSD1306仍为unreviewed；其余10张资料级配置为documented_not_tested，4张为blocked。
+查询接口回归覆盖批量组合、共享去重、补读、路径拒绝、哈希异常和预算遗漏。支持状态以各连接卡及当前工程证据为准，不能把查询或软件测试通过当成器件功能验收。

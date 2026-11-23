@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "author": "Hardware-CLAW",
+  "editor": "wokwi",
+  "parts": [
+    {"type": "board-esp32-s3-devkitc-1", "id": "mcu", "top": 0, "left": 0, "attrs": {}},
+    {"type": "board-st7789", "id": "tft", "top": 0, "left": 200, "attrs": {}}
+  ],
+  "connections": [
+    ["mcu:3V3.2", "tft:VCC", "red", []],
+    ["mcu:GND.2", "tft:GND", "black", []],
+    ["mcu:10", "tft:SCL", "green", []],
+    ["mcu:11", "tft:SDA", "blue", []],
+    ["mcu:12", "tft:CS", "orange", []],
+    ["mcu:13", "tft:DC", "yellow", []],
+    ["mcu:14", "tft:RST", "purple", []],
+    ["mcu:TX", "$serialMonitor:RX", "", []]
+  ],
+  "serialMonitor": {"display": "always", "convertEol": true}
+}

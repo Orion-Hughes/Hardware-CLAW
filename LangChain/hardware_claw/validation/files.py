@@ -3,6 +3,7 @@ import configparser
 import json
 import re
 import tomllib
+from pathlib import PurePosixPath
 
 REQUIRED = {
     "vscode": {"src/main.cpp", "diagram.json", "platformio.ini", "wokwi.toml", "README.md"},
@@ -47,6 +48,17 @@ def has_fixed_serial_baud(source):
                for arg in re.findall(r"\bSerial\s*\.\s*begin\s*\(\s*(115200|[A-Za-z_]\w*)\s*\)", source))
 
 
+def driver_includes(files, entry):
+    """Look for explicit driver use across application sources, including local headers."""
+    included = set()
+    for path, content in files.items():
+        if path != entry and not (path.startswith(("src/", "include/", "lib/"))
+                                   and path.lower().endswith((".c", ".cpp", ".h", ".hpp", ".ino"))):
+            continue
+        included.update(re.findall(r'^\s*#\s*include\s*[<"]([^>"\r\n]+)[>"]', content, re.M))
+    return included
+
+
 def check(state):
     issues = []
     def issue(code, path, message):
@@ -58,13 +70,16 @@ def check(state):
             issue("MISSING_FILE", name, "缺少必需文件或内容为空。")
     if not design:
         issue("MISSING_DESIGN", "design", "未保存设计。")
-    host_reserved_files = set()
+    host_reserved_files, optional_headers = set(), {}
     try:
         from ..catalog.driver_bundles import project_driver_bundles
         for bundle in project_driver_bundles(state):
             host_reserved_files.add(bundle["install"]["destination"] + "/bundle.json")
             host_reserved_files.update(bundle["install"]["destination"] + "/" + item["path"]
                                        for item in bundle["files"])
+            optional_headers[bundle["manifest_ref"]] = {
+                PurePosixPath(item["path"]).name for item in bundle["files"] if item["role"] == "optional_header"
+            }
     except Exception as exc:
         issue("INVALID_DRIVER_BUNDLE", "design", getattr(exc, "message", str(exc)))
     if set(files) & host_reserved_files:
@@ -167,13 +182,17 @@ def check(state):
             pattern = r"(?:#define\s+" + re.escape(name) + r"\s+|\b" + re.escape(name) + r"\s*=\s*)" + str(pin) + r"\b"
             if not re.search(pattern, source):
                 issue("PIN_DEFINE_MISMATCH", source_name, f"未发现简单整数定义{name}={pin}；不能推断复杂表达式。")
+        included = driver_includes(files, source_name)
         for info in hardware.values():
-            for header in info["profile"].get("driver_profile", {}).get("headers", []):
+            driver = info["profile"].get("driver_profile", {})
+            optional = set().union(*(optional_headers.get(dep.get("bundle_manifest_ref"), set())
+                                     for dep in driver.get("dependencies", [])))
+            for header in driver.get("headers", []):
                 if header == "Arduino.h" and template == "arduino":
                     continue
-                if not re.search(r'#\s*include\s*[<"]' + re.escape(header) + r'[>"]', source):
-                    issue("MISSING_INCLUDE", source_name, f"缺少驱动头文件{header}。")
-            for dep in info["profile"].get("driver_profile", {}).get("dependencies", []):
+                if header not in optional and header not in included:
+                    issue("MISSING_INCLUDE", source_name, f"应用源码缺少必需驱动头文件 {header} 的引用。")
+            for dep in driver.get("dependencies", []):
                 if dep.get("resolution") == "local_bundle":
                     if any(d["name"] == dep["name"] and d["version"] == dep["version"] for d in design["dependencies"]):
                         issue("LOCAL_DEPENDENCY_MUST_BE_HOST_MANAGED", "design",
@@ -239,6 +258,6 @@ def check(state):
                     issue("FIRMWARE_PATH_MISMATCH", "wokwi.toml", f"{key}应为.pio/build/{env[4:]}/firmware.{ext}；文件尚未构建。")
         except (ValueError, KeyError, TypeError, configparser.Error):
             issue("INVALID_BUILD_CONFIG", "platformio.ini/wokwi.toml", "构建配置无法解析或超出支持范围。")
-    return {"version": state["version"], "validator_version": 1, "verdict": "fail" if issues else "pass", "issues": issues,
+    return {"version": state["version"], "validator_version": 2, "verdict": "fail" if issues else "pass", "issues": issues,
             "scope": "basic_files_only", "warnings": ["不是C++编译器，不证明源码语义、GPIO实际用途、采样时序、电气或行为正确。", "第三方模型的额外芯片资源和运行时支持仍须编译/仿真验证。"],
             "build": "not_run", "simulation": "not_run", "behavior": "not_run"}

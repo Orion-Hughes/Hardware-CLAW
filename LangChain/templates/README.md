@@ -4,4 +4,4 @@
 
 load_template只读白名单ID，返回内容与SHA256；scaffold_project根据保存设计实例化固定配置。只读指Agent工具权限，维护者仍可修改模板，不依靠Windows文件只读属性。参数、业务逻辑与具体连接来自当前设计。模板改变后已有工程需新修订、检查并重新编译。
 
-模板为本项目编写。参考Wokwi官方project-config、serial-monitor，以及circuit-synth的可复用模块思想；来源记录见docs/VSCODE_DELIVERY.md。
+模板为本项目编写。参考Wokwi官方project-config、serial-monitor，以及circuit-synth的可复用模块思想；来源记录见docs/guides/VSCODE_DELIVERY.md。

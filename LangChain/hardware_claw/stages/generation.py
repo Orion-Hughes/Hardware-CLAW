@@ -7,9 +7,12 @@ from typing import Literal
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelCallLimitMiddleware, ToolCallLimitMiddleware
+from langchain.agents.middleware.model_call_limit import ModelCallLimitExceededError
+from langchain.agents.middleware.tool_call_limit import ToolCallLimitExceededError
 from langchain.agents.structured_output import ToolStrategy
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import StructuredTool
+from langgraph.errors import GraphRecursionError
 from pydantic import Field, create_model, model_validator
 
 from .. import limits
@@ -91,6 +94,7 @@ class GenerationTrace(StageTrace):
 
     def make_tools(self):
         sources = [read_hardware, load_template, *[t for t in make_project_tools(self.coordinator.project) if t.name in PROJECT_TOOLS]]
+        self.business_tool_names = {t.name for t in sources}
         def wrap(source):
             async def invoke(**kwargs):
                 kwargs = {k: v.model_dump() if hasattr(v, 'model_dump') else v for k, v in kwargs.items()}
@@ -158,8 +162,8 @@ class GenerationTrace(StageTrace):
         if report.project_version != p['version']:
             raise WorkflowError('PROJECT_VERSION_CONFLICT', '候选报告不是当前工程修订。')
 
-    def recover_candidate(self, request):
-        """Keep a saved complete revision when the token stop preempts the report."""
+    def recover_candidate(self, request, reason):
+        """Keep a saved complete revision when a resource guard preempts the report."""
         p = self.coordinator.project.get()
         version = self.authored_revision
         if (version is None or version == request['expected_project_version'] or p['version'] != version
@@ -167,9 +171,9 @@ class GenerationTrace(StageTrace):
                 or not REQUIRED[p['template']] <= {f['path'] for f in p['files']}):
             return None
         proposal = GenerationReport(status='candidate', project_version=version, hardware_ids=sorted(self.selected),
-                                    summary='模型预算耗尽前已保存候选；程序接管检查。')
+                                    summary='生成到达运行限制前已保存候选；程序接管检查。')
         self.validate(proposal)
-        self.events.append({'kind': 'candidate_recovered', 'version': version})
+        self.events.append({'kind': 'candidate_recovered', 'version': version, 'reason': reason})
         return proposal
 
 
@@ -190,6 +194,8 @@ class GenerationExecutor:
         context['selection'] = {k: selected.get(k) for k in ('requirements','hardware_ids','decisions','assumptions','compatibility')}
         context['feedback'] = [{'stage':h['stage'],'status':h['status'],'summary':h['result']['summary']}
             for h in request['handoffs'] if h['stage'] != 'selection']
+        if request.get('repair_evidence'):
+            context['repair_evidence'] = request['repair_evidence']
         prompt = (ROOT/'prompts/generation.md').read_text('utf8') + '\n\n' + (ROOT/'skills/stages/generation.md').read_text('utf8')
         prompt += '\n\n' + (ROOT/'skills/firmware_and_observation.md').read_text('utf8')
         last_error = None
@@ -212,17 +218,23 @@ class GenerationExecutor:
                 ModelCallLimitMiddleware(run_limit=limits.GENERATION_MODEL_CALLS, exit_behavior='error'),
                 ToolCallLimitMiddleware(run_limit=limits.GENERATION_TOOL_CALLS, exit_behavior='error')])
         report, proposed, error = None, None, None
+        allow_repair = True
         if self.emit: await self.emit('stage_start',{'stage':'generation','run_id':request['run_id']})
         try:
             async with asyncio.timeout(limits.GENERATION_TIMEOUT_SECONDS):
                 try:
                     output = await graph.ainvoke({'messages':[HumanMessage(content=json.dumps(context, ensure_ascii=False))]},
-                        config={'recursion_limit':128})
+                        config={'recursion_limit':limits.GENERATION_GRAPH_STEPS})
                     proposed = output.get('structured_response')
                 except WorkflowError as exc:
                     if exc.code not in TOKEN_STOPS:
                         raise
-                    proposed = trace.recover_candidate(request)
+                    proposed = trace.recover_candidate(request, exc.code)
+                    if proposed is None:
+                        raise
+                except (GraphRecursionError, ModelCallLimitExceededError, ToolCallLimitExceededError) as exc:
+                    allow_repair = False
+                    proposed = trace.recover_candidate(request, type(exc).__name__)
                     if proposed is None:
                         raise
                 if proposed is None:
@@ -230,7 +242,8 @@ class GenerationExecutor:
                 trace.validate(proposed)
                 values = proposed.model_dump()
                 if proposed.status == 'candidate':
-                    version = await finish_candidate(trace, request['run_id'], proposed.project_version, self.model)
+                    version = await finish_candidate(trace, request['run_id'], proposed.project_version, self.model,
+                                                     allow_repair=allow_repair)
                     values.update(status='completed', project_version=version,
                                   summary='程序已检查、编译并导出当前修订。功能状态以实际验证记录为准。')
                 report = StageResult.model_validate(values)
@@ -258,5 +271,5 @@ class GenerationExecutor:
 def attach_generation(coordinator, model, emit=None):
     if coordinator.executors.get('generation') is None or isinstance(coordinator.executors['generation'], GenerationExecutor):
         if 'max_tokens' in type(model).model_fields:
-            model = model.model_copy(update={'max_tokens':limits.PROJECT_OUTPUT_TOKENS})
+            model = model.model_copy(update={'max_tokens':limits.GENERATION_OUTPUT_TOKENS})
         coordinator.executors['generation'] = GenerationExecutor(model, coordinator, emit)

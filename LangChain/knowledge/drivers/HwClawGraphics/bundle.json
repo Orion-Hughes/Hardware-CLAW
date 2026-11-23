@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "library_name": "HwClawGraphics",
+  "version": "0.1.0",
+  "origin": {"maintenance": "hardware_claw_local_bundle"},
+  "install": {
+    "destination": "lib/HwClawGraphics",
+    "managed_by": "host",
+    "platformio_lib_deps": false
+  },
+  "files": [
+    {"path": "library.properties", "role": "metadata"},
+    {"path": "src/HwClawGraphics.cpp", "role": "source"},
+    {"path": "src/HwClawGraphics.h", "role": "optional_header"},
+    {"path": "src/HwClawSpiBitmap.h", "role": "optional_header"},
+    {"path": "README.md", "role": "usage_reference"}
+  ]
+}

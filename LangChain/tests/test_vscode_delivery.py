@@ -39,6 +39,11 @@ class VSCodeTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.base = ROOT / "temp/vscode-tests" / uuid.uuid4().hex
         self.p = ProjectService.create("delivery-test", "Build delivery fixture", "vscode", workspace=self.base)
+        fixture_pio = self.base / "fixture-pio"
+        fixture_pio.write_text("TEST DOUBLE; never executable", encoding="utf-8")
+        compiler_path = patch("hardware_claw.adapters.compiler.PIO", fixture_pio)
+        compiler_path.start()
+        self.addCleanup(compiler_path.stop)
         design = copy.deepcopy(DESIGN)
         design.update(goal="Build delivery fixture", components=[], connections=[], dependencies=[], pin_defines={})
         self.p.update_design(0, design)
@@ -108,6 +113,19 @@ class VSCodeTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ProjectError) as caught:
             self.p.export(3)
         self.assertEqual(caught.exception.code, "BUILD_REQUIRED")
+
+    def test_base_driver_can_be_in_a_module_but_only_auxiliary_headers_are_optional(self):
+        state = self.p._load()
+        profile = state["hardware"]["mcu"]["profile"]["driver_profile"]
+        profile["headers"] = ["MainDriver.h", "Helper.h"]
+        profile["dependencies"] = [{"resolution": "local_bundle", "bundle_manifest_ref": "fixture-bundle"}]
+        bundle = {"install": {"destination": "lib/fixture"}, "manifest_ref": "fixture-bundle",
+                  "files": [{"path": "src/MainDriver.h", "role": "header"},
+                            {"path": "src/Helper.h", "role": "optional_header"}]}
+        with patch("hardware_claw.catalog.driver_bundles.project_driver_bundles", return_value=[bundle]):
+            self.assertEqual([i["code"] for i in check(state)["issues"]], ["MISSING_INCLUDE"])
+            state["files"]["src/display.cpp"] = '#include <MainDriver.h>\n'
+            self.assertEqual(check(state)["verdict"], "pass")
 
     def test_portable_export_and_stale_invalidation(self):
         self.p.check_files()

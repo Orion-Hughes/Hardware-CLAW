@@ -83,6 +83,8 @@ class Coordinator:
             if attempt and attempt['status'] != 'completed':
                 progress[stage]['blockers'] = report.get('blockers', [])
                 progress[stage]['summary'] = report.get('summary')
+                if stage == 'generation' and report.get('detail_ref'):
+                    progress[stage]['evidence_ref'] = attempt['run_id']
         return state | {'project': project,
             'stages': {name: {'description': description, 'available': name in self.executors}
                        for name, description in STAGES.items()},
@@ -178,15 +180,33 @@ class Coordinator:
                 elif p.get('behavior') != 'pass':
                     raise WorkflowError('UNPROVEN_COMPLETION', '未有当前修订的功能通过证据；返回blocked或failed并说明缺口。')
 
-    async def run_stage(self, stage, objective, expected_task_version, input_refs=None, expected_project_version=None):
+    async def run_stage(self, stage, objective, expected_task_version, input_refs=None, expected_project_version=None,
+                        *, repair_from=None):
         if stage not in STAGES:
             raise WorkflowError('INVALID_STAGE', '未知阶段。')
         self.check_budget()
         start = time.monotonic()
         run_id = uuid.uuid4().hex
+        repair = None
         with self.store.edit(self.task_id) as (state, con):
             self._idle(state)
             self._version(state, expected_task_version)
+            latest_generation = state.get('latest_attempts', {}).get('generation')
+            if stage == 'generation' and repair_from is None and latest_generation:
+                last = self.store.record(self.task_id, latest_generation)
+                selection = state.get('latest_attempts', {}).get('selection', state['latest'].get('selection'))
+                if (last.get('turn') == state['turn_count'] and last['status'] in {'blocked', 'failed'}
+                        and selection == last.get('current_handoffs', {}).get('selection')):
+                    raise WorkflowError('REPAIR_EVIDENCE_REQUIRED', '本轮生成已失败；如有可定位诊断，须通过repair_from续修。')
+            if repair_from is not None:
+                from .evidence import repair_evidence
+                if stage != 'generation' or repair_from != latest_generation:
+                    raise WorkflowError('INVALID_REPAIR_REFERENCE', '只允许根据最近生成失败交接修订。')
+                if state.get('last_evidence_repair_turn') == state['turn_count']:
+                    raise WorkflowError('REPAIR_LIMIT', '本轮证据驱动的续修机会已用完。')
+                self._check_project_version(expected_project_version)
+                repair = repair_evidence(self, repair_from, expected_project_version)
+                state['last_evidence_repair_turn'] = state['turn_count']
             if state['stage_attempts'] >= limits.COORDINATOR_STAGE_ATTEMPTS:
                 raise WorkflowError('STAGE_BUDGET', '该任务的阶段委派次数达到上限。')
             refs = list(dict.fromkeys([*(input_refs or []), *state['latest'].values()]))
@@ -200,6 +220,10 @@ class Coordinator:
                        'user_request': state['current_request'], 'handoffs': handoffs,
                        'current_handoffs': dict(state['latest']),
                        'project_id': state['project_id'], 'expected_project_version': expected_project_version}
+            if repair:
+                request['repair_evidence'] = repair
+            if stage == 'generation':
+                request['turn'] = state['turn_count']
             state['stage_attempts'] += 1
             state['active_run'] = run_id
             self.store.save_record(con, self.task_id, request | {'status': 'running', 'created_at': timestamp()})
@@ -271,7 +295,14 @@ class Coordinator:
                     state['latest'].pop(dependent, None)
             self.store.save_record(con, self.task_id, record)
             version = state['version'] + 1
-        return {'task_version': version, 'handoff_ref': request['run_id'], **record}
+        response = {'task_version': version, 'handoff_ref': request['run_id'], **record}
+        if request['stage'] == 'generation' and result.detail_ref and result.status in {'blocked', 'failed'}:
+            response['evidence_ref'] = request['run_id']
+            from .evidence import stage_evidence, repair_action
+            response['diagnosis'] = stage_evidence(self, request['run_id'])
+            response['repair_action'] = repair_action(self, request['run_id'])
+        response.pop('repair_evidence', None)
+        return response
 
     def deliver(self, expected_task_version, expected_project_version, scope):
         if scope not in {'checked_artifacts', 'verified'}:

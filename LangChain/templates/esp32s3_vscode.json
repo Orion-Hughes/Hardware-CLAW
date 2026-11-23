@@ -1,7 +1,7 @@
 {
   "template_id": "esp32s3_vscode",
   "version": 2,
-  "scope": "ESP32-S3 Arduino UART0, standard Wokwi partitions, 4MB simulation",
+  "scope": "ESP32-S3 Arduino UART0, PlatformIO N8/8MB baseline, no PSRAM; physical upload uses a separate N32R16V build",
   "platformio": "[env:esp32s3]\nplatform = espressif32@6.12.0\nboard = esp32-s3-devkitc-1\nframework = arduino\nmonitor_speed = 115200\nlib_deps =\n{{dependencies}}\n",
   "wokwi": "[wokwi]\nversion = 1\nfirmware = \"firmware/firmware.bin\"\nelf = \"firmware/firmware.elf\"\n",
   "serial_connections": [["mcu:TX", "$serialMonitor:RX", "", []], ["mcu:RX", "$serialMonitor:TX", "", []]],

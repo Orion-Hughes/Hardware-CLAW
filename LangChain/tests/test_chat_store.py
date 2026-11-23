@@ -13,7 +13,7 @@ from hardware_claw.coordinator import TaskStore
 
 
 class ChatStoreTests(unittest.IsolatedAsyncioTestCase):
-    async def test_coordinator_mode_does_not_autocreate_project(self):
+    async def test_default_coordinator_does_not_autocreate_project(self):
         state = {'history': [], 'project': None, 'mode': 'generate'}
         session = SimpleNamespace(set=state.__setitem__, get=state.get)
         task_store = TaskStore(self.path / 'tasks')
@@ -25,15 +25,12 @@ class ChatStoreTests(unittest.IsolatedAsyncioTestCase):
              patch.object(app.ProjectService, 'create') as create, \
              patch.object(app, 'create_model') as model, \
              patch.object(app, 'execute_turn', new_callable=AsyncMock) as run:
-            await app.respond(SimpleNamespace(content='/coordinator'))
-            self.assertEqual(state['mode'], 'coordinator')
+            await app.respond(SimpleNamespace(content='请选型'))
             ident = state['coordinator_task_id']
             self.assertEqual(task_store.load(ident)['project_id'], None)
-            model.assert_not_called()
-            await app.respond(SimpleNamespace(content='请选型'))
+            model.assert_called_once()
             create.assert_not_called()
             self.assertEqual(run.call_args.kwargs['coordinator'].task_id, ident)
-            self.assertFalse(run.call_args.kwargs['require_delivery'])
             self.assertEqual(self.store.get('state','coordinator-chat')['coordinator_task_id'], ident)
 
     async def test_resume_keeps_coordinator_task_id(self):
@@ -43,7 +40,6 @@ class ChatStoreTests(unittest.IsolatedAsyncioTestCase):
                                       'coordinator_task_id': 'a'*32, 'history': []})
         with patch.object(app, 'chat_store', return_value=self.store), patch.object(app.cl, 'user_session', session):
             await app.resume({'id': 'chat'})
-        self.assertEqual(state['mode'], 'coordinator')
         self.assertEqual(state['coordinator_task_id'], 'a'*32)
 
     async def asyncSetUp(self):

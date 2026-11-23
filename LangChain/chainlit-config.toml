@@ -15,5 +15,12 @@ name = "Hardware-CLAW"
 language = "zh-CN"
 cot = "full"
 
+[[UI.header_links]]
+name = "firmware-upload"
+display_name = "固件烧录"
+icon_url = "/hardware-claw-flash/assets/flash.svg"
+url = "/hardware-claw-flash"
+target = "_blank"
+
 [meta]
 generated_by = "2.12.0"

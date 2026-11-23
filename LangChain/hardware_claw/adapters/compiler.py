@@ -91,8 +91,11 @@ def compiler_env(work):
     return env
 
 
-async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
+async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT, on_log=None, target=None):
     started = time.monotonic()
+    from ..deployment import target as physical
+    if target not in (None, physical.TARGET):
+        fail("UNSUPPORTED_BUILD_TARGET", "未登记的构建目标。")
     with project.locked():
         state = project._load()
         project._check_version(state, expected_version)
@@ -103,8 +106,10 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
         if not report or report["verdict"] != "pass" or check(state)["verdict"] != "pass":
             fail("CHECK_REQUIRED", "先对当前版本运行check_project_files并通过。")
         source_hash = fingerprint(state)
-        previous = project.build_status(state)
-        if isinstance(previous, dict) and previous.get("source_sha256") == source_hash and previous["verdict"] == "fail":
+        effective_ini = physical.platformio_for(state) if target else state["files"].get("platformio.ini")
+        previous = physical.build_status(project, state) if target else project.build_status(state)
+        same_profile = physical.matches(previous, state) if target else True
+        if same_profile and isinstance(previous, dict) and previous.get("source_sha256") == source_hash and previous["verdict"] == "fail":
             fail("NO_PROGRESS", "相同源码已编译失败，先根据日志修改，不能原样重复编译。")
     if not PIO.is_file():
         fail("COMPILER_UNAVAILABLE", "受控PlatformIO编译器未安装。")
@@ -118,6 +123,8 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
     work = ROOT / "temp" / "builds" / project.id / attempt
     work.mkdir(parents=True)
     for name, content in state["files"].items():
+        if name == "platformio.ini":
+            content = effective_ini
         path = work / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8", newline="")
@@ -134,6 +141,8 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
                                  "bundle_ref": bundle["bundle_ref"], "manifest_sha256": bundle["manifest_sha256"],
                                  "files": list(outputs)})
     log = work / "build.log"
+    if on_log is not None:
+        on_log(log)
     try:
         verdict, code = await run_process([str(PIO), "run", "--project-dir", str(work), "--environment", "esp32s3"],
                                           work, compiler_env(work), log, timeout)
@@ -143,9 +152,12 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
     diagnostics = [line for line in text.splitlines() if re.search(r"error:|fatal|FAILED|Error", line, re.I)]
     data = {"version": expected_version, "source_sha256": source_hash, "attempt": attempt,
             "verdict": verdict, "exit_code": code, "elapsed_seconds": round(time.monotonic() - started, 2),
-            "log": str(log), "diagnostics": diagnostics[-20:], "log_tail": text[-2500:],
+            "log": str(log), "diagnostics": list(dict.fromkeys(diagnostics))[:40],
+            "diagnostics_total_unique": len(set(diagnostics)), "log_tail": text[-2500:],
             "artifacts": {}, "driver_bundles": injected_bundles,
             "simulation": "not_run", "behavior": "not_run"}
+    if target:
+        data.update(build_profile=dict(physical.PROFILE), effective_platformio=effective_ini)
     outputs = {"firmware." + ext: work / ".pio/build/esp32s3" / ("firmware." + ext) for ext in ("bin", "elf")}
     if verdict == "pass" and not all(path.is_file() and path.stat().st_size > 0 for path in outputs.values()):
         data["verdict"] = "tool_error"
@@ -157,10 +169,14 @@ async def compile_project(project, expected_version, *, timeout=BUILD_TIMEOUT):
         if fingerprint(current) != source_hash:
             fail("VERSION_CONFLICT", "编译期间源码发生变化，不能交付旧固件。")
         if data["verdict"] == "pass":
-            target = project.meta / "builds" / attempt
-            target.mkdir(parents=True)
+            build_folder = project.meta / "builds" / attempt
+            build_folder.mkdir(parents=True)
             for name, source in outputs.items():
-                shutil.copyfile(source, target / name)
-                data["artifacts"][name] = {"path": str(target / name), "sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "bytes": source.stat().st_size}
-        atomic_json(project.meta / "build.json", data)
+                shutil.copyfile(source, build_folder / name)
+                data["artifacts"][name] = {"path": str(build_folder / name), "sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "bytes": source.stat().st_size}
+            from ..deployment.images import capture_images
+            data["upload"] = capture_images(current, work, build_folder, physical=bool(data.get("build_profile")))
+            if data.get("build_profile"):
+                (build_folder / "platformio.ini").write_text(effective_ini, encoding="utf-8")
+        atomic_json(project.meta / (physical.REPORT if data.get("build_profile") else "build.json"), data)
     return data

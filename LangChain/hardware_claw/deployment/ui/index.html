@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>固件烧录 · Hardware-CLAW</title>
+  <link rel="icon" href="/hardware-claw-flash/assets/flash.svg">
+  <link rel="stylesheet" href="/hardware-claw-flash/assets/style.css">
+  <script defer src="/hardware-claw-flash/assets/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><img src="/hardware-claw-flash/assets/flash.svg" alt="">Hardware-CLAW</a>
+    <nav><span class="nav-active">固件烧录</span><a href="/">返回对话</a></nav>
+  </header>
+  <main>
+    <div class="page-heading">
+      <div><p class="eyebrow">LOCAL DEPLOYMENT</p><h1>固件烧录</h1>
+        <p class="muted">选择工程、检查固件，再确认写入开发板。全部操作在本机完成，不调用 LLM。</p></div>
+      <span class="badge">仅本机 · 人工确认</span>
+    </div>
+    <div id="notice" class="notice" role="alert" hidden></div>
+    <div class="layout">
+      <section class="card">
+        <div class="card-heading"><span class="number">1</span><h2>选择工程与设备</h2></div>
+        <form id="prepare-form">
+          <div class="field">
+            <label for="project-search">工程文件夹</label>
+            <div class="control-row"><input id="project-search" placeholder="搜索工程名称或文件夹" autocomplete="off"><button id="refresh-projects" type="button" class="secondary">刷新</button></div>
+            <select id="project-select" aria-label="选择工程文件夹"><option value="">正在读取工程…</option></select>
+            <p id="workspace-path" class="hint path"></p>
+            <div id="project-info" class="project-info" hidden>
+              <p id="project-title"></p><p id="project-path" class="path"></p>
+              <div id="project-badges" class="badges"></div>
+              <p id="project-build-hint" class="hint"></p>
+              <details><summary>查看当前需求与元件</summary><p id="project-requirement"></p><p id="project-components" class="hint"></p></details>
+            </div>
+          </div>
+          <div class="field">
+            <label for="port-select">串口</label>
+            <div class="control-row"><select id="port-select"><option value="">正在枚举串口…</option></select><button id="refresh-ports" type="button" class="secondary">刷新</button></div>
+            <p id="port-hint" class="hint">只读取系统设备列表，不打开串口或复位设备。</p>
+          </div>
+          <div class="field">
+            <label for="board-select">目标板卡 / 构建配置</label>
+            <select id="board-select"><option value="">请选择并核对目标配置</option></select>
+            <p class="hint">烧录单独构建 N32R16V：32MB OPI Flash / 16MB OPI PSRAM。按采购记录配置，尚未实物验证；日志使用 USB 转串口（UART0），屏幕等外设仍须核对。</p>
+          </div>
+          <label class="check"><input id="rebuild" type="checkbox" checked><span>准备前重新检查并编译<span class="hint">生成独立实物固件；不修改源码、不覆盖 Wokwi 固件和旧导出。</span></span></label>
+          <div class="review">
+            <label class="check"><input id="hardware-reviewed" type="checkbox"><span>我已核对实物板卡、Flash、供电、接线和屏幕规格。</span></label>
+            <label class="check"><input id="risk-reviewed" type="checkbox"><span>我了解烧录会覆盖启动、分区和应用信息，可能使原固件或数据不可用。</span></label>
+            <p class="hint">可以不勾选先编译并查看预览，但只有完成核对后才能烧录。</p>
+          </div>
+          <button id="prepare-button" class="primary full" type="submit" disabled>检查、编译并准备预览</button>
+        </form>
+      </section>
+      <div class="right-column">
+        <section class="card">
+          <div class="card-heading"><span class="number">2</span><h2>检查烧录预览</h2></div>
+          <div id="preview-empty" class="empty">先选择工程并准备固件。<br><span>准备和预览不会写入开发板。</span></div>
+          <div id="preview" hidden>
+            <div class="preview-top"><span id="plan-status" class="badge"></span><span id="plan-version" class="hint"></span></div>
+            <dl id="plan-meta"></dl>
+            <div class="table-scroll"><table><thead><tr><th>镜像</th><th>偏移</th><th>大小</th></tr></thead><tbody id="image-list"></tbody></table></div>
+            <ul id="plan-blockers" class="warnings"></ul>
+            <details><summary>适用范围与风险</summary><ul id="plan-warnings" class="hint"></ul></details>
+            <p id="plan-path" class="hint path"></p>
+          </div>
+          <button id="flash-button" class="danger full" type="button" disabled>确认并烧录到开发板</button>
+          <p class="hint">只有点击此按钮并通过二次确认，才会真正连接和写入设备。</p>
+        </section>
+        <section class="card">
+          <div class="card-heading"><span class="number">3</span><h2>进度与日志</h2><button id="cancel-button" class="secondary small" type="button" disabled>取消任务</button></div>
+          <div class="job-heading"><span id="job-dot" class="dot"></span><span id="job-status" role="status">等待操作</span></div>
+          <p id="job-message" class="hint">此处显示静态检查、编译或烧录结果；不会占用聊天区域。</p>
+          <pre id="job-log" aria-label="任务日志">尚无任务日志。</pre>
+          <details id="error-details" hidden><summary>查看详细诊断</summary><pre id="error-json"></pre></details>
+        </section>
+      </div>
+    </div>
+    <footer>生成、编译、烧录和功能验收是不同状态。首次实物烧录仍需人工核对，本界面不自动判断硬件功能正确。</footer>
+  </main>
+  <dialog id="confirm-dialog">
+    <h2>确认写入开发板？</h2>
+    <p>这一步会真正连接串口、写入启动与应用镜像并复位设备。请勿断开电源或 USB。</p>
+    <div id="confirm-summary" class="review"></div>
+    <label for="confirm-text">输入“确认烧录”继续</label>
+    <input id="confirm-text" autocomplete="off" placeholder="确认烧录">
+    <div class="dialog-actions"><button id="dismiss-confirm" class="secondary" type="button">返回检查</button><button id="execute-button" class="danger" type="button" disabled>开始真实烧录</button></div>
+  </dialog>
+</body>
+</html>

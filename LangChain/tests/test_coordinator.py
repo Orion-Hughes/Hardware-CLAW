@@ -24,7 +24,7 @@ class ParentModel(BaseChatModel):
     @property
     def _llm_type(self): return 'offline-coordinator-fixture'
     def bind_tools(self, tools, **kwargs):
-        assert {t.name for t in tools} == {'get_task_state', 'run_stage', 'deliver_project'}
+        assert {t.name for t in tools} == {'get_task_state', 'run_stage', 'deliver_project', 'read_task_evidence'}
         return self
     def _generate(self, messages, stop=None, run_manager=None, **kwargs):
         self._step += 1
@@ -59,9 +59,49 @@ class CoordinatorTests(unittest.IsolatedAsyncioTestCase):
 
     def test_tool_surface_and_fixed_enum(self):
         tools = make_coordinator_tools(self.c)
-        self.assertEqual([t.name for t in tools], ['get_task_state', 'run_stage', 'deliver_project'])
+        self.assertEqual([t.name for t in tools], ['get_task_state', 'run_stage', 'deliver_project', 'read_task_evidence'])
         self.assertNotIn('spawn_agent', [t.name for t in tools])
         self.assertEqual(tools[1].args['stage']['enum'], ['selection', 'generation', 'verification'])
+
+    async def test_current_failure_is_read_and_delegated_once(self):
+        from hardware_claw.projects.service import ProjectService
+        project = ProjectService.create('evidence', 'evidence fixture', workspace=Path(self.tmp.name) / 'projects')
+        with self.store.edit(self.ident) as (state, _):
+            state['project_id'] = project.id
+        self.c.project = project
+        self.c.executors['selection'] = AsyncMock(return_value={
+            'status': 'completed', 'summary': 'selected', 'hardware_ids': ['dht22_red_module'], 'requirements': ['input']})
+        await self.invoke()
+        seen = []
+        async def generation(request):
+            seen.append(request)
+            ref = 'a'*32 if len(seen) == 1 else 'b'*32
+            with self.store.connect() as con:
+                self.store.save_record(con, self.ident, {'run_id': ref, 'kind': 'generation_detail',
+                    'stage_run_id': request['run_id'], 'events': [{'kind': 'candidate_check', 'step': 'static',
+                    'version': 0, 'report': {'verdict': 'fail', 'issues': [{'code': 'MISSING_ENTRY', 'path': 'src/main.cpp'}]}}]})
+            return {'status': 'blocked', 'summary': 'failed check', 'detail_ref': ref}
+        self.c.executors['generation'] = generation
+        first = await self.invoke('generation', expected_project_version=0)
+        tool = {t.name:t for t in make_coordinator_tools(self.c)}['read_task_evidence']
+        reply = tool.invoke({'kind':'stage', 'ref':first['evidence_ref']})['data']
+        self.assertEqual(reply['checks'][0]['issues'][0]['code'], 'MISSING_ENTRY')
+        self.assertTrue(reply['repair_action']['available'])
+        self.assertEqual(reply['repair_action']['args']['repair_from'], first['evidence_ref'])
+        self.assertNotIn('next_offset', reply)
+        self.assertEqual(first['diagnosis']['checks'][0]['issues'][0]['code'], 'MISSING_ENTRY')
+        self.assertEqual(tool.invoke({'kind':'stage', 'ref':'0'*32})['error_code'], 'INVALID_REFERENCE')
+        with self.assertRaisesRegex(WorkflowError, 'repair_from'):
+            await self.invoke('generation', expected_project_version=0)
+        with self.assertRaises(WorkflowError) as stale:
+            await self.invoke('generation', expected_project_version=1, repair_from=first['evidence_ref'])
+        self.assertEqual(stale.exception.code, 'PROJECT_VERSION_CONFLICT')
+        second = await self.invoke('generation', expected_project_version=0, repair_from=first['evidence_ref'])
+        self.assertEqual(seen[-1]['repair_evidence']['check']['issues'][0]['code'], 'MISSING_ENTRY')
+        with self.assertRaises(WorkflowError) as exhausted:
+            await self.invoke('generation', expected_project_version=0, repair_from=second['evidence_ref'])
+        self.assertEqual(exhausted.exception.code, 'REPAIR_LIMIT')
+        self.assertEqual(len(seen), 2)
 
     async def test_unavailable_persists_blocker_without_fake_handoff(self):
         result = await self.invoke()

@@ -18,6 +18,8 @@ class StageTrace(AgentMiddleware):
         self.recorded_messages = set()
         self.invalid_reports = 0
         self.json_repair_pending = False
+        self.business_tool_names = set()
+        self.invalid_arguments = 0
 
     def reject_report(self, error):
         # Syntax and semantic rejections share one correction allowance.
@@ -58,7 +60,33 @@ class StageTrace(AgentMiddleware):
             return None
         malformed = [c for c in message.invalid_tool_calls if c.get('name') == self.report_name]
         if not malformed:
-            return None
+            business = [c for c in message.invalid_tool_calls if c.get('name') in self.business_tool_names]
+            if not business:
+                return None
+            self.invalid_arguments += 1
+            if self.invalid_arguments > 2:
+                raise WorkflowError('INVALID_TOOL_JSON', '工具参数重交仍无法解析；本次无效调用均未执行。')
+            feedback = []
+            for call in business:
+                raw = call.get('args')
+                if not call.get('id') or not isinstance(raw, str) or len(raw) > 128000:
+                    raise WorkflowError('INVALID_TOOL_JSON', '无效工具参数缺少调用ID或超过反馈上限；原文保留。')
+                try:
+                    json.loads(raw)
+                    diagnostic = {'message': '参数必须是工具 Schema 要求的 JSON 对象。'}
+                except json.JSONDecodeError as exc:
+                    diagnostic = {'message': exc.msg, 'line': exc.lineno, 'column': exc.colno, 'offset': exc.pos}
+                content = json.dumps({'error_code': 'INVALID_TOOL_JSON', 'executed': False,
+                    'parser_error': diagnostic, 'raw_arguments': raw,
+                    'instruction': '上次参数没有执行。利用前文修复 JSON 并重提此工具；'
+                                   '写文件时 files 必须是路径到源码字符串的映射，必要时拆为较小文件批次。'
+                                   '不要重新选型、查询未变资料或声称文件已保存。'}, ensure_ascii=False)
+                feedback.append(ToolMessage(content=content, name=call['name'], tool_call_id=call['id'], status='error'))
+                self.events.append({'kind': 'tool_argument_feedback', 'name': call['name'],
+                                    'tool_call_id': call['id'], 'content': content})
+            answered = {m.tool_call_id for m in state['messages'] if isinstance(m, ToolMessage)}
+            pending = [c for c in message.tool_calls if c['id'] not in answered and c['name'] != self.report_name]
+            return {'messages': feedback, **({} if pending else {'jump_to': 'model'})}
         if state.get('structured_response') is not None:
             raise WorkflowError('AMBIGUOUS_REPORT', '同一响应同时包含有效和无法解析的报告，拒绝接受。')
         self.reject_report(WorkflowError('INVALID_REPORT_JSON', '报告参数仍无法解析；修正额度已用完。'))

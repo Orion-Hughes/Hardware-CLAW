@@ -1,5 +1,5 @@
-# 输入输出契约（预留）
+# 输入输出契约
 
-保存未来RunContext、项目状态、设计选择、文件修订、ToolResult及ValidationReport的类型与schema。契约分开维护、带schema_version，不建设强制全局Project IR。
+`project.py` 定义工程设计的 Pydantic 模型，`verification.py` 定义规划契约，`simulation_mcp.py` 定义受控仿真操作参数。各模块分别维护，不建设强制全局 Project IR；主协调交接模型另外放在 `coordinator/contracts.py`。
 
-字段与所有权见 [正式生成程序设计](../../../docs/GENERATOR_ARCHITECTURE.md)。本轮只有说明，尚无运行时类型校验器。
+字段以相应模型为准；校验覆盖软件输入结构，不证明硬件功能正确。权限和交接见 [当前架构](../../../docs/architecture/OVERVIEW.md)。

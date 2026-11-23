@@ -44,7 +44,8 @@ class GenerationModel(BaseChatModel):
                             usage_metadata={'input_tokens':10,'output_tokens':2,'total_tokens':12})
             return ChatResult(generations=[ChatGeneration(message=msg)])
         prior = [json.loads(m.content)['data'] for m in messages if isinstance(m,ToolMessage)
-                 and m.name in {'get_project','update_project_design','scaffold_project','write_project_files'}]
+                 and m.name in {'get_project','update_project_design','scaffold_project','write_project_files'}
+                 and json.loads(m.content).get('data')]
         version = prior[-1]['version'] if prior else 0
         if child:
             report = {'status':'candidate','summary':'fixture candidate','hardware_ids':[BOARD],'project_version':version}
@@ -56,8 +57,18 @@ class GenerationModel(BaseChatModel):
             elif last.name=='scaffold_project':
                 source = SOURCE.replace('void loop', 'void cycle') if self.mode in {'repair','bad_repair'} else SOURCE
                 name,args='write_project_files',{'expected_version':version,'files':{'src/main.cpp':source,'README.md':'software fixture only'}}
+            elif last.name=='write_project_files' and json.loads(last.content).get('error_code')=='INVALID_TOOL_JSON':
+                name,args='write_project_files',{'expected_version':version,
+                     'files':{'src/main.cpp':SOURCE,'README.md':'software fixture only'}}
             elif last.name=='write_project_files' and self.mode=='preempted_report': name,args='get_project',{}
             else: name,args='GenerationReport',report
+            if name=='write_project_files' and self.mode in {'file_json','file_json_repeat'} and (
+                    not self._malformed or self.mode=='file_json_repeat'):
+                self._malformed=True
+                msg=AIMessage(content='',invalid_tool_calls=[{'id':f'bad-write-{len(messages)}','name':name,
+                     'args':'{"expected_version":2,"files":{','error':'JSON'}],
+                    usage_metadata={'input_tokens':10,'output_tokens':2,'total_tokens':12})
+                return ChatResult(generations=[ChatGeneration(message=msg)])
             if name=='GenerationReport' and self.mode=='json' and not self._malformed:
                 self._malformed=True
                 msg=AIMessage(content='',invalid_tool_calls=[{'id':'bad','name':name,'args':'{"summary":bad}','error':'JSON'}],
@@ -191,6 +202,21 @@ class GenerationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.c.project.delivery()['delivery_status'],'ready_for_vscode')
         self.assertNotIn('generation_repair_reserve',self.c.state())
 
+    async def test_model_limit_still_checks_fresh_candidate_without_another_model_call(self):
+        for mode, expected in (('normal', 'completed'), ('repair', 'blocked')):
+            with self.subTest(mode=mode):
+                version = self.c.project.get()['version'] if self.c.project else None
+                self.c.begin_turn('check bounded candidate recovery')
+                with patch.object(limits, 'GENERATION_MODEL_CALLS', 5):
+                    result = await self.child(mode, expected=version)
+                self.assertEqual(result['status'], expected)
+                detail = self.c.store.record(self.c.task_id, result['result']['detail_ref'])
+                self.assertEqual(detail['metrics']['api_attempts'], 5)
+                self.assertEqual([e['reason'] for e in detail['events'] if e['kind']=='candidate_recovered'],
+                                 ['ModelCallLimitExceededError'])
+                self.assertTrue(any(e['kind']=='candidate_check' for e in detail['events']))
+                self.assertFalse(any(e['kind']=='candidate_repair_request' for e in detail['events']))
+
     async def test_token_stop_before_report_recovers_candidate_and_parent_does_not_recall(self):
         self.c.builtin_stages=True; events=[]
         async def emit(k,d):events.append((k,d))
@@ -249,6 +275,22 @@ class GenerationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(feedback),1)
         self.assertIn('GenerationReport Schema',feedback[0]['content'])
         self.assertEqual(detail['metrics']['model_responses'],7)
+
+    async def test_invalid_file_arguments_are_returned_to_same_agent_and_resubmitted(self):
+        result=await self.child('file_json')
+        self.assertEqual(result['status'],'completed')
+        detail=self.c.store.record(self.c.task_id,result['result']['detail_ref'])
+        feedback=[e for e in detail['events'] if e['kind']=='tool_argument_feedback']
+        self.assertEqual(len(feedback),1)
+        self.assertFalse(json.loads(feedback[0]['content'])['executed'])
+        self.assertEqual(detail['metrics']['model_responses'],7)
+        self.assertEqual(self.c.project.get()['version'],3)
+
+    async def test_invalid_file_argument_retries_stop_without_writes(self):
+        result=await self.child('file_json_repeat')
+        self.assertEqual(result['result']['blockers'],['INVALID_TOOL_JSON'])
+        self.assertEqual(self.c.project.get()['version'],2)
+        self.assertNotIn('src/main.cpp', [f['path'] for f in self.c.project.get()['files']])
 
     async def test_scope_and_tool_surface(self):
         await self.child()

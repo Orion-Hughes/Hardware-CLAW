@@ -36,7 +36,7 @@ def load_api_key(*, ask_key: bool = False) -> str:
     return key
 
 
-def create_model(*, ask_key: bool = False, max_tokens: int = limits.QUERY_OUTPUT_TOKENS):
+def create_model(*, ask_key: bool = False, max_tokens: int = limits.COORDINATOR_OUTPUT_TOKENS):
     """Construct the client; actual API traffic begins when the agent runs."""
     return ChatDeepSeek(
         model=os.environ.get("DEEPSEEK_MODEL", DEFAULT_MODEL),
